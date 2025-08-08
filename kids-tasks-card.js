@@ -152,7 +152,8 @@ class KidsTasksCard extends HTMLElement {
             tasks: this.getChildTasks(entity.attributes.child_id),
           });
         }
-    });
+    }
+  });
 
     return children;
   }
