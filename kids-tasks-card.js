@@ -15,14 +15,6 @@ import {
   css,
   nothing,
 } from "https://unpkg.com/lit@2.8.0/index.js?module";
-import {
-  hasConfigOrEntityChanged,
-  hasAction,
-  ActionHandlerEvent,
-  handleAction,
-  LovelaceCardEditor,
-  getLovelace,
-} from "https://unpkg.com/custom-card-helpers@1.9.0/dist/index.js?module";
 
 // Card version for console logging
 const CARD_VERSION = "1.0.0";
@@ -74,24 +66,13 @@ class KidsTasksCard extends LitElement {
       return false;
     }
 
-    return hasConfigOrEntityChanged(this, changedProps, false);
+    return true; // Simplify - always update when props change
   }
 
   // Updated lifecycle
   updated(changedProps) {
     super.updated(changedProps);
-    
-    if (
-      !this._helpers ||
-      (changedProps.has('hass') && this.hass.language !== changedProps.get('hass')?.language)
-    ) {
-      this._loadHelpers();
-    }
-  }
-
-  // Load card helpers
-  async _loadHelpers() {
-    this._helpers = await window.loadCardHelpers();
+    // Simplified - no need for card helpers in this basic implementation
   }
 
   // Handle card clicks
