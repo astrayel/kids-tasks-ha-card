@@ -19,6 +19,7 @@ class KidsTasksCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._pendingChildCreation = null; // Track pending child creation
   }
 
   // Set configuration
@@ -90,19 +91,22 @@ class KidsTasksCard extends HTMLElement {
               initial_points: 0,
             });
             
+            // Set pending child creation state
+            this._pendingChildCreation = childName;
+            this.render(); // Re-render to show loading state
+            
             this._hass.callService('kids_tasks', 'add_child', {
               name: childName,
               avatar: '👶',
               initial_points: 0,
             }).then(() => {
               console.log('add_child service call succeeded');
-              // Force card refresh after a delay to allow entity creation
-              setTimeout(() => {
-                console.log('Refreshing card...');
-                this.render();
-              }, 2000);
+              // Wait for integration reload and entity creation with multiple retries
+              this._waitForChildEntities(childName);
             }).catch(error => {
               console.error('add_child service call failed:', error);
+              this._pendingChildCreation = null;
+              this.render();
             });
           }
           break;
@@ -113,6 +117,31 @@ class KidsTasksCard extends HTMLElement {
     } catch (error) {
       console.error('Action failed:', error);
     }
+  }
+
+  // Wait for child entities to be created after adding a new child
+  _waitForChildEntities(childName, retries = 0, maxRetries = 20) {
+    const checkInterval = 1000; // Check every 1 second
+    
+    console.log(`Waiting for child entities (attempt ${retries + 1}/${maxRetries})...`);
+    
+    setTimeout(() => {
+      const children = this.getChildrenData();
+      const childFound = children.some(child => child.name === childName);
+      
+      if (childFound) {
+        console.log(`Child entities found for ${childName}, refreshing card`);
+        this._pendingChildCreation = null; // Clear pending state
+        this.render();
+      } else if (retries < maxRetries) {
+        console.log(`Child entities not yet available, retrying...`);
+        this._waitForChildEntities(childName, retries + 1, maxRetries);
+      } else {
+        console.warn(`Timeout waiting for child entities for ${childName}, forcing refresh anyway`);
+        this._pendingChildCreation = null; // Clear pending state
+        this.render();
+      }
+    }, checkInterval);
   }
 
   // Get children data from Home Assistant entities
@@ -139,21 +168,28 @@ class KidsTasksCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => {
       if (entityId.includes('_points') && entityId.startsWith('sensor.kids_tasks_')) {
         const entity = entities[entityId];
-        console.log(`Checking points entity ${entityId}:`, entity.attributes);
+        console.log(`Checking points entity ${entityId}:`, {
+          state: entity.state,
+          attributes: entity.attributes
+        });
         
-        if (entity.attributes.type === 'child') {
-          console.log('Found child entity:', entityId);
+        if (entity.attributes && entity.attributes.type === 'child') {
+          console.log('Found child entity:', entityId, 'with attributes:', entity.attributes);
           children.push({
             id: entity.attributes.child_id,
             name: entity.attributes.friendly_name || entity.attributes.name,
-            points: entity.state,
-            level: entity.attributes.level,
-            avatar: entity.attributes.avatar,
+            points: parseInt(entity.state) || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || '👶',
             tasks: this.getChildTasks(entity.attributes.child_id),
           });
+        } else {
+          console.log('Entity does not have child type:', entityId, entity.attributes);
         }
     }
   });
+
+  console.log('Total children found:', children.length);
 
     return children;
   }
@@ -382,12 +418,17 @@ class KidsTasksCard extends HTMLElement {
       <div class="card">
         <div class="card-header">${this.config.title}</div>
         
-        ${children.length === 0 ? `
+        ${children.length === 0 && !this._pendingChildCreation ? `
           <div class="no-data">
             <p>Aucun enfant trouvé. Commencez par ajouter votre premier enfant !</p>
             <button class="add-child-button" onclick="this.getRootNode().host.handleAction('add_child')">
               Ajouter votre premier enfant
             </button>
+          </div>
+        ` : children.length === 0 && this._pendingChildCreation ? `
+          <div class="no-data">
+            <p>Création de l'enfant "${this._pendingChildCreation}" en cours...</p>
+            <p><small>L'intégration se recharge pour créer les nouveaux capteurs.</small></p>
           </div>
         ` : `
           ${children.map(child => `
