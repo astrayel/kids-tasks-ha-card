@@ -166,14 +166,20 @@ class KidsTasksCard extends HTMLElement {
 
     // Find child entities (points sensors contain all child info)
     Object.keys(entities).forEach(entityId => {
-      if (entityId.includes('_points') && entityId.startsWith('sensor.kids_tasks_')) {
+      // Look for entities that end with _points and have kids_tasks in their unique_id
+      if (entityId.includes('_points') && entityId.startsWith('sensor.')) {
         const entity = entities[entityId];
         console.log(`Checking points entity ${entityId}:`, {
           state: entity.state,
-          attributes: entity.attributes
+          attributes: entity.attributes,
+          unique_id: entity.attributes?.unique_id
         });
         
-        if (entity.attributes && entity.attributes.type === 'child') {
+        // Check if this is a kids_tasks entity by looking at the unique_id
+        if (entity.attributes && 
+            entity.attributes.unique_id && 
+            entity.attributes.unique_id.startsWith('kids_tasks_') &&
+            entity.attributes.type === 'child') {
           console.log('Found child entity:', entityId, 'with attributes:', entity.attributes);
           children.push({
             id: entity.attributes.child_id,
@@ -184,7 +190,10 @@ class KidsTasksCard extends HTMLElement {
             tasks: this.getChildTasks(entity.attributes.child_id),
           });
         } else {
-          console.log('Entity does not have child type:', entityId, entity.attributes);
+          console.log('Entity does not match kids_tasks child pattern:', entityId, {
+            unique_id: entity.attributes?.unique_id,
+            type: entity.attributes?.type
+          });
         }
     }
   });
@@ -202,9 +211,13 @@ class KidsTasksCard extends HTMLElement {
     const tasks = [];
 
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_task_')) {
+      // Look for task entities by checking unique_id instead of entity_id
+      if (entityId.startsWith('sensor.')) {
         const entity = entities[entityId];
-        if (entity.attributes.assigned_child_id === childId) {
+        if (entity.attributes && 
+            entity.attributes.unique_id && 
+            entity.attributes.unique_id.includes('kids_tasks_task_') &&
+            entity.attributes.assigned_child_id === childId) {
           tasks.push({
             id: entity.attributes.task_id,
             name: entity.attributes.friendly_name || entity.attributes.name,
@@ -229,16 +242,21 @@ class KidsTasksCard extends HTMLElement {
     const rewards = [];
 
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_reward_')) {
+      // Look for reward entities by checking unique_id instead of entity_id
+      if (entityId.startsWith('sensor.')) {
         const entity = entities[entityId];
-        rewards.push({
-          id: entity.attributes.reward_id,
-          name: entity.attributes.friendly_name || entity.attributes.name,
-          cost: entity.attributes.cost,
-          category: entity.attributes.category,
-          description: entity.attributes.description,
-          available: entity.state === 'available',
-        });
+        if (entity.attributes && 
+            entity.attributes.unique_id && 
+            entity.attributes.unique_id.includes('kids_tasks_reward_')) {
+          rewards.push({
+            id: entity.attributes.reward_id,
+            name: entity.attributes.friendly_name || entity.attributes.name,
+            cost: entity.attributes.cost,
+            category: entity.attributes.category,
+            description: entity.attributes.description,
+            available: entity.state === 'available',
+          });
+        }
       }
     });
 
