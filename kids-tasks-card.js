@@ -199,7 +199,8 @@ class KidsTasksCard extends HTMLElement {
         } else {
           console.log('Entity does not match kids_tasks child pattern:', entityId, {
             type: entity.attributes?.type,
-            child_id: entity.attributes?.child_id
+            child_id: entity.attributes?.child_id,
+            all_attributes: Object.keys(entity.attributes || {})
           });
         }
     }
