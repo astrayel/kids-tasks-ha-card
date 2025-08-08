@@ -1,0 +1,23 @@
+{
+  "name": "kids-tasks-card",
+  "version": "1.0.0",
+  "description": "Lovelace custom cards for Kids Tasks Manager integration",
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "kids",
+    "tasks",
+    "rewards"
+  ],
+  "author": "Kids Tasks Card Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/astrayel/kids-tasks-card.git"
+  },
+  "bugs": {
+    "url": "https://github.com/astrayel/kids-tasks-card/issues"
+  },
+  "homepage": "https://github.com/astrayel/kids-tasks-card#readme"
+}
