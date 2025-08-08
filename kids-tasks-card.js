@@ -416,6 +416,44 @@ class KidsTasksCard extends HTMLElement {
   }
 }
 
+// Add static method for visual editor support
+KidsTasksCard.getConfigElement = () => {
+  const element = document.createElement('div');
+  element.innerHTML = `
+    <div style="padding: 16px;">
+      <ha-textfield
+        label="Titre"
+        .value="\${this.config?.title || 'Kids Tasks'}"
+        .configValue="title"
+        @input="\${this._valueChanged}"
+      ></ha-textfield>
+      <ha-formfield label="Afficher les tâches complétées">
+        <ha-checkbox
+          .checked="\${this.config?.show_completed !== false}"
+          .configValue="show_completed"
+          @change="\${this._valueChanged}"
+        ></ha-checkbox>
+      </ha-formfield>
+      <ha-formfield label="Afficher les récompenses">
+        <ha-checkbox
+          .checked="\${this.config?.show_rewards !== false}"
+          .configValue="show_rewards"  
+          @change="\${this._valueChanged}"
+        ></ha-checkbox>
+      </ha-formfield>
+    </div>
+  `;
+  return element;
+};
+
+// Add stub config
+KidsTasksCard.getStubConfig = () => ({
+  type: 'custom:kids-tasks-card',
+  title: 'Kids Tasks',
+  show_completed: true,
+  show_rewards: true,
+});
+
 // Register the card
 customElements.define('kids-tasks-card', KidsTasksCard);
 
@@ -427,4 +465,5 @@ window.customCards.push({
   description: 'A custom card for managing children\'s tasks and rewards',
   preview: true,
   documentationURL: 'https://github.com/astrayel/kids-tasks-card',
+  configurable: true,
 });
