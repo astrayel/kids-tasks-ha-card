@@ -144,14 +144,14 @@ class KidsTasksCard extends HTMLElement {
         if (entity.attributes.type === 'child') {
           console.log('Found child entity:', entityId);
           children.push({
-          id: entity.attributes.child_id,
-          name: entity.attributes.friendly_name || entity.attributes.name,
-          points: entity.state,
-          level: entity.attributes.level,
-          avatar: entity.attributes.avatar,
-          tasks: this.getChildTasks(entity.attributes.child_id),
-        });
-      }
+            id: entity.attributes.child_id,
+            name: entity.attributes.friendly_name || entity.attributes.name,
+            points: entity.state,
+            level: entity.attributes.level,
+            avatar: entity.attributes.avatar,
+            tasks: this.getChildTasks(entity.attributes.child_id),
+          });
+        }
     });
 
     return children;
