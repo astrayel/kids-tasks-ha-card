@@ -151,10 +151,12 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const children = [];
 
-    // Debug: Log all potential kids_tasks entities by checking unique_id
+    // Debug: Log all potential kids_tasks entities by checking type
     const potentialKidsTasksEntities = Object.keys(entities).filter(id => {
       const entity = entities[id];
-      return entity.attributes?.unique_id?.startsWith('kids_tasks_');
+      return entity.attributes?.type === 'child' || 
+             entity.attributes?.type === 'task' || 
+             entity.attributes?.type === 'reward';
     });
     console.log('Kids Tasks entities found:', potentialKidsTasksEntities);
     
@@ -163,9 +165,10 @@ class KidsTasksCard extends HTMLElement {
       const entity = entities[entityId];
       console.log(`Entity ${entityId}:`, {
         state: entity.state,
-        unique_id: entity.attributes?.unique_id,
         type: entity.attributes?.type,
-        attributes: entity.attributes
+        child_id: entity.attributes?.child_id,
+        task_id: entity.attributes?.task_id,
+        reward_id: entity.attributes?.reward_id
       });
     });
 
@@ -176,15 +179,14 @@ class KidsTasksCard extends HTMLElement {
         const entity = entities[entityId];
         console.log(`Checking points entity ${entityId}:`, {
           state: entity.state,
-          attributes: entity.attributes,
-          unique_id: entity.attributes?.unique_id
+          type: entity.attributes?.type,
+          child_id: entity.attributes?.child_id
         });
         
-        // Check if this is a kids_tasks entity by looking at the unique_id
+        // Check if this is a kids_tasks child entity
         if (entity.attributes && 
-            entity.attributes.unique_id && 
-            entity.attributes.unique_id.startsWith('kids_tasks_') &&
-            entity.attributes.type === 'child') {
+            entity.attributes.type === 'child' &&
+            entity.attributes.child_id) {
           console.log('Found child entity:', entityId, 'with attributes:', entity.attributes);
           children.push({
             id: entity.attributes.child_id,
@@ -196,8 +198,8 @@ class KidsTasksCard extends HTMLElement {
           });
         } else {
           console.log('Entity does not match kids_tasks child pattern:', entityId, {
-            unique_id: entity.attributes?.unique_id,
-            type: entity.attributes?.type
+            type: entity.attributes?.type,
+            child_id: entity.attributes?.child_id
           });
         }
     }
@@ -216,12 +218,11 @@ class KidsTasksCard extends HTMLElement {
     const tasks = [];
 
     Object.keys(entities).forEach(entityId => {
-      // Look for task entities by checking unique_id instead of entity_id
+      // Look for task entities by checking type
       if (entityId.startsWith('sensor.')) {
         const entity = entities[entityId];
         if (entity.attributes && 
-            entity.attributes.unique_id && 
-            entity.attributes.unique_id.includes('kids_tasks_task_') &&
+            entity.attributes.type === 'task' &&
             entity.attributes.assigned_child_id === childId) {
           tasks.push({
             id: entity.attributes.task_id,
@@ -247,12 +248,11 @@ class KidsTasksCard extends HTMLElement {
     const rewards = [];
 
     Object.keys(entities).forEach(entityId => {
-      // Look for reward entities by checking unique_id instead of entity_id
+      // Look for reward entities by checking type
       if (entityId.startsWith('sensor.')) {
         const entity = entities[entityId];
         if (entity.attributes && 
-            entity.attributes.unique_id && 
-            entity.attributes.unique_id.includes('kids_tasks_reward_')) {
+            entity.attributes.type === 'reward') {
           rewards.push({
             id: entity.attributes.reward_id,
             name: entity.attributes.friendly_name || entity.attributes.name,
