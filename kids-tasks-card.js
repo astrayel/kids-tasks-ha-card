@@ -107,9 +107,14 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const children = [];
 
-    // Find child entities
+    // Debug: Log all kids_tasks entities
+    console.log('Kids Tasks entities found:', 
+      Object.keys(entities).filter(id => id.startsWith('sensor.kids_tasks_'))
+    );
+
+    // Find child entities (points sensors contain all child info)
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_') && entities[entityId].attributes.type === 'child') {
+      if (entityId.includes('_points') && entityId.startsWith('sensor.kids_tasks_') && entities[entityId].attributes.type === 'child') {
         const entity = entities[entityId];
         children.push({
           id: entity.attributes.child_id,
