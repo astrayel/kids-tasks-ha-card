@@ -151,15 +151,20 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const children = [];
 
-    // Debug: Log all kids_tasks entities
-    const kidsTasksEntities = Object.keys(entities).filter(id => id.startsWith('sensor.kids_tasks_'));
-    console.log('Kids Tasks entities found:', kidsTasksEntities);
+    // Debug: Log all potential kids_tasks entities by checking unique_id
+    const potentialKidsTasksEntities = Object.keys(entities).filter(id => {
+      const entity = entities[id];
+      return entity.attributes?.unique_id?.startsWith('kids_tasks_');
+    });
+    console.log('Kids Tasks entities found:', potentialKidsTasksEntities);
     
     // Log details of each entity for debugging
-    kidsTasksEntities.forEach(entityId => {
+    potentialKidsTasksEntities.forEach(entityId => {
       const entity = entities[entityId];
       console.log(`Entity ${entityId}:`, {
         state: entity.state,
+        unique_id: entity.attributes?.unique_id,
+        type: entity.attributes?.type,
         attributes: entity.attributes
       });
     });
