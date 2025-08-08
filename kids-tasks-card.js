@@ -84,10 +84,25 @@ class KidsTasksCard extends HTMLElement {
           // Open a simple prompt for now
           const childName = prompt('Enter child name:');
           if (childName) {
+            console.log('Calling add_child service with:', {
+              name: childName,
+              avatar: '👶',
+              initial_points: 0,
+            });
+            
             this._hass.callService('kids_tasks', 'add_child', {
               name: childName,
               avatar: '👶',
               initial_points: 0,
+            }).then(() => {
+              console.log('add_child service call succeeded');
+              // Force card refresh after a delay to allow entity creation
+              setTimeout(() => {
+                console.log('Refreshing card...');
+                this.render();
+              }, 2000);
+            }).catch(error => {
+              console.error('add_child service call failed:', error);
             });
           }
           break;
@@ -108,15 +123,27 @@ class KidsTasksCard extends HTMLElement {
     const children = [];
 
     // Debug: Log all kids_tasks entities
-    console.log('Kids Tasks entities found:', 
-      Object.keys(entities).filter(id => id.startsWith('sensor.kids_tasks_'))
-    );
+    const kidsTasksEntities = Object.keys(entities).filter(id => id.startsWith('sensor.kids_tasks_'));
+    console.log('Kids Tasks entities found:', kidsTasksEntities);
+    
+    // Log details of each entity for debugging
+    kidsTasksEntities.forEach(entityId => {
+      const entity = entities[entityId];
+      console.log(`Entity ${entityId}:`, {
+        state: entity.state,
+        attributes: entity.attributes
+      });
+    });
 
     // Find child entities (points sensors contain all child info)
     Object.keys(entities).forEach(entityId => {
-      if (entityId.includes('_points') && entityId.startsWith('sensor.kids_tasks_') && entities[entityId].attributes.type === 'child') {
+      if (entityId.includes('_points') && entityId.startsWith('sensor.kids_tasks_')) {
         const entity = entities[entityId];
-        children.push({
+        console.log(`Checking points entity ${entityId}:`, entity.attributes);
+        
+        if (entity.attributes.type === 'child') {
+          console.log('Found child entity:', entityId);
+          children.push({
           id: entity.attributes.child_id,
           name: entity.attributes.friendly_name || entity.attributes.name,
           points: entity.state,
