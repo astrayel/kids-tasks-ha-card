@@ -91,7 +91,7 @@ class KidsTasksCard extends LitElement {
 
   // Load card helpers
   async _loadHelpers() {
-    this._helpers = await (window as any).loadCardHelpers();
+    this._helpers = await window.loadCardHelpers();
   }
 
   // Handle card clicks
@@ -587,8 +587,8 @@ class KidsTasksCard extends LitElement {
 customElements.define('kids-tasks-card', KidsTasksCard);
 
 // Add to custom card registry
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
+window.customCards = window.customCards || [];
+window.customCards.push({
   type: 'kids-tasks-card',
   name: 'Kids Tasks Card',
   description: 'A custom card for managing children\'s tasks and rewards',
