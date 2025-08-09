@@ -596,27 +596,22 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_') && entityId.includes('_points')) {
-        const childMatch = entityId.match(/sensor\.kids_tasks_(.+)_points/);
-        if (childMatch) {
-          const childId = childMatch[1];
-          const pointsEntity = entities[entityId];
-          const levelEntity = entities[`sensor.kids_tasks_${childId}_level`];
+      // Chercher les entités se terminant par _points avec type: child
+      if (entityId.endsWith('_points')) {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
+          const points = parseInt(pointsEntity.state) || 0;
+          const level = parseInt(pointsEntity.attributes.level) || 1;
+          const progress = ((points % 100) / 100) * 100;
           
-          if (pointsEntity && levelEntity) {
-            const points = parseInt(pointsEntity.state) || 0;
-            const level = parseInt(levelEntity.state) || 1;
-            const progress = ((points % 100) / 100) * 100;
-            
-            children.push({
-              id: childId,
-              name: pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId,
-              points: points,
-              level: level,
-              progress: progress,
-              avatar: pointsEntity.attributes.avatar || '👶'
-            });
-          }
+          children.push({
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
+            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
+            points: points,
+            level: level,
+            progress: progress,
+            avatar: pointsEntity.attributes.avatar || '👶'
+          });
         }
       }
     });
@@ -792,7 +787,7 @@ class KidsTasksCard extends HTMLElement {
   // Navigation et vues (réutilisation du code existant avec ajout des boutons de suppression)
   getNavigation() {
     const tabs = [
-      { id: 'dashboard', label: '📊 Tableau', icon: '📊' },
+      { id: 'dashboard', label: '📊 Tableau1', icon: '📊' },
       { id: 'children', label: '👶 Enfants', icon: '👶' },
       { id: 'tasks', label: '📝 Tâches', icon: '📝' },
       { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' }
