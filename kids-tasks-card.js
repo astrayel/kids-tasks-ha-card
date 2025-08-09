@@ -19,7 +19,7 @@ class KidsTasksCard extends HTMLElement {
     this._hass = hass;
     if (!this._initialized && hass) {
       this._initialized = true;
-      this.addEventListener('click', this.handleClick.bind(this));
+      this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
     }
     this.render();
   }
