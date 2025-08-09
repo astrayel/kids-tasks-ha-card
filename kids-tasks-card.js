@@ -162,69 +162,96 @@ class KidsTasksCard extends HTMLElement {
     }
   }
 
-  async submitTaskForm(modal, isEdit = false) {
-    const form = modal.querySelector('form');
-    const formData = new FormData(form);
+  async submitTaskForm(dialog, isEdit = false) {
+    const form = dialog.querySelector('form');
+    
+    // Récupérer les valeurs des composants HA
+    const name = form.querySelector('[name="name"]').value;
+    const description = form.querySelector('[name="description"]').value || '';
+    const category = form.querySelector('[name="category"]').value;
+    const points = parseInt(form.querySelector('[name="points"]').value);
+    const frequency = form.querySelector('[name="frequency"]').value;
+    const assigned_child_id = form.querySelector('[name="assigned_child_id"]').value || null;
+    const validation_required = form.querySelector('[name="validation_required"]').checked;
     
     const serviceData = {
-      name: formData.get('name'),
-      description: formData.get('description') || '',
-      category: formData.get('category'),
-      points: parseInt(formData.get('points')),
-      frequency: formData.get('frequency'),
-      assigned_child_id: formData.get('assigned_child_id') || null,
-      validation_required: formData.get('validation_required') === 'true'
+      name,
+      description,
+      category,
+      points,
+      frequency,
+      assigned_child_id,
+      validation_required
     };
 
     if (isEdit) {
-      serviceData.task_id = formData.get('task_id');
-      serviceData.active = formData.get('active') === 'true';
+      const taskIdInput = form.querySelector('[name="task_id"]');
+      serviceData.task_id = taskIdInput ? taskIdInput.value : null;
+      
+      const activeCheckbox = form.querySelector('[name="active"]');
+      serviceData.active = activeCheckbox ? activeCheckbox.checked : true;
+      
       if (await this.callService('kids_tasks', 'update_task', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     } else {
       if (await this.callService('kids_tasks', 'add_task', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     }
   }
 
-  async submitRewardForm(modal, isEdit = false) {
-    const form = modal.querySelector('form');
-    const formData = new FormData(form);
+  async submitRewardForm(dialog, isEdit = false) {
+    const form = dialog.querySelector('form');
+    
+    // Récupérer les valeurs des composants HA
+    const name = form.querySelector('[name="name"]').value;
+    const description = form.querySelector('[name="description"]').value || '';
+    const cost = parseInt(form.querySelector('[name="cost"]').value);
+    const category = form.querySelector('[name="category"]').value;
+    const limitedQuantityInput = form.querySelector('[name="limited_quantity"]');
+    const limited_quantity = limitedQuantityInput.value ? parseInt(limitedQuantityInput.value) : null;
     
     const serviceData = {
-      name: formData.get('name'),
-      description: formData.get('description') || '',
-      cost: parseInt(formData.get('cost')),
-      category: formData.get('category'),
-      limited_quantity: formData.get('limited_quantity') ? parseInt(formData.get('limited_quantity')) : null
+      name,
+      description,
+      cost,
+      category,
+      limited_quantity
     };
 
     if (isEdit) {
-      serviceData.reward_id = formData.get('reward_id');
-      serviceData.active = formData.get('active') === 'true';
+      const rewardIdInput = form.querySelector('[name="reward_id"]');
+      serviceData.reward_id = rewardIdInput ? rewardIdInput.value : null;
+      
+      const activeCheckbox = form.querySelector('[name="active"]');
+      serviceData.active = activeCheckbox ? activeCheckbox.checked : true;
+      
       if (await this.callService('kids_tasks', 'update_reward', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     } else {
       if (await this.callService('kids_tasks', 'add_reward', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     }
   }
 
-  async submitClaimForm(modal) {
-    const form = modal.querySelector('form');
-    const formData = new FormData(form);
+  async submitClaimForm(dialog) {
+    const form = dialog.querySelector('form');
+    
+    // Récupérer les valeurs des composants HA
+    const rewardIdInput = form.querySelector('[name="reward_id"]');
+    const reward_id = rewardIdInput ? rewardIdInput.value : null;
+    const child_id = form.querySelector('[name="child_id"]').value;
     
     const serviceData = {
-      reward_id: formData.get('reward_id'),
-      child_id: formData.get('child_id')
+      reward_id,
+      child_id
     };
 
     if (await this.callService('kids_tasks', 'claim_reward', serviceData)) {
-      this.closeModal(modal);
+      this.closeModal(dialog);
     }
   }
 
@@ -260,6 +287,49 @@ class KidsTasksCard extends HTMLElement {
           outline: none;
           border-color: var(--primary-color);
           box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+        }
+        
+        /* Styles pour les composants HA */
+        ha-textfield, ha-textarea, ha-select, ha-formfield {
+          display: block;
+          margin-bottom: 16px;
+          width: 100%;
+        }
+        
+        .form-row {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        
+        .form-row > * {
+          flex: 1;
+          margin-bottom: 0;
+        }
+        
+        .dialog-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid var(--divider-color);
+        }
+        
+        /* Responsive design pour les formulaires */
+        @media (max-width: 768px) {
+          .form-row {
+            flex-direction: column;
+            gap: 0;
+          }
+          
+          .form-row > * {
+            margin-bottom: 16px;
+          }
+          
+          .dialog-actions {
+            flex-direction: column-reverse;
+          }
         }
         .avatar-options { 
           display: flex; 
@@ -376,86 +446,107 @@ class KidsTasksCard extends HTMLElement {
     const frequencies = ['daily', 'weekly', 'monthly', 'once'];
 
     const content = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">${isEdit ? 'Modifier la tâche' : 'Créer une tâche'}</h3>
-          <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+      <form>
+        ${isEdit ? `<input type="hidden" name="task_id" value="${task.id}">` : ''}
+        
+        <ha-textfield
+          label="Nom de la tâche *"
+          name="name" 
+          required
+          value="${isEdit ? task.name : ''}"
+          placeholder="Ex: Ranger sa chambre">
+        </ha-textfield>
+        
+        <ha-textarea
+          label="Description"
+          name="description"
+          placeholder="Description détaillée de la tâche..."
+          value="${isEdit ? task.description || '' : ''}">
+        </ha-textarea>
+        
+        <div class="form-row">
+          <ha-select 
+            label="Catégorie *"
+            name="category"
+            required
+            value="${isEdit ? task.category : 'other'}">
+            ${categories.map(cat => `
+              <ha-list-item value="${cat}" ${isEdit && task.category === cat ? 'selected' : ''}>
+                ${this.getCategoryLabel(cat)}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
+          
+          <ha-textfield
+            label="Points *"
+            name="points"
+            type="number"
+            required
+            value="${isEdit ? task.points : '10'}"
+            min="1"
+            max="100">
+          </ha-textfield>
         </div>
-        <div class="modal-body">
-          <form>
-            ${isEdit ? `<input type="hidden" name="task_id" value="${task.id}">` : ''}
-            <div class="form-group">
-              <label class="form-label">Nom de la tâche*</label>
-              <input type="text" name="name" class="form-input" required 
-                     value="${isEdit ? task.name : ''}"
-                     placeholder="Ex: Ranger sa chambre">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea name="description" class="form-textarea" 
-                        placeholder="Description détaillée de la tâche...">${isEdit ? task.description || '' : ''}</textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Catégorie*</label>
-                <select name="category" class="form-select" required>
-                  ${categories.map(cat => `
-                    <option value="${cat}" ${isEdit && task.category === cat ? 'selected' : ''}>${this.getCategoryLabel(cat)}</option>
-                  `).join('')}
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Points*</label>
-                <input type="number" name="points" class="form-input" required 
-                       value="${isEdit ? task.points : '10'}" 
-                       min="1" max="100" step="1">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Fréquence*</label>
-                <select name="frequency" class="form-select" required>
-                  ${frequencies.map(freq => `
-                    <option value="${freq}" ${isEdit && task.frequency === freq ? 'selected' : ''}>${this.getFrequencyLabel(freq)}</option>
-                  `).join('')}
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Enfant assigné</label>
-                <select name="assigned_child_id" class="form-select">
-                  <option value="">Non assigné</option>
-                  ${children.map(child => `
-                    <option value="${child.id}" ${isEdit && task.assigned_child_id === child.id ? 'selected' : ''}>${child.name}</option>
-                  `).join('')}
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">
-                <input type="checkbox" name="validation_required" value="true" 
-                       ${isEdit ? (task.validation_required ? 'checked' : '') : 'checked'}>
-                Validation parentale requise
-              </label>
-            </div>
-            ${isEdit ? `
-              <div class="form-group">
-                <label class="form-label">
-                  <input type="checkbox" name="active" value="true" 
-                         ${task.active !== false ? 'checked' : ''}>
-                  Tâche active
-                </label>
-              </div>
-            ` : ''}
-          </form>
+        
+        <div class="form-row">
+          <ha-select
+            label="Fréquence *"
+            name="frequency"
+            required
+            value="${isEdit ? task.frequency : 'daily'}">
+            ${frequencies.map(freq => `
+              <ha-list-item value="${freq}" ${isEdit && task.frequency === freq ? 'selected' : ''}>
+                ${this.getFrequencyLabel(freq)}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
+          
+          <ha-select
+            label="Enfant assigné"
+            name="assigned_child_id"
+            value="${isEdit ? task.assigned_child_id || '' : ''}">
+            <ha-list-item value="">Non assigné</ha-list-item>
+            ${children.map(child => `
+              <ha-list-item value="${child.id}" ${isEdit && task.assigned_child_id === child.id ? 'selected' : ''}>
+                ${child.name}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Annuler</button>
-          <button class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitTaskForm(this.closest('.modal'), ${isEdit})">${isEdit ? 'Modifier' : 'Créer'}</button>
+        
+        <ha-formfield label="Validation parentale requise">
+          <ha-checkbox 
+            name="validation_required"
+            ${isEdit ? (task.validation_required ? 'checked' : '') : 'checked'}>
+          </ha-checkbox>
+        </ha-formfield>
+        
+        ${isEdit ? `
+          <ha-formfield label="Tâche active">
+            <ha-checkbox 
+              name="active"
+              ${task.active !== false ? 'checked' : ''}>
+            </ha-checkbox>
+          </ha-formfield>
+        ` : ''}
+        
+        <div class="dialog-actions">
+          <ha-button 
+            slot="secondaryAction" 
+            onclick="this.closest('ha-dialog').close()">
+            Annuler
+          </ha-button>
+          <ha-button 
+            slot="primaryAction"
+            raised
+            onclick="this.closest('ha-dialog')._cardInstance.submitTaskForm(this.closest('ha-dialog'), ${isEdit})">
+            ${isEdit ? 'Modifier' : 'Créer'}
+          </ha-button>
         </div>
-      </div>
+      </form>
     `;
 
-    this.showModal(content);
+    this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche');
   }
 
   showRewardForm(rewardId = null) {
@@ -466,67 +557,84 @@ class KidsTasksCard extends HTMLElement {
     const categories = ['fun', 'screen_time', 'outing', 'treat', 'privilege', 'toy', 'other'];
 
     const content = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">${isEdit ? 'Modifier la récompense' : 'Créer une récompense'}</h3>
-          <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+      <form>
+        ${isEdit ? `<input type="hidden" name="reward_id" value="${reward.id}">` : ''}
+        
+        <ha-textfield
+          label="Nom de la récompense *"
+          name="name"
+          required
+          value="${isEdit ? reward.name : ''}"
+          placeholder="Ex: 30 minutes de tablette">
+        </ha-textfield>
+        
+        <ha-textarea
+          label="Description"
+          name="description"
+          placeholder="Description de la récompense..."
+          value="${isEdit ? reward.description || '' : ''}">
+        </ha-textarea>
+        
+        <div class="form-row">
+          <ha-textfield
+            label="Coût en points *"
+            name="cost"
+            type="number"
+            required
+            value="${isEdit ? reward.cost : '50'}"
+            min="1"
+            max="1000">
+          </ha-textfield>
+          
+          <ha-select
+            label="Catégorie *"
+            name="category"
+            required
+            value="${isEdit ? reward.category : 'fun'}">
+            ${categories.map(cat => `
+              <ha-list-item value="${cat}" ${isEdit && reward.category === cat ? 'selected' : ''}>
+                ${this.getCategoryLabel(cat)}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
         </div>
-        <div class="modal-body">
-          <form>
-            ${isEdit ? `<input type="hidden" name="reward_id" value="${reward.id}">` : ''}
-            <div class="form-group">
-              <label class="form-label">Nom de la récompense*</label>
-              <input type="text" name="name" class="form-input" required 
-                     value="${isEdit ? reward.name : ''}"
-                     placeholder="Ex: 30 minutes de tablette">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea name="description" class="form-textarea" 
-                        placeholder="Description de la récompense...">${isEdit ? reward.description || '' : ''}</textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Coût en points*</label>
-                <input type="number" name="cost" class="form-input" required 
-                       value="${isEdit ? reward.cost : '50'}" 
-                       min="1" max="1000" step="1">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Catégorie*</label>
-                <select name="category" class="form-select" required>
-                  ${categories.map(cat => `
-                    <option value="${cat}" ${isEdit && reward.category === cat ? 'selected' : ''}>${this.getCategoryLabel(cat)}</option>
-                  `).join('')}
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Quantité limitée</label>
-              <input type="number" name="limited_quantity" class="form-input" 
-                     value="${isEdit && reward.limited_quantity ? reward.limited_quantity : ''}"
-                     min="1" max="100" step="1"
-                     placeholder="Laissez vide pour illimité">
-            </div>
-            ${isEdit ? `
-              <div class="form-group">
-                <label class="form-label">
-                  <input type="checkbox" name="active" value="true" 
-                         ${reward.active !== false ? 'checked' : ''}>
-                  Récompense active
-                </label>
-              </div>
-            ` : ''}
-          </form>
+        
+        <ha-textfield
+          label="Quantité limitée"
+          name="limited_quantity"
+          type="number"
+          value="${isEdit && reward.limited_quantity ? reward.limited_quantity : ''}"
+          min="1"
+          max="100"
+          placeholder="Laissez vide pour illimité">
+        </ha-textfield>
+        
+        ${isEdit ? `
+          <ha-formfield label="Récompense active">
+            <ha-checkbox
+              name="active"
+              ${reward.active !== false ? 'checked' : ''}>
+            </ha-checkbox>
+          </ha-formfield>
+        ` : ''}
+        
+        <div class="dialog-actions">
+          <ha-button
+            slot="secondaryAction"
+            onclick="this.closest('ha-dialog').close()">
+            Annuler
+          </ha-button>
+          <ha-button
+            slot="primaryAction"
+            raised
+            onclick="this.closest('ha-dialog')._cardInstance.submitRewardForm(this.closest('ha-dialog'), ${isEdit})">
+            ${isEdit ? 'Modifier' : 'Créer'}
+          </ha-button>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Annuler</button>
-          <button class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitRewardForm(this.closest('.modal'), ${isEdit})">${isEdit ? 'Modifier' : 'Créer'}</button>
-        </div>
-      </div>
+      </form>
     `;
 
-    this.showModal(content);
+    this.showModal(content, isEdit ? 'Modifier la récompense' : 'Créer une récompense');
   }
 
   showClaimRewardForm(rewardId) {
@@ -539,42 +647,46 @@ class KidsTasksCard extends HTMLElement {
     }
 
     const content = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">Échanger une récompense</h3>
-          <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
-        </div>
-        <div class="modal-body reward-claim">
-          <div class="reward-info">
-            <h3>🎁 ${reward.name}</h3>
-            <p><strong>Coût:</strong> ${reward.cost} points</p>
-            <p><strong>Catégorie:</strong> ${this.getCategoryLabel(reward.category)}</p>
-            ${reward.description ? `<p>${reward.description}</p>` : ''}
-            ${reward.remaining_quantity !== null ? `<p><strong>Stock restant:</strong> ${reward.remaining_quantity}</p>` : ''}
-          </div>
-          <form>
-            <input type="hidden" name="reward_id" value="${reward.id}">
-            <div class="form-group">
-              <label class="form-label">Sélectionner l'enfant*</label>
-              <select name="child_id" class="form-select" required>
-                <option value="">Choisir un enfant...</option>
-                ${children.map(child => `
-                  <option value="${child.id}" ${child.points >= reward.cost ? '' : 'disabled'}>
-                    ${child.name} (${child.points} points) ${child.points >= reward.cost ? '' : '- Pas assez de points'}
-                  </option>
-                `).join('')}
-              </select>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Annuler</button>
-          <button class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitClaimForm(this.closest('.modal'))">Échanger</button>
-        </div>
+      <div class="reward-info" style="text-align: center; margin-bottom: 24px; padding: 16px; background: var(--secondary-background-color); border-radius: 8px;">
+        <h3 style="margin: 0 0 8px 0; color: var(--primary-text-color);">🎁 ${reward.name}</h3>
+        <p style="margin: 4px 0;"><strong>Coût:</strong> ${reward.cost} points</p>
+        <p style="margin: 4px 0;"><strong>Catégorie:</strong> ${this.getCategoryLabel(reward.category)}</p>
+        ${reward.description ? `<p style="margin: 8px 0 0 0;">${reward.description}</p>` : ''}
+        ${reward.remaining_quantity !== null ? `<p style="margin: 4px 0;"><strong>Stock restant:</strong> ${reward.remaining_quantity}</p>` : ''}
       </div>
+      
+      <form>
+        <input type="hidden" name="reward_id" value="${reward.id}">
+        
+        <ha-select
+          label="Sélectionner l'enfant *"
+          name="child_id"
+          required>
+          <ha-list-item value="">Choisir un enfant...</ha-list-item>
+          ${children.map(child => `
+            <ha-list-item value="${child.id}" ${child.points < reward.cost ? 'disabled' : ''}>
+              ${child.name} (${child.points} points) ${child.points >= reward.cost ? '' : '- Pas assez de points'}
+            </ha-list-item>
+          `).join('')}
+        </ha-select>
+        
+        <div class="dialog-actions">
+          <ha-button
+            slot="secondaryAction"
+            onclick="this.closest('ha-dialog').close()">
+            Annuler
+          </ha-button>
+          <ha-button
+            slot="primaryAction"
+            raised
+            onclick="this.closest('ha-dialog')._cardInstance.submitClaimForm(this.closest('ha-dialog'))">
+            Échanger
+          </ha-button>
+        </div>
+      </form>
     `;
 
-    this.showModal(content);
+    this.showModal(content, 'Échanger une récompense');
   }
 
   showNotification(message, type = 'info') {
