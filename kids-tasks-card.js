@@ -1375,5 +1375,5 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'kids-tasks-card', 
   name: 'Kids Tasks Card',
-  description: 'Interface graphique complète pour gérer les tâches et récompenses des enfants'
+  description: 'Interface graphique pour gérer les tâches et récompenses des enfants'
 });
