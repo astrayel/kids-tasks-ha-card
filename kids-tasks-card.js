@@ -721,17 +721,28 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités se terminant par _points avec type: child
-      if (entityId.endsWith('_points')) {
+      // Chercher les entités se terminant par _points avec type: child OU avec préfixe KT_
+      if (entityId.endsWith('_points') || entityId.startsWith('sensor.kt_')) {
         const pointsEntity = entities[entityId];
-        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
+        if (pointsEntity && pointsEntity.attributes && 
+            (pointsEntity.attributes.type === 'child' || entityId.startsWith('sensor.kt_'))) {
           const points = parseInt(pointsEntity.state) || 0;
           const level = parseInt(pointsEntity.attributes.level) || 1;
           const progress = ((points % 100) / 100) * 100;
           
+          // Extraire l'ID et le nom
+          let childId, childName;
+          if (entityId.startsWith('sensor.kt_')) {
+            childId = pointsEntity.attributes.child_id || entityId.replace('sensor.kt_', '').replace('_points', '');
+            childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
+          } else {
+            childId = pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', '');
+            childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
+          }
+          
           children.push({
-            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
-            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
+            id: childId,
+            name: childName,
             points: points,
             level: level,
             progress: progress,
@@ -748,27 +759,72 @@ class KidsTasksCard extends HTMLElement {
     const tasks = [];
     const entities = this._hass.states;
     
+    // Chercher les tâches par groupes d'entités avec préfixe KT_
+    const taskGroups = new Map();
+    
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_task_')) {
-        const taskEntity = entities[entityId];
-        if (taskEntity && taskEntity.attributes) {
-          const attrs = taskEntity.attributes;
-          
-          tasks.push({
-            id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
-            name: attrs.friendly_name || attrs.task_name || 'Tâche sans nom',
-            description: attrs.description || '',
-            category: attrs.category || 'other',
-            points: parseInt(attrs.points) || 10,
-            frequency: attrs.frequency || 'daily',
-            status: taskEntity.state || 'todo',
-            assigned_child_id: attrs.assigned_child_id || null,
-            validation_required: attrs.validation_required !== false,
-            active: attrs.active !== false,
-            created_at: attrs.created_at || new Date().toISOString(),
-            last_completed_at: attrs.last_completed_at || null
-          });
+      // Chercher les entités button, number, select avec préfixe KT_
+      if (entityId.startsWith('button.kt_') || 
+          entityId.startsWith('number.kt_') || 
+          entityId.startsWith('select.kt_')) {
+        
+        // Extraire le nom de base de la tâche
+        let taskBaseName;
+        if (entityId.startsWith('button.kt_terminer_')) {
+          taskBaseName = entityId.replace('button.kt_terminer_', '');
+        } else if (entityId.startsWith('number.kt_points_')) {
+          taskBaseName = entityId.replace('number.kt_points_', '');
+        } else if (entityId.startsWith('select.kt_statut_')) {
+          taskBaseName = entityId.replace('select.kt_statut_', '');
         }
+        
+        if (taskBaseName) {
+          if (!taskGroups.has(taskBaseName)) {
+            taskGroups.set(taskBaseName, {});
+          }
+          
+          const entity = entities[entityId];
+          if (entityId.startsWith('button.kt_terminer_')) {
+            taskGroups.get(taskBaseName).button = entity;
+          } else if (entityId.startsWith('number.kt_points_')) {
+            taskGroups.get(taskBaseName).points = entity;
+          } else if (entityId.startsWith('select.kt_statut_')) {
+            taskGroups.get(taskBaseName).status = entity;
+          }
+        }
+      }
+    });
+    
+    // Créer les tâches à partir des groupes
+    taskGroups.forEach((group, taskBaseName) => {
+      if (group.status && group.points) {
+        const statusEntity = group.status;
+        const pointsEntity = group.points;
+        
+        // Convertir le statut français en statut système
+        const statusMapping = {
+          'À faire': 'todo',
+          'En cours': 'in_progress', 
+          'Terminé': 'completed',
+          'En attente validation': 'pending_validation',
+          'Validé': 'validated',
+          'Échoué': 'failed'
+        };
+        
+        tasks.push({
+          id: taskBaseName,
+          name: statusEntity.attributes.friendly_name?.replace('Statut: ', '') || taskBaseName.replace(/_/g, ' '),
+          description: statusEntity.attributes.description || '',
+          category: statusEntity.attributes.category || 'other',
+          points: parseInt(pointsEntity.state) || 10,
+          frequency: statusEntity.attributes.frequency || 'daily',
+          status: statusMapping[statusEntity.state] || 'todo',
+          assigned_child_id: statusEntity.attributes.assigned_child_id || null,
+          validation_required: statusEntity.attributes.validation_required !== false,
+          active: statusEntity.attributes.active !== false,
+          created_at: statusEntity.attributes.created_at || new Date().toISOString(),
+          last_completed_at: statusEntity.attributes.last_completed_at || null
+        });
       }
     });
     
@@ -783,27 +839,71 @@ class KidsTasksCard extends HTMLElement {
     const rewards = [];
     const entities = this._hass.states;
     
+    // Chercher les récompenses par groupes d'entités avec préfixe KT_
+    const rewardGroups = new Map();
+    
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_reward_')) {
-        const rewardEntity = entities[entityId];
-        if (rewardEntity && rewardEntity.attributes) {
-          const attrs = rewardEntity.attributes;
+      // Chercher les entités de récompenses avec préfixe KT_
+      if (entityId.startsWith('button.kt_echanger_') || 
+          entityId.startsWith('number.kt_cout_') || 
+          entityId.startsWith('switch.kt_active_reward_') ||
+          entityId.startsWith('number.kt_quantite_')) {
+        
+        // Extraire le nom de base de la récompense
+        let rewardBaseName;
+        if (entityId.startsWith('button.kt_echanger_')) {
+          rewardBaseName = entityId.replace('button.kt_echanger_', '');
+        } else if (entityId.startsWith('number.kt_cout_')) {
+          rewardBaseName = entityId.replace('number.kt_cout_', '');
+        } else if (entityId.startsWith('switch.kt_active_reward_')) {
+          rewardBaseName = entityId.replace('switch.kt_active_reward_', '');
+        } else if (entityId.startsWith('number.kt_quantite_')) {
+          rewardBaseName = entityId.replace('number.kt_quantite_', '');
+        }
+        
+        if (rewardBaseName) {
+          if (!rewardGroups.has(rewardBaseName)) {
+            rewardGroups.set(rewardBaseName, {});
+          }
           
-          rewards.push({
-            id: attrs.reward_id || entityId.replace('sensor.kids_tasks_reward_', ''),
-            name: attrs.friendly_name || attrs.reward_name || 'Récompense sans nom',
-            description: attrs.description || '',
-            category: attrs.category || 'fun',
-            cost: parseInt(attrs.cost) || 50,
-            active: attrs.active !== false,
-            limited_quantity: attrs.limited_quantity || null,
-            remaining_quantity: attrs.remaining_quantity || null
-          });
+          const entity = entities[entityId];
+          if (entityId.startsWith('button.kt_echanger_')) {
+            rewardGroups.get(rewardBaseName).button = entity;
+          } else if (entityId.startsWith('number.kt_cout_')) {
+            rewardGroups.get(rewardBaseName).cost = entity;
+          } else if (entityId.startsWith('switch.kt_active_reward_')) {
+            rewardGroups.get(rewardBaseName).active = entity;
+          } else if (entityId.startsWith('number.kt_quantite_')) {
+            rewardGroups.get(rewardBaseName).quantity = entity;
+          }
         }
       }
     });
     
-    return rewards.sort((a, b) => a.name.localeCompare(b.name));
+    // Créer les récompenses à partir des groupes
+    rewardGroups.forEach((group, rewardBaseName) => {
+      if (group.cost) {
+        const costEntity = group.cost;
+        const activeEntity = group.active;
+        const quantityEntity = group.quantity;
+        const buttonEntity = group.button;
+        
+        rewards.push({
+          id: rewardBaseName,
+          name: costEntity.attributes.friendly_name?.replace('Coût: ', '') || 
+                buttonEntity?.attributes.friendly_name?.replace('Échanger: ', '') || 
+                rewardBaseName.replace(/_/g, ' '),
+          description: costEntity.attributes.description || '',
+          category: costEntity.attributes.category || 'fun',
+          cost: parseInt(costEntity.state) || 50,
+          active: activeEntity ? activeEntity.state === 'on' : true,
+          limited_quantity: quantityEntity ? parseInt(quantityEntity.attributes.max) : null,
+          remaining_quantity: quantityEntity ? parseInt(quantityEntity.state) : null
+        });
+      }
+    });
+    
+    return rewards.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getStats() {
@@ -1649,10 +1749,10 @@ class KidsTasksChildCard extends HTMLElement {
 
     const entities = this._hass.states;
     
-    // Chercher l'entité de points de cet enfant
+    // Chercher l'entité de points de cet enfant (nouveau format KT_ ou ancien)
     const pointsEntity = Object.values(entities).find(entity => 
       entity.attributes && 
-      entity.attributes.type === 'child' && 
+      (entity.attributes.type === 'child' || entity.entity_id?.startsWith('sensor.kt_')) &&
       entity.attributes.child_id === this.config.child_id
     );
 
@@ -1680,24 +1780,69 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
+    // Utiliser la même logique que la carte principale
+    const taskGroups = new Map();
+    
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_task_')) {
-        const taskEntity = entities[entityId];
-        if (taskEntity && 
-            taskEntity.attributes && 
-            taskEntity.attributes.assigned_child_id === this.config.child_id) {
-          
-          const attrs = taskEntity.attributes;
-          tasks.push({
-            id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
-            name: attrs.friendly_name || attrs.task_name || 'Tâche',
-            description: attrs.description || '',
-            category: attrs.category || 'other',
-            points: parseInt(attrs.points) || 10,
-            status: taskEntity.state || 'todo',
-            validation_required: attrs.validation_required !== false
-          });
+      // Chercher les entités button, number, select avec préfixe KT_
+      if (entityId.startsWith('button.kt_') || 
+          entityId.startsWith('number.kt_') || 
+          entityId.startsWith('select.kt_')) {
+        
+        // Extraire le nom de base de la tâche
+        let taskBaseName;
+        if (entityId.startsWith('button.kt_terminer_')) {
+          taskBaseName = entityId.replace('button.kt_terminer_', '');
+        } else if (entityId.startsWith('number.kt_points_')) {
+          taskBaseName = entityId.replace('number.kt_points_', '');
+        } else if (entityId.startsWith('select.kt_statut_')) {
+          taskBaseName = entityId.replace('select.kt_statut_', '');
         }
+        
+        if (taskBaseName) {
+          if (!taskGroups.has(taskBaseName)) {
+            taskGroups.set(taskBaseName, {});
+          }
+          
+          const entity = entities[entityId];
+          if (entityId.startsWith('button.kt_terminer_')) {
+            taskGroups.get(taskBaseName).button = entity;
+          } else if (entityId.startsWith('number.kt_points_')) {
+            taskGroups.get(taskBaseName).points = entity;
+          } else if (entityId.startsWith('select.kt_statut_')) {
+            taskGroups.get(taskBaseName).status = entity;
+          }
+        }
+      }
+    });
+    
+    // Créer les tâches assignées à cet enfant
+    taskGroups.forEach((group, taskBaseName) => {
+      if (group.status && group.points && 
+          group.status.attributes.assigned_child_id === this.config.child_id) {
+        
+        const statusEntity = group.status;
+        const pointsEntity = group.points;
+        
+        // Convertir le statut français en statut système
+        const statusMapping = {
+          'À faire': 'todo',
+          'En cours': 'in_progress', 
+          'Terminé': 'completed',
+          'En attente validation': 'pending_validation',
+          'Validé': 'validated',
+          'Échoué': 'failed'
+        };
+        
+        tasks.push({
+          id: taskBaseName,
+          name: statusEntity.attributes.friendly_name?.replace('Statut: ', '') || taskBaseName.replace(/_/g, ' '),
+          description: statusEntity.attributes.description || '',
+          category: statusEntity.attributes.category || 'other',
+          points: parseInt(pointsEntity.state) || 10,
+          status: statusMapping[statusEntity.state] || 'todo',
+          validation_required: statusEntity.attributes.validation_required !== false
+        });
       }
     });
     
@@ -1715,22 +1860,66 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
+    // Utiliser la même logique que la carte principale pour les récompenses KT_
+    const rewardGroups = new Map();
+    
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.kids_tasks_reward_')) {
-        const rewardEntity = entities[entityId];
-        if (rewardEntity && rewardEntity.attributes) {
-          const attrs = rewardEntity.attributes;
-          
-          rewards.push({
-            id: attrs.reward_id || entityId.replace('sensor.kids_tasks_reward_', ''),
-            name: attrs.friendly_name || attrs.reward_name || 'Récompense',
-            cost: parseInt(attrs.cost) || 50,
-            category: attrs.category || 'fun',
-            description: attrs.description || '',
-            active: attrs.active !== false,
-            remaining_quantity: attrs.remaining_quantity
-          });
+      // Chercher les entités de récompenses avec préfixe KT_
+      if (entityId.startsWith('button.kt_echanger_') || 
+          entityId.startsWith('number.kt_cout_') || 
+          entityId.startsWith('switch.kt_active_reward_') ||
+          entityId.startsWith('number.kt_quantite_')) {
+        
+        // Extraire le nom de base de la récompense
+        let rewardBaseName;
+        if (entityId.startsWith('button.kt_echanger_')) {
+          rewardBaseName = entityId.replace('button.kt_echanger_', '');
+        } else if (entityId.startsWith('number.kt_cout_')) {
+          rewardBaseName = entityId.replace('number.kt_cout_', '');
+        } else if (entityId.startsWith('switch.kt_active_reward_')) {
+          rewardBaseName = entityId.replace('switch.kt_active_reward_', '');
+        } else if (entityId.startsWith('number.kt_quantite_')) {
+          rewardBaseName = entityId.replace('number.kt_quantite_', '');
         }
+        
+        if (rewardBaseName) {
+          if (!rewardGroups.has(rewardBaseName)) {
+            rewardGroups.set(rewardBaseName, {});
+          }
+          
+          const entity = entities[entityId];
+          if (entityId.startsWith('button.kt_echanger_')) {
+            rewardGroups.get(rewardBaseName).button = entity;
+          } else if (entityId.startsWith('number.kt_cout_')) {
+            rewardGroups.get(rewardBaseName).cost = entity;
+          } else if (entityId.startsWith('switch.kt_active_reward_')) {
+            rewardGroups.get(rewardBaseName).active = entity;
+          } else if (entityId.startsWith('number.kt_quantite_')) {
+            rewardGroups.get(rewardBaseName).quantity = entity;
+          }
+        }
+      }
+    });
+    
+    // Créer les récompenses à partir des groupes
+    rewardGroups.forEach((group, rewardBaseName) => {
+      if (group.cost) {
+        const costEntity = group.cost;
+        const activeEntity = group.active;
+        const quantityEntity = group.quantity;
+        const buttonEntity = group.button;
+        
+        rewards.push({
+          id: rewardBaseName,
+          name: costEntity.attributes.friendly_name?.replace('Coût: ', '') || 
+                buttonEntity?.attributes.friendly_name?.replace('Échanger: ', '') || 
+                rewardBaseName.replace(/_/g, ' '),
+          description: costEntity.attributes.description || '',
+          category: costEntity.attributes.category || 'fun',
+          cost: parseInt(costEntity.state) || 50,
+          active: activeEntity ? activeEntity.state === 'on' : true,
+          remaining_quantity: quantityEntity ? parseInt(quantityEntity.state) : null
+        });
       }
     });
     
