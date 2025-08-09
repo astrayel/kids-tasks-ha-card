@@ -221,10 +221,20 @@ class KidsTasksCard extends HTMLElement {
     modal.innerHTML = content;
     this.shadowRoot.appendChild(modal);
     
-    // Auto-fermeture sur clic en dehors
+    // Auto-fermeture sur clic en dehors uniquement
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) this.closeModal(modal);
+      if (e.target === modal) {
+        this.closeModal(modal);
+      }
     });
+
+    // Empêcher la fermeture sur les clics à l'intérieur du contenu
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
 
     return modal;
   }
