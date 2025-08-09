@@ -221,9 +221,74 @@ class KidsTasksCard extends HTMLElement {
     dialog.heading = title;
     dialog.hideActions = true;
     
-    // Créer le contenu sans l'enveloppe modal-content
+    // Créer le contenu avec les styles et référence à l'instance
     const contentDiv = document.createElement('div');
-    contentDiv.innerHTML = content.replace(/<div class="modal-content">|<\/div>$/g, '');
+    contentDiv.innerHTML = `
+      <style>
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+        .form-input, .form-select, .form-textarea {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color);
+          border-radius: 4px;
+          background: var(--card-background-color);
+          color: var(--primary-text-color);
+          font-size: 14px;
+          font-family: inherit;
+          box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+          outline: none;
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+        }
+        .avatar-options { 
+          display: flex; 
+          gap: 8px; 
+          flex-wrap: wrap; 
+          margin-bottom: 8px; 
+        }
+        .avatar-option {
+          padding: 8px;
+          border: 2px solid var(--divider-color);
+          border-radius: 8px;
+          background: var(--secondary-background-color);
+          cursor: pointer;
+          font-size: 1.5em;
+          transition: all 0.3s;
+        }
+        .avatar-option:hover { border-color: var(--primary-color); }
+        .avatar-option.selected {
+          border-color: var(--accent-color);
+          background: rgba(255, 64, 129, 0.1);
+        }
+        .btn {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          transition: all 0.3s;
+        }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-secondary { 
+          background: var(--secondary-background-color); 
+          color: var(--primary-text-color);
+          border: 1px solid var(--divider-color);
+        }
+      </style>
+      ${content}
+    `;
+    
+    // Stocker la référence à this dans le dialog
+    dialog._cardInstance = this;
     
     dialog.appendChild(contentDiv);
     document.body.appendChild(dialog);
@@ -280,7 +345,7 @@ class KidsTasksCard extends HTMLElement {
         ` : ''}
         <div style="margin-top: 20px; text-align: right;">
           <button type="button" class="btn btn-secondary" onclick="this.closest('ha-dialog').close()" style="margin-right: 10px;">Annuler</button>
-          <button type="button" class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitChildForm(this.closest('ha-dialog'), ${isEdit})">${isEdit ? 'Modifier' : 'Ajouter'}</button>
+          <button type="button" class="btn btn-primary" onclick="this.closest('ha-dialog')._cardInstance.submitChildForm(this.closest('ha-dialog'), ${isEdit})">${isEdit ? 'Modifier' : 'Ajouter'}</button>
         </div>
       </form>
     `;
