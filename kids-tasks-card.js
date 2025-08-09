@@ -722,18 +722,18 @@ class KidsTasksCard extends HTMLElement {
     
     Object.keys(entities).forEach(entityId => {
       // Chercher les entités se terminant par _points avec type: child OU avec préfixe KT_
-      if (entityId.endsWith('_points') || entityId.startsWith('sensor.kt_')) {
+      if (entityId.endsWith('_points') || entityId.startsWith('sensor.KT_')) {
         const pointsEntity = entities[entityId];
         if (pointsEntity && pointsEntity.attributes && 
-            (pointsEntity.attributes.type === 'child' || entityId.startsWith('sensor.kt_'))) {
+            (pointsEntity.attributes.type === 'child' || entityId.startsWith('sensor.KT_'))) {
           const points = parseInt(pointsEntity.state) || 0;
           const level = parseInt(pointsEntity.attributes.level) || 1;
           const progress = ((points % 100) / 100) * 100;
           
           // Extraire l'ID et le nom
           let childId, childName;
-          if (entityId.startsWith('sensor.kt_')) {
-            childId = pointsEntity.attributes.child_id || entityId.replace('sensor.kt_', '').replace('_points', '');
+          if (entityId.startsWith('sensor.KT_')) {
+            childId = pointsEntity.attributes.child_id || entityId.replace('sensor.KT_', '').replace('_points', '');
             childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
           } else {
             childId = pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', '');
@@ -764,18 +764,18 @@ class KidsTasksCard extends HTMLElement {
     
     Object.keys(entities).forEach(entityId => {
       // Chercher les entités button, number, select avec préfixe KT_
-      if (entityId.startsWith('button.kt_') || 
-          entityId.startsWith('number.kt_') || 
-          entityId.startsWith('select.kt_')) {
+      if (entityId.startsWith('button.KT_') || 
+          entityId.startsWith('number.KT_') || 
+          entityId.startsWith('select.KT_')) {
         
         // Extraire le nom de base de la tâche
         let taskBaseName;
-        if (entityId.startsWith('button.kt_terminer_')) {
-          taskBaseName = entityId.replace('button.kt_terminer_', '');
-        } else if (entityId.startsWith('number.kt_points_')) {
-          taskBaseName = entityId.replace('number.kt_points_', '');
-        } else if (entityId.startsWith('select.kt_statut_')) {
-          taskBaseName = entityId.replace('select.kt_statut_', '');
+        if (entityId.startsWith('button.KT_terminer_')) {
+          taskBaseName = entityId.replace('button.KT_terminer_', '');
+        } else if (entityId.startsWith('number.KT_points_')) {
+          taskBaseName = entityId.replace('number.KT_points_', '');
+        } else if (entityId.startsWith('select.KT_statut_')) {
+          taskBaseName = entityId.replace('select.KT_statut_', '');
         }
         
         if (taskBaseName) {
@@ -784,11 +784,11 @@ class KidsTasksCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.kt_terminer_')) {
+          if (entityId.startsWith('button.KT_terminer_')) {
             taskGroups.get(taskBaseName).button = entity;
-          } else if (entityId.startsWith('number.kt_points_')) {
+          } else if (entityId.startsWith('number.KT_points_')) {
             taskGroups.get(taskBaseName).points = entity;
-          } else if (entityId.startsWith('select.kt_statut_')) {
+          } else if (entityId.startsWith('select.KT_statut_')) {
             taskGroups.get(taskBaseName).status = entity;
           }
         }
@@ -844,21 +844,21 @@ class KidsTasksCard extends HTMLElement {
     
     Object.keys(entities).forEach(entityId => {
       // Chercher les entités de récompenses avec préfixe KT_
-      if (entityId.startsWith('button.kt_echanger_') || 
-          entityId.startsWith('number.kt_cout_') || 
-          entityId.startsWith('switch.kt_active_reward_') ||
-          entityId.startsWith('number.kt_quantite_')) {
+      if (entityId.startsWith('button.KT_echanger_') || 
+          entityId.startsWith('number.KT_cout_') || 
+          entityId.startsWith('switch.KT_active_reward_') ||
+          entityId.startsWith('number.KT_quantite_')) {
         
         // Extraire le nom de base de la récompense
         let rewardBaseName;
-        if (entityId.startsWith('button.kt_echanger_')) {
-          rewardBaseName = entityId.replace('button.kt_echanger_', '');
-        } else if (entityId.startsWith('number.kt_cout_')) {
-          rewardBaseName = entityId.replace('number.kt_cout_', '');
-        } else if (entityId.startsWith('switch.kt_active_reward_')) {
-          rewardBaseName = entityId.replace('switch.kt_active_reward_', '');
-        } else if (entityId.startsWith('number.kt_quantite_')) {
-          rewardBaseName = entityId.replace('number.kt_quantite_', '');
+        if (entityId.startsWith('button.KT_echanger_')) {
+          rewardBaseName = entityId.replace('button.KT_echanger_', '');
+        } else if (entityId.startsWith('number.KT_cout_')) {
+          rewardBaseName = entityId.replace('number.KT_cout_', '');
+        } else if (entityId.startsWith('switch.KT_active_reward_')) {
+          rewardBaseName = entityId.replace('switch.KT_active_reward_', '');
+        } else if (entityId.startsWith('number.KT_quantite_')) {
+          rewardBaseName = entityId.replace('number.KT_quantite_', '');
         }
         
         if (rewardBaseName) {
@@ -867,13 +867,13 @@ class KidsTasksCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.kt_echanger_')) {
+          if (entityId.startsWith('button.KT_echanger_')) {
             rewardGroups.get(rewardBaseName).button = entity;
-          } else if (entityId.startsWith('number.kt_cout_')) {
+          } else if (entityId.startsWith('number.KT_cout_')) {
             rewardGroups.get(rewardBaseName).cost = entity;
-          } else if (entityId.startsWith('switch.kt_active_reward_')) {
+          } else if (entityId.startsWith('switch.KT_active_reward_')) {
             rewardGroups.get(rewardBaseName).active = entity;
-          } else if (entityId.startsWith('number.kt_quantite_')) {
+          } else if (entityId.startsWith('number.KT_quantite_')) {
             rewardGroups.get(rewardBaseName).quantity = entity;
           }
         }
@@ -1752,7 +1752,7 @@ class KidsTasksChildCard extends HTMLElement {
     // Chercher l'entité de points de cet enfant (nouveau format KT_ ou ancien)
     const pointsEntity = Object.values(entities).find(entity => 
       entity.attributes && 
-      (entity.attributes.type === 'child' || entity.entity_id?.startsWith('sensor.kt_')) &&
+      (entity.attributes.type === 'child' || entity.entity_id?.startsWith('sensor.KT_')) &&
       entity.attributes.child_id === this.config.child_id
     );
 
@@ -1785,18 +1785,18 @@ class KidsTasksChildCard extends HTMLElement {
     
     Object.keys(entities).forEach(entityId => {
       // Chercher les entités button, number, select avec préfixe KT_
-      if (entityId.startsWith('button.kt_') || 
-          entityId.startsWith('number.kt_') || 
-          entityId.startsWith('select.kt_')) {
+      if (entityId.startsWith('button.KT_') || 
+          entityId.startsWith('number.KT_') || 
+          entityId.startsWith('select.KT_')) {
         
         // Extraire le nom de base de la tâche
         let taskBaseName;
-        if (entityId.startsWith('button.kt_terminer_')) {
-          taskBaseName = entityId.replace('button.kt_terminer_', '');
-        } else if (entityId.startsWith('number.kt_points_')) {
-          taskBaseName = entityId.replace('number.kt_points_', '');
-        } else if (entityId.startsWith('select.kt_statut_')) {
-          taskBaseName = entityId.replace('select.kt_statut_', '');
+        if (entityId.startsWith('button.KT_terminer_')) {
+          taskBaseName = entityId.replace('button.KT_terminer_', '');
+        } else if (entityId.startsWith('number.KT_points_')) {
+          taskBaseName = entityId.replace('number.KT_points_', '');
+        } else if (entityId.startsWith('select.KT_statut_')) {
+          taskBaseName = entityId.replace('select.KT_statut_', '');
         }
         
         if (taskBaseName) {
@@ -1805,11 +1805,11 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.kt_terminer_')) {
+          if (entityId.startsWith('button.KT_terminer_')) {
             taskGroups.get(taskBaseName).button = entity;
-          } else if (entityId.startsWith('number.kt_points_')) {
+          } else if (entityId.startsWith('number.KT_points_')) {
             taskGroups.get(taskBaseName).points = entity;
-          } else if (entityId.startsWith('select.kt_statut_')) {
+          } else if (entityId.startsWith('select.KT_statut_')) {
             taskGroups.get(taskBaseName).status = entity;
           }
         }
@@ -1865,21 +1865,21 @@ class KidsTasksChildCard extends HTMLElement {
     
     Object.keys(entities).forEach(entityId => {
       // Chercher les entités de récompenses avec préfixe KT_
-      if (entityId.startsWith('button.kt_echanger_') || 
-          entityId.startsWith('number.kt_cout_') || 
-          entityId.startsWith('switch.kt_active_reward_') ||
-          entityId.startsWith('number.kt_quantite_')) {
+      if (entityId.startsWith('button.KT_echanger_') || 
+          entityId.startsWith('number.KT_cout_') || 
+          entityId.startsWith('switch.KT_active_reward_') ||
+          entityId.startsWith('number.KT_quantite_')) {
         
         // Extraire le nom de base de la récompense
         let rewardBaseName;
-        if (entityId.startsWith('button.kt_echanger_')) {
-          rewardBaseName = entityId.replace('button.kt_echanger_', '');
-        } else if (entityId.startsWith('number.kt_cout_')) {
-          rewardBaseName = entityId.replace('number.kt_cout_', '');
-        } else if (entityId.startsWith('switch.kt_active_reward_')) {
-          rewardBaseName = entityId.replace('switch.kt_active_reward_', '');
-        } else if (entityId.startsWith('number.kt_quantite_')) {
-          rewardBaseName = entityId.replace('number.kt_quantite_', '');
+        if (entityId.startsWith('button.KT_echanger_')) {
+          rewardBaseName = entityId.replace('button.KT_echanger_', '');
+        } else if (entityId.startsWith('number.KT_cout_')) {
+          rewardBaseName = entityId.replace('number.KT_cout_', '');
+        } else if (entityId.startsWith('switch.KT_active_reward_')) {
+          rewardBaseName = entityId.replace('switch.KT_active_reward_', '');
+        } else if (entityId.startsWith('number.KT_quantite_')) {
+          rewardBaseName = entityId.replace('number.KT_quantite_', '');
         }
         
         if (rewardBaseName) {
@@ -1888,13 +1888,13 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.kt_echanger_')) {
+          if (entityId.startsWith('button.KT_echanger_')) {
             rewardGroups.get(rewardBaseName).button = entity;
-          } else if (entityId.startsWith('number.kt_cout_')) {
+          } else if (entityId.startsWith('number.KT_cout_')) {
             rewardGroups.get(rewardBaseName).cost = entity;
-          } else if (entityId.startsWith('switch.kt_active_reward_')) {
+          } else if (entityId.startsWith('switch.KT_active_reward_')) {
             rewardGroups.get(rewardBaseName).active = entity;
-          } else if (entityId.startsWith('number.kt_quantite_')) {
+          } else if (entityId.startsWith('number.KT_quantite_')) {
             rewardGroups.get(rewardBaseName).quantity = entity;
           }
         }
