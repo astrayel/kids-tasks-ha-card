@@ -34,6 +34,10 @@ class KidsTasksCard extends HTMLElement {
       return;
     }
 
+    // Sauvegarder les modales existantes
+    const existingModals = this.shadowRoot.querySelectorAll('.modal');
+    const modalElements = Array.from(existingModals).map(modal => modal.cloneNode(true));
+
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
       <div class="kids-tasks-manager">
@@ -43,6 +47,23 @@ class KidsTasksCard extends HTMLElement {
         </div>
       </div>
     `;
+
+    // Restaurer les modales
+    modalElements.forEach(modal => {
+      this.shadowRoot.appendChild(modal);
+      // Réattacher les événements
+      const modalContent = modal.querySelector('.modal-content');
+      if (modalContent) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            this.closeModal(modal);
+          }
+        });
+        modalContent.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+    });
   }
 
   handleClick(event) {
