@@ -805,7 +805,7 @@ class KidsTasksCard extends HTMLElement {
         <div class="empty-state">
           <div class="empty-state-icon">👶</div>
           <p>Aucun enfant enregistré</p>
-          <button class="btn btn-primary" data-action="add-child">Ajouter votre premier enfant</button>
+          <button class="btn btn-primary" data-action="add-child">Ajouter un enfant</button>
         </div>
       `}
 
