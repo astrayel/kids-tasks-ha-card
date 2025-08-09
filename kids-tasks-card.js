@@ -7,7 +7,6 @@ class KidsTasksCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.currentView = 'dashboard';
     this._initialized = false;
-    this._modalOpen = false;
   }
 
   setConfig(config) {
@@ -32,11 +31,6 @@ class KidsTasksCard extends HTMLElement {
   render() {
     if (!this._hass) {
       this.shadowRoot.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
-
-    // Ne pas re-rendre si une modale est ouverte
-    if (this._modalOpen) {
       return;
     }
 
@@ -132,8 +126,8 @@ class KidsTasksCard extends HTMLElement {
     }
   }
 
-  async submitChildForm(modal, isEdit = false) {
-    const form = modal.querySelector('form');
+  async submitChildForm(dialog, isEdit = false) {
+    const form = dialog.querySelector('form');
     const formData = new FormData(form);
     
     const serviceData = {
@@ -146,11 +140,11 @@ class KidsTasksCard extends HTMLElement {
       serviceData.child_id = formData.get('child_id');
       delete serviceData.initial_points;
       if (await this.callService('kids_tasks', 'update_child', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     } else {
       if (await this.callService('kids_tasks', 'add_child', serviceData)) {
-        this.closeModal(modal);
+        this.closeModal(dialog);
       }
     }
   }
@@ -221,36 +215,31 @@ class KidsTasksCard extends HTMLElement {
     }
   }
 
-  showModal(content) {
-    this._modalOpen = true;
+  showModal(content, title = '') {
+    // Utiliser ha-dialog pour les modales
+    const dialog = document.createElement('ha-dialog');
+    dialog.heading = title;
+    dialog.hideActions = true;
     
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = content;
-    this.shadowRoot.appendChild(modal);
+    // Créer le contenu sans l'enveloppe modal-content
+    const contentDiv = document.createElement('div');
+    contentDiv.innerHTML = content.replace(/<div class="modal-content">|<\/div>$/g, '');
     
-    // Auto-fermeture sur clic en dehors uniquement
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        this.closeModal(modal);
-      }
-    });
-
-    // Empêcher la fermeture sur les clics à l'intérieur du contenu
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-      modalContent.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
-
-    return modal;
+    dialog.appendChild(contentDiv);
+    document.body.appendChild(dialog);
+    
+    // Ouvrir la dialog
+    dialog.show();
+    
+    return dialog;
   }
 
-  closeModal(modal) {
-    if (modal && modal.parentNode) {
-      modal.parentNode.removeChild(modal);
-      this._modalOpen = false;
+  closeModal(dialog) {
+    if (dialog && dialog.close) {
+      dialog.close();
+      if (dialog.parentNode) {
+        dialog.parentNode.removeChild(dialog);
+      }
     }
   }
 
@@ -262,49 +251,41 @@ class KidsTasksCard extends HTMLElement {
     const avatarOptions = ['👶', '👧', '👦', '🧒', '🧸', '🎈', '⭐', '🌟', '🏆', '🎯'];
 
     const content = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">${isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant'}</h3>
-          <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+      <form>
+        ${isEdit ? `<input type="hidden" name="child_id" value="${child.id}">` : ''}
+        <div class="form-group">
+          <label class="form-label">Nom de l'enfant*</label>
+          <input type="text" name="name" class="form-input" required 
+                 value="${isEdit ? child.name : ''}"
+                 placeholder="Prénom de l'enfant">
         </div>
-        <div class="modal-body">
-          <form>
-            ${isEdit ? `<input type="hidden" name="child_id" value="${child.id}">` : ''}
-            <div class="form-group">
-              <label class="form-label">Nom de l'enfant*</label>
-              <input type="text" name="name" class="form-input" required 
-                     value="${isEdit ? child.name : ''}"
-                     placeholder="Prénom de l'enfant">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Avatar</label>
-              <div class="avatar-options">
-                ${avatarOptions.map(avatar => `
-                  <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}" 
-                          onclick="this.closest('.modal').querySelector('input[name=avatar]').value = '${avatar}'; this.closest('.avatar-options').querySelectorAll('.avatar-option').forEach(btn => btn.classList.remove('selected')); this.classList.add('selected');">
-                    ${avatar}
-                  </button>
-                `).join('')}
-              </div>
-              <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
-            </div>
-            ${!isEdit ? `
-              <div class="form-group">
-                <label class="form-label">Points initiaux</label>
-                <input type="number" name="initial_points" class="form-input" 
-                       value="0" min="0" max="1000" step="1">
-              </div>
-            ` : ''}
-          </form>
+        <div class="form-group">
+          <label class="form-label">Avatar</label>
+          <div class="avatar-options">
+            ${avatarOptions.map(avatar => `
+              <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}" 
+                      onclick="this.closest('ha-dialog').querySelector('input[name=avatar]').value = '${avatar}'; this.closest('.avatar-options').querySelectorAll('.avatar-option').forEach(btn => btn.classList.remove('selected')); this.classList.add('selected');">
+                ${avatar}
+              </button>
+            `).join('')}
+          </div>
+          <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Annuler</button>
-          <button class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitChildForm(this.closest('.modal'), ${isEdit})">${isEdit ? 'Modifier' : 'Ajouter'}</button>
+        ${!isEdit ? `
+          <div class="form-group">
+            <label class="form-label">Points initiaux</label>
+            <input type="number" name="initial_points" class="form-input" 
+                   value="0" min="0" max="1000" step="1">
+          </div>
+        ` : ''}
+        <div style="margin-top: 20px; text-align: right;">
+          <button type="button" class="btn btn-secondary" onclick="this.closest('ha-dialog').close()" style="margin-right: 10px;">Annuler</button>
+          <button type="button" class="btn btn-primary" onclick="this.closest('kids-tasks-card').submitChildForm(this.closest('ha-dialog'), ${isEdit})">${isEdit ? 'Modifier' : 'Ajouter'}</button>
         </div>
-      </div>
+      </form>
     `;
 
-    this.showModal(content);
+    this.showModal(content, isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant');
   }
 
   showTaskForm(taskId = null) {
