@@ -7,6 +7,7 @@ class KidsTasksCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.currentView = 'dashboard';
     this._initialized = false;
+    this._modalOpen = false;
   }
 
   setConfig(config) {
@@ -34,9 +35,10 @@ class KidsTasksCard extends HTMLElement {
       return;
     }
 
-    // Sauvegarder les modales existantes
-    const existingModals = this.shadowRoot.querySelectorAll('.modal');
-    const modalElements = Array.from(existingModals).map(modal => modal.cloneNode(true));
+    // Ne pas re-rendre si une modale est ouverte
+    if (this._modalOpen) {
+      return;
+    }
 
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
@@ -47,23 +49,6 @@ class KidsTasksCard extends HTMLElement {
         </div>
       </div>
     `;
-
-    // Restaurer les modales
-    modalElements.forEach(modal => {
-      this.shadowRoot.appendChild(modal);
-      // Réattacher les événements
-      const modalContent = modal.querySelector('.modal-content');
-      if (modalContent) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            this.closeModal(modal);
-          }
-        });
-        modalContent.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-      }
-    });
   }
 
   handleClick(event) {
@@ -237,6 +222,8 @@ class KidsTasksCard extends HTMLElement {
   }
 
   showModal(content) {
+    this._modalOpen = true;
+    
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = content;
@@ -263,6 +250,7 @@ class KidsTasksCard extends HTMLElement {
   closeModal(modal) {
     if (modal && modal.parentNode) {
       modal.parentNode.removeChild(modal);
+      this._modalOpen = false;
     }
   }
 
