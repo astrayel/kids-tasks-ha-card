@@ -161,7 +161,7 @@ class KidsTasksChildCard extends HTMLElement {
     const tasks = [];
     
     // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les nouveaux capteurs TaskSensor
-    Object.keys(entities).forEach(entityId => {
+    Object.keys(entities).forEach(entityId => { 
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
         if (taskEntity && 
