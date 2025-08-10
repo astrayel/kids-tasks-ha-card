@@ -1066,7 +1066,7 @@ class KidsTasksCard extends HTMLElement {
 
     return `
       <div class="section">
-        <h2>Tableau de bord</h2>
+        <h2>Aperçu</h2>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon">👶</div>
