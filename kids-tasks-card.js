@@ -547,8 +547,8 @@ class KidsTasksCard extends HTMLElement {
         ` : ''}
 
         <div class="dialog-actions">
-          <ha-button @click=${() => this.closeModal()}>Annuler</ha-button>
-          <ha-button @click=${() => this.submitChildForm(isEdit)} class="primary">${isEdit ? 'Modifier' : 'Ajouter'}</ha-button>
+          <ha-button onclick="this.closest('ha-dialog').close()">Annuler</ha-button>
+          <ha-button onclick="this.closest('ha-dialog')._cardInstance.submitChildForm(${isEdit})" class="primary">${isEdit ? 'Modifier' : 'Ajouter'}</ha-button>
         </div>
       </form>
 
@@ -1742,6 +1742,7 @@ class KidsTasksCard extends HTMLElement {
 
   static getStubConfig() {
     return {
+      type: 'custom:kids-tasks-card',
       title: "Gestionnaire de Tâches Enfants",
       show_navigation: true
     };
@@ -2599,6 +2600,7 @@ class KidsTasksChildCard extends HTMLElement {
 
   static getStubConfig() {
     return {
+      type: 'custom:kids-tasks-child-card',
       child_id: '',
       title: 'Mes Tâches',
       show_avatar: true,
@@ -2807,6 +2809,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const show_rewards = this.querySelector('#show_rewards').checked;
 
     this._config = {
+      type: 'custom:kids-tasks-child-card',
       child_id,
       title,
       show_avatar,
