@@ -276,6 +276,18 @@ class KidsTasksCard extends HTMLElement {
           font-weight: 500;
           color: var(--primary-text-color);
         }
+        
+        /* Limiter la hauteur des ha-select pour éviter l'overflow */
+        ha-select {
+          max-height: 56px;
+          overflow: visible;
+        }
+        
+        /* Améliorer l'affichage des modals */
+        ha-dialog {
+          max-height: 90vh;
+          overflow-y: auto;
+        }
         .form-input, .form-select, .form-textarea {
           width: 100%;
           padding: 8px 12px;
@@ -1298,13 +1310,15 @@ class KidsTasksCard extends HTMLElement {
           border: none;
           color: white;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: background 0.3s;
           font-size: 13px;
           text-align: center;
           min-height: 48px;
           display: flex;
           align-items: center;
           justify-content: center;
+          white-space: nowrap;
+          overflow: hidden;
         }
         
         .nav-tab:hover { background: rgba(255, 255, 255, 0.1); }
@@ -2682,20 +2696,32 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
     
     if (childSelect) {
-      // Essayer plusieurs événements pour assurer compatibilité
-      const handleChildChange = () => {
-        setTimeout(() => {
-          const selectedValue = childSelect.value;
-          if (selectedValue && selectedValue !== this.config?.child_id) {
-            this.config = { ...this.config, child_id: selectedValue };
-            this.configChanged(this.config);
+      const handleChildChange = (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        
+        // Récupérer la valeur sélectionnée de manière robuste
+        let selectedValue = null;
+        if (ev.target.value) {
+          selectedValue = ev.target.value;
+        } else if (ev.detail && ev.detail.value) {
+          selectedValue = ev.detail.value;
+        } else {
+          // Chercher l'item sélectionné
+          const selectedItem = childSelect.querySelector('ha-list-item[selected]');
+          if (selectedItem) {
+            selectedValue = selectedItem.getAttribute('value');
           }
-        }, 10);
+        }
+        
+        if (selectedValue && selectedValue !== this.config?.child_id) {
+          this.config = { ...this.config, child_id: selectedValue };
+          this.configChanged(this.config);
+        }
       };
       
+      // Utiliser seulement l'événement le plus fiable
       childSelect.addEventListener('selected', handleChildChange);
-      childSelect.addEventListener('change', handleChildChange);
-      childSelect.addEventListener('value-changed', handleChildChange);
     }
     
     if (titleInput) {
