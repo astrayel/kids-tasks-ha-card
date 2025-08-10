@@ -1695,12 +1695,22 @@ class KidsTasksCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
+    console.log('⚙️ DEBUG setConfig: Appelé avec config:', config);
+    console.log('⚙️ DEBUG setConfig: this.config actuel:', this.config);
+    
     const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
+    console.log('⚙️ DEBUG setConfig: configChanged?', configChanged);
+    
     this.config = config;
+    console.log('⚙️ DEBUG setConfig: this.config après assignation:', this.config);
+    
     if (!this._rendered || configChanged) {
+      console.log('⚙️ DEBUG setConfig: Re-rendu nécessaire (_rendered:', this._rendered, ', configChanged:', configChanged, ')');
       this._rendered = false; // Permettre le re-rendu si la config a changé
       this.render();
       this._rendered = true;
+    } else {
+      console.log('⚙️ DEBUG setConfig: Pas de re-rendu nécessaire');
     }
   }
 
@@ -1709,12 +1719,26 @@ class KidsTasksCardEditor extends HTMLElement {
   }
 
   configChanged(newConfig) {
+    console.log('🔄 DEBUG configChanged: Appelé avec config:', newConfig);
+    console.log('🔄 DEBUG configChanged: this.config avant:', this.config);
+    
     const event = new CustomEvent('config-changed', {
       detail: { config: newConfig },
       bubbles: true,
       composed: true,
     });
-    this.dispatchEvent(event);
+    
+    console.log('🔄 DEBUG configChanged: Événement créé:', event);
+    console.log('🔄 DEBUG configChanged: Event bubbles:', event.bubbles);
+    console.log('🔄 DEBUG configChanged: Event composed:', event.composed);
+    
+    const result = this.dispatchEvent(event);
+    console.log('🔄 DEBUG configChanged: dispatchEvent résultat:', result);
+    
+    // Vérifier si ça a marché
+    setTimeout(() => {
+      console.log('🔄 DEBUG configChanged: this.config après 200ms:', this.config);
+    }, 200);
   }
 
   render() {
@@ -2572,12 +2596,22 @@ class KidsTasksChildCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
+    console.log('⚙️ DEBUG setConfig: Appelé avec config:', config);
+    console.log('⚙️ DEBUG setConfig: this.config actuel:', this.config);
+    
     const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
+    console.log('⚙️ DEBUG setConfig: configChanged?', configChanged);
+    
     this.config = config;
+    console.log('⚙️ DEBUG setConfig: this.config après assignation:', this.config);
+    
     if (!this._rendered || configChanged) {
+      console.log('⚙️ DEBUG setConfig: Re-rendu nécessaire (_rendered:', this._rendered, ', configChanged:', configChanged, ')');
       this._rendered = false; // Permettre le re-rendu si la config a changé
       this.render();
       this._rendered = true;
+    } else {
+      console.log('⚙️ DEBUG setConfig: Pas de re-rendu nécessaire');
     }
   }
 
@@ -2590,12 +2624,26 @@ class KidsTasksChildCardEditor extends HTMLElement {
   }
 
   configChanged(newConfig) {
+    console.log('🔄 DEBUG configChanged: Appelé avec config:', newConfig);
+    console.log('🔄 DEBUG configChanged: this.config avant:', this.config);
+    
     const event = new CustomEvent('config-changed', {
       detail: { config: newConfig },
       bubbles: true,
       composed: true,
     });
-    this.dispatchEvent(event);
+    
+    console.log('🔄 DEBUG configChanged: Événement créé:', event);
+    console.log('🔄 DEBUG configChanged: Event bubbles:', event.bubbles);
+    console.log('🔄 DEBUG configChanged: Event composed:', event.composed);
+    
+    const result = this.dispatchEvent(event);
+    console.log('🔄 DEBUG configChanged: dispatchEvent résultat:', result);
+    
+    // Vérifier si ça a marché
+    setTimeout(() => {
+      console.log('🔄 DEBUG configChanged: this.config après 200ms:', this.config);
+    }, 200);
   }
 
   getChildren() {
@@ -2696,18 +2744,34 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
     
     if (childSelect) {
+      console.log('🔧 DEBUG: childSelect trouvé:', childSelect);
+      console.log('🔧 DEBUG: Config actuelle:', this.config);
+      console.log('🔧 DEBUG: Enfants disponibles:', this.getChildren());
+      
       // Approche simplifiée sans preventDefault qui peut bloquer HA
-      // Essayer avec l'événement 'change' aussi au cas où
       const handleChange = (ev) => {
+        console.log('🎯 DEBUG: Événement déclenché:', ev.type, ev);
+        console.log('🎯 DEBUG: ev.target:', ev.target);
+        console.log('🎯 DEBUG: ev.target.value:', ev.target.value);
+        console.log('🎯 DEBUG: ev.detail:', ev.detail);
+        
         // Attendre que la valeur soit vraiment mise à jour
         setTimeout(() => {
           const selectedValue = childSelect.value;
+          console.log('⏱️ DEBUG: Après timeout - selectedValue:', selectedValue);
+          console.log('⏱️ DEBUG: Config child_id actuel:', this.config?.child_id);
+          console.log('⏱️ DEBUG: Valeurs sont différentes:', selectedValue !== this.config?.child_id);
+          
           if (selectedValue && selectedValue !== this.config?.child_id) {
+            console.log('✅ DEBUG: Conditions remplies, création nouvelle config');
+            
             // Créer une nouvelle config au lieu de modifier l'existante
             const newConfig = {
               ...this.config,
               child_id: selectedValue
             };
+            
+            console.log('📦 DEBUG: Nouvelle config créée:', newConfig);
             
             // Déclencher l'événement de manière plus compatible HA
             const event = new CustomEvent('config-changed', {
@@ -2715,13 +2779,47 @@ class KidsTasksChildCardEditor extends HTMLElement {
               bubbles: true,
               composed: true
             });
-            this.dispatchEvent(event);
+            
+            console.log('🚀 DEBUG: Événement config-changed créé:', event);
+            console.log('🚀 DEBUG: Event detail:', event.detail);
+            
+            const result = this.dispatchEvent(event);
+            console.log('📤 DEBUG: dispatchEvent résultat:', result);
+            
+            // Test alternatif avec la méthode configChanged
+            console.log('🔄 DEBUG: Test avec configChanged...');
+            this.configChanged(newConfig);
+            
+          } else {
+            console.log('❌ DEBUG: Conditions non remplies');
+            if (!selectedValue) console.log('❌ DEBUG: selectedValue vide');
+            if (selectedValue === this.config?.child_id) console.log('❌ DEBUG: Même valeur qu\'avant');
           }
         }, 100);
       };
       
-      childSelect.addEventListener('selected', handleChange);
-      childSelect.addEventListener('change', handleChange);
+      console.log('🔗 DEBUG: Ajout des event listeners...');
+      childSelect.addEventListener('selected', (ev) => {
+        console.log('📡 DEBUG: Événement SELECTED reçu');
+        handleChange(ev);
+      });
+      
+      childSelect.addEventListener('change', (ev) => {
+        console.log('📡 DEBUG: Événement CHANGE reçu');
+        handleChange(ev);
+      });
+      
+      childSelect.addEventListener('click', (ev) => {
+        console.log('📡 DEBUG: Événement CLICK reçu');
+      });
+      
+      // Test toutes les 2 secondes de la valeur actuelle
+      setInterval(() => {
+        console.log('🕐 DEBUG: Valeur actuelle du select:', childSelect.value);
+      }, 2000);
+      
+    } else {
+      console.log('❌ DEBUG: childSelect NOT FOUND!');
     }
     
     if (titleInput) {
