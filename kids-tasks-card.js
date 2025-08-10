@@ -858,22 +858,22 @@ class KidsTasksCard extends HTMLElement {
     const rewardGroups = new Map();
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités de récompenses avec préfixe KT_
-      if (entityId.startsWith('button.KT_echanger_') || 
-          entityId.startsWith('number.KT_cout_') || 
-          entityId.startsWith('switch.KT_active_reward_') ||
-          entityId.startsWith('number.KT_quantite_')) {
+      // Chercher les entités de récompenses sans préfixe
+      if (entityId.startsWith('button.echanger_') || 
+          entityId.startsWith('number.cout_') || 
+          entityId.startsWith('switch.active_reward_') ||
+          entityId.startsWith('number.quantite_')) {
         
         // Extraire le nom de base de la récompense
         let rewardBaseName;
-        if (entityId.startsWith('button.KT_echanger_')) {
-          rewardBaseName = entityId.replace('button.KT_echanger_', '');
-        } else if (entityId.startsWith('number.KT_cout_')) {
-          rewardBaseName = entityId.replace('number.KT_cout_', '');
-        } else if (entityId.startsWith('switch.KT_active_reward_')) {
-          rewardBaseName = entityId.replace('switch.KT_active_reward_', '');
-        } else if (entityId.startsWith('number.KT_quantite_')) {
-          rewardBaseName = entityId.replace('number.KT_quantite_', '');
+        if (entityId.startsWith('button.echanger_')) {
+          rewardBaseName = entityId.replace('button.echanger_', '');
+        } else if (entityId.startsWith('number.cout_')) {
+          rewardBaseName = entityId.replace('number.cout_', '');
+        } else if (entityId.startsWith('switch.active_reward_')) {
+          rewardBaseName = entityId.replace('switch.active_reward_', '');
+        } else if (entityId.startsWith('number.quantite_')) {
+          rewardBaseName = entityId.replace('number.quantite_', '');
         }
         
         if (rewardBaseName) {
@@ -882,13 +882,13 @@ class KidsTasksCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.KT_echanger_')) {
+          if (entityId.startsWith('button.echanger_')) {
             rewardGroups.get(rewardBaseName).button = entity;
-          } else if (entityId.startsWith('number.KT_cout_')) {
+          } else if (entityId.startsWith('number.cout_')) {
             rewardGroups.get(rewardBaseName).cost = entity;
-          } else if (entityId.startsWith('switch.KT_active_reward_')) {
+          } else if (entityId.startsWith('switch.active_reward_')) {
             rewardGroups.get(rewardBaseName).active = entity;
-          } else if (entityId.startsWith('number.KT_quantite_')) {
+          } else if (entityId.startsWith('number.quantite_')) {
             rewardGroups.get(rewardBaseName).quantity = entity;
           }
         }
@@ -1655,11 +1655,17 @@ class KidsTasksCardEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._rendered = false;
   }
 
   setConfig(config) {
+    const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
     this.config = config;
-    this.render();
+    if (!this._rendered || configChanged) {
+      this._rendered = false; // Permettre le re-rendu si la config a changé
+      this.render();
+      this._rendered = true;
+    }
   }
 
   set hass(hass) {
@@ -1676,6 +1682,7 @@ class KidsTasksCardEditor extends HTMLElement {
   }
 
   render() {
+    
     this.shadowRoot.innerHTML = `
       <style>
         .config-row {
@@ -1685,6 +1692,7 @@ class KidsTasksCardEditor extends HTMLElement {
         }
         .config-row label {
           margin-left: 8px;
+          cursor: pointer;
         }
         ha-textfield {
           width: 100%;
@@ -1698,13 +1706,13 @@ class KidsTasksCardEditor extends HTMLElement {
         <ha-textfield
           id="title-input"
           label="Titre de la carte"
-          .value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
+          value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
         </ha-textfield>
         
         <div class="config-row">
           <ha-switch
             id="navigation-switch"
-            .checked="${this.config?.show_navigation !== false}">
+            ${this.config?.show_navigation !== false ? 'checked' : ''}>
           </ha-switch>
           <label>Afficher la navigation par onglets</label>
         </div>
@@ -1712,20 +1720,26 @@ class KidsTasksCardEditor extends HTMLElement {
     `;
 
     // Attacher les événements après le rendu
-    this.shadowRoot.getElementById('title-input')?.addEventListener('input', this._titleChanged.bind(this));
-    this.shadowRoot.getElementById('navigation-switch')?.addEventListener('change', this._navigationChanged.bind(this));
-  }
-
-  _titleChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, title: ev.target.value };
-    this.configChanged(this.config);
-  }
-
-  _navigationChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, show_navigation: ev.target.checked };
-    this.configChanged(this.config);
+    const titleInput = this.shadowRoot.getElementById('title-input');
+    const navSwitch = this.shadowRoot.getElementById('navigation-switch');
+    
+    if (titleInput) {
+      titleInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, title: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (navSwitch) {
+      navSwitch.addEventListener('change', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, show_navigation: ev.target.checked };
+        this.configChanged(this.config);
+      });
+    }
+    
+    this._rendered = true;
   }
 }
 
@@ -1940,22 +1954,22 @@ class KidsTasksChildCard extends HTMLElement {
     const rewardGroups = new Map();
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités de récompenses avec préfixe KT_
-      if (entityId.startsWith('button.KT_echanger_') || 
-          entityId.startsWith('number.KT_cout_') || 
-          entityId.startsWith('switch.KT_active_reward_') ||
-          entityId.startsWith('number.KT_quantite_')) {
+      // Chercher les entités de récompenses sans préfixe
+      if (entityId.startsWith('button.echanger_') || 
+          entityId.startsWith('number.cout_') || 
+          entityId.startsWith('switch.active_reward_') ||
+          entityId.startsWith('number.quantite_')) {
         
         // Extraire le nom de base de la récompense
         let rewardBaseName;
-        if (entityId.startsWith('button.KT_echanger_')) {
-          rewardBaseName = entityId.replace('button.KT_echanger_', '');
-        } else if (entityId.startsWith('number.KT_cout_')) {
-          rewardBaseName = entityId.replace('number.KT_cout_', '');
-        } else if (entityId.startsWith('switch.KT_active_reward_')) {
-          rewardBaseName = entityId.replace('switch.KT_active_reward_', '');
-        } else if (entityId.startsWith('number.KT_quantite_')) {
-          rewardBaseName = entityId.replace('number.KT_quantite_', '');
+        if (entityId.startsWith('button.echanger_')) {
+          rewardBaseName = entityId.replace('button.echanger_', '');
+        } else if (entityId.startsWith('number.cout_')) {
+          rewardBaseName = entityId.replace('number.cout_', '');
+        } else if (entityId.startsWith('switch.active_reward_')) {
+          rewardBaseName = entityId.replace('switch.active_reward_', '');
+        } else if (entityId.startsWith('number.quantite_')) {
+          rewardBaseName = entityId.replace('number.quantite_', '');
         }
         
         if (rewardBaseName) {
@@ -1964,13 +1978,13 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.KT_echanger_')) {
+          if (entityId.startsWith('button.echanger_')) {
             rewardGroups.get(rewardBaseName).button = entity;
-          } else if (entityId.startsWith('number.KT_cout_')) {
+          } else if (entityId.startsWith('number.cout_')) {
             rewardGroups.get(rewardBaseName).cost = entity;
-          } else if (entityId.startsWith('switch.KT_active_reward_')) {
+          } else if (entityId.startsWith('switch.active_reward_')) {
             rewardGroups.get(rewardBaseName).active = entity;
-          } else if (entityId.startsWith('number.KT_quantite_')) {
+          } else if (entityId.startsWith('number.quantite_')) {
             rewardGroups.get(rewardBaseName).quantity = entity;
           }
         }
@@ -2518,17 +2532,24 @@ class KidsTasksChildCardEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._rendered = false;
   }
 
   setConfig(config) {
+    const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
     this.config = config;
-    this.render();
+    if (!this._rendered || configChanged) {
+      this._rendered = false; // Permettre le re-rendu si la config a changé
+      this.render();
+      this._rendered = true;
+    }
   }
 
   set hass(hass) {
     this._hass = hass;
-    if (hass) {
+    if (hass && !this._rendered) {
       this.render();
+      this._rendered = true;
     }
   }
 
@@ -2563,6 +2584,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
   }
 
   render() {
+    
     const children = this.getChildren();
     
     this.shadowRoot.innerHTML = `
@@ -2574,6 +2596,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         }
         .config-row label {
           margin-left: 8px;
+          cursor: pointer;
         }
         ha-textfield, ha-select {
           width: 100%;
@@ -2587,7 +2610,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         <ha-select
           id="child-select"
           label="Enfant *"
-          .value="${this.config?.child_id || ''}"
+          value="${this.config?.child_id || ''}"
           required>
           <ha-list-item value="">Sélectionner un enfant...</ha-list-item>
           ${children.map(child => `
@@ -2600,13 +2623,13 @@ class KidsTasksChildCardEditor extends HTMLElement {
         <ha-textfield
           id="title-input"
           label="Titre de la carte"
-          .value="${this.config?.title || 'Mes Tâches'}">
+          value="${this.config?.title || 'Mes Tâches'}">
         </ha-textfield>
         
         <div class="config-row">
           <ha-switch
             id="avatar-switch"
-            .checked="${this.config?.show_avatar !== false}">
+            ${this.config?.show_avatar !== false ? 'checked' : ''}>
           </ha-switch>
           <label>Afficher l'avatar</label>
         </div>
@@ -2614,7 +2637,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         <div class="config-row">
           <ha-switch
             id="progress-switch"
-            .checked="${this.config?.show_progress !== false}">
+            ${this.config?.show_progress !== false ? 'checked' : ''}>
           </ha-switch>
           <label>Afficher la progression</label>
         </div>
@@ -2622,7 +2645,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         <div class="config-row">
           <ha-switch
             id="rewards-switch"
-            .checked="${this.config?.show_rewards !== false}">
+            ${this.config?.show_rewards !== false ? 'checked' : ''}>
           </ha-switch>
           <label>Afficher les récompenses</label>
         </div>
@@ -2630,41 +2653,54 @@ class KidsTasksChildCardEditor extends HTMLElement {
     `;
 
     // Attacher les événements après le rendu
-    this.shadowRoot.getElementById('child-select')?.addEventListener('selected', this._childChanged.bind(this));
-    this.shadowRoot.getElementById('title-input')?.addEventListener('input', this._titleChanged.bind(this));
-    this.shadowRoot.getElementById('avatar-switch')?.addEventListener('change', this._avatarChanged.bind(this));
-    this.shadowRoot.getElementById('progress-switch')?.addEventListener('change', this._progressChanged.bind(this));
-    this.shadowRoot.getElementById('rewards-switch')?.addEventListener('change', this._rewardsChanged.bind(this));
-  }
-
-  _childChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, child_id: ev.detail.value };
-    this.configChanged(this.config);
-  }
-
-  _titleChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, title: ev.target.value };
-    this.configChanged(this.config);
-  }
-
-  _avatarChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, show_avatar: ev.target.checked };
-    this.configChanged(this.config);
-  }
-
-  _progressChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, show_progress: ev.target.checked };
-    this.configChanged(this.config);
-  }
-
-  _rewardsChanged(ev) {
-    if (!this.config) return;
-    this.config = { ...this.config, show_rewards: ev.target.checked };
-    this.configChanged(this.config);
+    const childSelect = this.shadowRoot.getElementById('child-select');
+    const titleInput = this.shadowRoot.getElementById('title-input');
+    const avatarSwitch = this.shadowRoot.getElementById('avatar-switch');
+    const progressSwitch = this.shadowRoot.getElementById('progress-switch');
+    const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
+    
+    if (childSelect) {
+      childSelect.addEventListener('change', (ev) => {
+        ev.stopPropagation(); // Empêcher la propagation de l'événement
+        if (!this.config) return;
+        this.config = { ...this.config, child_id: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (titleInput) {
+      titleInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, title: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (avatarSwitch) {
+      avatarSwitch.addEventListener('change', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, show_avatar: ev.target.checked };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (progressSwitch) {
+      progressSwitch.addEventListener('change', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, show_progress: ev.target.checked };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (rewardsSwitch) {
+      rewardsSwitch.addEventListener('change', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, show_rewards: ev.target.checked };
+        this.configChanged(this.config);
+      });
+    }
+    
+    this._rendered = true;
   }
 }
 
