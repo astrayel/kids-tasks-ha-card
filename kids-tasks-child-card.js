@@ -160,8 +160,8 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les nouveaux capteurs TaskSensor
     Object.keys(entities).forEach(entityId => {
-      // Mise à jour: cherche les nouvelles entités créées par l'intégration
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
         if (taskEntity && 
@@ -182,45 +182,11 @@ class KidsTasksChildCard extends HTMLElement {
       }
     });
     
-    // Fallback: si pas de tâches individuelles, utiliser la liste générale
-    if (tasks.length === 0) {
-      const allTasksEntity = entities['sensor.kids_tasks_all_tasks_list'];
-      if (allTasksEntity && allTasksEntity.attributes && allTasksEntity.attributes.tasks) {
-        allTasksEntity.attributes.tasks.forEach(taskData => {
-          if (taskData.assigned_child && taskData.assigned_child === this.getChild()?.name) {
-            tasks.push({
-              id: taskData.task_id,
-              name: taskData.name,
-              description: taskData.description || '',
-              category: taskData.category?.toLowerCase() || 'other',
-              points: parseInt(taskData.points) || 10,
-              status: this._mapDisplayStatusToInternal(taskData.status),
-              validation_required: taskData.validation_required !== false
-            });
-          }
-        });
-      }
-    }
-    
     // Trier par statut (en attente en premier, puis à faire)
     return tasks.sort((a, b) => {
       const statusOrder = { 'pending_validation': 0, 'todo': 1, 'completed': 2, 'validated': 3 };
       return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
     });
-  }
-
-  // Mapper les statuts d'affichage vers les statuts internes
-  _mapDisplayStatusToInternal(displayStatus) {
-    const statusMap = {
-      'À faire': 'todo',
-      'En cours': 'in_progress', 
-      'Terminé': 'completed',
-      'En attente de validation': 'pending_validation',
-      'Validé ✅': 'validated',
-      'Validé': 'validated',
-      'Échoué': 'failed'
-    };
-    return statusMap[displayStatus] || displayStatus.toLowerCase();
   }
 
   // Récupérer les récompenses disponibles
@@ -230,8 +196,8 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les nouveaux capteurs RewardSensor
     Object.keys(entities).forEach(entityId => {
-      // Mise à jour: cherche les nouvelles entités créées par l'intégration
       if (entityId.startsWith('sensor.kids_tasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes) {
@@ -250,25 +216,6 @@ class KidsTasksChildCard extends HTMLElement {
         }
       }
     });
-    
-    // Fallback: si pas de récompenses individuelles, utiliser la liste générale
-    if (rewards.length === 0) {
-      const allRewardsEntity = entities['sensor.kids_tasks_all_rewards_list'];
-      if (allRewardsEntity && allRewardsEntity.attributes && allRewardsEntity.attributes.rewards) {
-        allRewardsEntity.attributes.rewards.forEach(rewardData => {
-          rewards.push({
-            id: rewardData.reward_id,
-            name: rewardData.name,
-            cost: parseInt(rewardData.cost) || 50,
-            category: rewardData.category?.toLowerCase() || 'fun',
-            description: rewardData.description || '',
-            active: rewardData.active !== false,
-            remaining_quantity: rewardData.remaining_quantity,
-            is_available: rewardData.is_available !== false
-          });
-        });
-      }
-    }
     
     return rewards.filter(r => r.active && r.is_available).sort((a, b) => a.cost - b.cost);
   }
