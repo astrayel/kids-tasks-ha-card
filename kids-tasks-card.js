@@ -2399,7 +2399,16 @@ class KidsTasksChildCardEditor extends HTMLElement {
 
   setConfig(config) {
     this._config = Object.assign({}, config);
-    this.render();
+    if (this._rendered) {
+      this._updateValues();
+    }
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (!this._rendered) {
+      this.render();
+    }
   }
 
   get _child_id() {
@@ -2422,104 +2431,155 @@ class KidsTasksChildCardEditor extends HTMLElement {
     return this._config.show_rewards !== false;
   }
 
+  getChildren() {
+    if (!this._hass) return [];
+    
+    const children = [];
+    const entities = this._hass.states;
+    
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.endsWith('_points')) {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
+          children.push({
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
+            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
+          });
+        }
+      }
+    });
+    
+    return children.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   render() {
-    if (!this.innerHTML) {
-      this.innerHTML = `
-        <div class="card-config">
-          <div class="config-row">
-            <div class="config-item">
-              <label>ID de l'enfant (requis)</label>
-              <input 
-                id="child_id" 
-                type="text" 
-                placeholder="ID de l'enfant"
-                value="${this._child_id}"
-              >
-              <small>Récupérez l'ID depuis les logs Home Assistant</small>
-            </div>
-          </div>
-          
-          <div class="config-row">
-            <div class="config-item">
-              <label>Titre de la carte</label>
-              <input 
-                id="title" 
-                type="text" 
-                value="${this._title}"
-              >
-            </div>
-          </div>
-          
-          <div class="config-row">
-            <div class="config-item">
-              <label>
-                <input id="show_avatar" type="checkbox" ${this._show_avatar ? 'checked' : ''}>
-                Afficher l'avatar
-              </label>
-            </div>
-            <div class="config-item">
-              <label>
-                <input id="show_progress" type="checkbox" ${this._show_progress ? 'checked' : ''}>
-                Afficher la progression
-              </label>
-            </div>
-            <div class="config-item">
-              <label>
-                <input id="show_rewards" type="checkbox" ${this._show_rewards ? 'checked' : ''}>
-                Afficher les récompenses
-              </label>
-            </div>
+    const children = this.getChildren();
+    
+    this.innerHTML = `
+      <div class="card-config">
+        <div class="config-row">
+          <div class="config-item">
+            <label>Enfant (requis)</label>
+            <select id="child_select" required>
+              <option value="">Sélectionner un enfant...</option>
+              ${children.map(child => `
+                <option value="${child.id}" ${this._child_id === child.id ? 'selected' : ''}>
+                  ${child.name} (${child.id.substring(0, 8)}...)
+                </option>
+              `).join('')}
+            </select>
+            <small>Liste des enfants créés dans l'intégration</small>
           </div>
         </div>
         
-        <style>
-          .card-config {
-            padding: 16px;
-          }
-          .config-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-          }
-          .config-item {
-            flex: 1;
-          }
-          .config-item label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: 500;
-            color: var(--primary-text-color, #000);
-          }
-          .config-item input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--divider-color, #ccc);
-            border-radius: 4px;
-            background: var(--card-background-color, #fff);
-            color: var(--primary-text-color, #000);
-          }
-          .config-item input[type="checkbox"] {
-            margin-right: 8px;
-          }
-          .config-item small {
-            display: block;
-            color: var(--secondary-text-color, #666);
-            font-size: 12px;
-            margin-top: 4px;
-          }
-        </style>
-      `;
+        <div class="config-row">
+          <div class="config-item">
+            <label>Titre de la carte</label>
+            <input 
+              id="title" 
+              type="text" 
+              value="${this._title}"
+              placeholder="Mes Tâches"
+            >
+          </div>
+        </div>
+        
+        <div class="config-row">
+          <div class="config-item">
+            <div class="switch-row">
+              <ha-switch id="show_avatar" ${this._show_avatar ? 'checked' : ''}></ha-switch>
+              <label for="show_avatar">Afficher l'avatar</label>
+            </div>
+          </div>
+          <div class="config-item">
+            <div class="switch-row">
+              <ha-switch id="show_progress" ${this._show_progress ? 'checked' : ''}></ha-switch>
+              <label for="show_progress">Afficher la progression</label>
+            </div>
+          </div>
+          <div class="config-item">
+            <div class="switch-row">
+              <ha-switch id="show_rewards" ${this._show_rewards ? 'checked' : ''}></ha-switch>
+              <label for="show_rewards">Afficher les récompenses</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <style>
+        .card-config {
+          padding: 16px;
+        }
+        .config-row {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        .config-item {
+          flex: 1;
+        }
+        .config-item label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color, #000);
+        }
+        .config-item input[type="text"], .config-item select {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid var(--divider-color, #ccc);
+          border-radius: 4px;
+          background: var(--card-background-color, #fff);
+          color: var(--primary-text-color, #000);
+        }
+        .switch-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .switch-row label {
+          cursor: pointer;
+          margin-bottom: 0;
+        }
+        ha-switch {
+          --switch-checked-color: var(--primary-color);
+        }
+        .config-item small {
+          display: block;
+          color: var(--secondary-text-color, #666);
+          font-size: 12px;
+          margin-top: 4px;
+        }
+      </style>
+    `;
 
-      // Ajouter les event listeners
-      this.querySelectorAll('input').forEach(input => {
-        input.addEventListener('change', this._valueChanged.bind(this));
-        input.addEventListener('input', this._valueChanged.bind(this));
-      });
-    }
+    // Ajouter les event listeners
+    this.querySelectorAll('input, select, ha-switch').forEach(input => {
+      input.addEventListener('change', this._valueChanged.bind(this));
+      input.addEventListener('input', this._valueChanged.bind(this));
+    });
+
+    this._rendered = true;
+  }
+
+  _updateValues() {
+    if (!this._rendered) return;
+    
+    const childSelect = this.querySelector('#child_select');
+    const titleInput = this.querySelector('#title');
+    const showAvatarSwitch = this.querySelector('#show_avatar');
+    const showProgressSwitch = this.querySelector('#show_progress');
+    const showRewardsSwitch = this.querySelector('#show_rewards');
+    
+    if (childSelect) childSelect.value = this._child_id;
+    if (titleInput) titleInput.value = this._title;
+    if (showAvatarSwitch) showAvatarSwitch.checked = this._show_avatar;
+    if (showProgressSwitch) showProgressSwitch.checked = this._show_progress;
+    if (showRewardsSwitch) showRewardsSwitch.checked = this._show_rewards;
   }
 
   _valueChanged() {
-    const child_id = this.querySelector('#child_id').value;
+    const child_id = this.querySelector('#child_select').value;
     const title = this.querySelector('#title').value;
     const show_avatar = this.querySelector('#show_avatar').checked;
     const show_progress = this.querySelector('#show_progress').checked;
