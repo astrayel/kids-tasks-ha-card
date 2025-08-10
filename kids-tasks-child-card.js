@@ -45,20 +45,53 @@ class KidsTasksChildCard extends HTMLElement {
     this.handleAction(action, id);
   }
 
-  handleAction(action, id = null) {
-    if (!this._hass) return;
+  async handleAction(action, id = null) {
+    if (!this._hass) {
+      this.showNotification('Home Assistant non disponible', 'error');
+      return;
+    }
+
+    // Validation des paramètres
+    if (!id && (action === 'complete_task' || action === 'claim_reward')) {
+      this.showNotification('ID manquant pour cette action', 'error');
+      return;
+    }
+
+    if (!this.config.child_id && action === 'claim_reward') {
+      this.showNotification('ID enfant manquant', 'error');
+      return;
+    }
 
     try {
       switch (action) {
         case 'complete_task':
-          this._hass.callService('kids_tasks', 'complete_task', {
+          await this._hass.callService('kids_tasks', 'complete_task', {
             task_id: id,
           });
           this.showNotification('Tâche marquée comme terminée ! 🎉', 'success');
           break;
           
         case 'claim_reward':
-          this._hass.callService('kids_tasks', 'claim_reward', {
+          // Vérifier que l'enfant a assez de points
+          const child = this.getChild();
+          const reward = this.getRewards().find(r => r.id === id);
+          
+          if (!child) {
+            this.showNotification('Informations enfant introuvables', 'error');
+            return;
+          }
+          
+          if (!reward) {
+            this.showNotification('Récompense introuvable', 'error');
+            return;
+          }
+          
+          if (child.points < reward.cost) {
+            this.showNotification(`Il te manque ${reward.cost - child.points} points pour cette récompense`, 'warning');
+            return;
+          }
+          
+          await this._hass.callService('kids_tasks', 'claim_reward', {
             reward_id: id,
             child_id: this.config.child_id,
           });
@@ -67,10 +100,26 @@ class KidsTasksChildCard extends HTMLElement {
           
         default:
           console.warn('Action inconnue:', action);
+          this.showNotification('Action non reconnue', 'warning');
       }
     } catch (error) {
       console.error('Action échouée:', error);
-      this.showNotification('Erreur: ' + error.message, 'error');
+      
+      // Messages d'erreur plus précis
+      let errorMessage = 'Une erreur est survenue';
+      if (error.message) {
+        if (error.message.includes('not found')) {
+          errorMessage = 'Élément non trouvé';
+        } else if (error.message.includes('insufficient')) {
+          errorMessage = 'Points insuffisants';
+        } else if (error.message.includes('service')) {
+          errorMessage = 'Service indisponible';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      this.showNotification(errorMessage, 'error');
     }
   }
 
@@ -112,6 +161,7 @@ class KidsTasksChildCard extends HTMLElement {
     const tasks = [];
     
     Object.keys(entities).forEach(entityId => {
+      // Mise à jour: cherche les nouvelles entités créées par l'intégration
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
         if (taskEntity && 
@@ -121,7 +171,7 @@ class KidsTasksChildCard extends HTMLElement {
           const attrs = taskEntity.attributes;
           tasks.push({
             id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
-            name: attrs.friendly_name || attrs.task_name || 'Tâche',
+            name: attrs.task_name || attrs.friendly_name || 'Tâche',
             description: attrs.description || '',
             category: attrs.category || 'other',
             points: parseInt(attrs.points) || 10,
@@ -132,11 +182,45 @@ class KidsTasksChildCard extends HTMLElement {
       }
     });
     
+    // Fallback: si pas de tâches individuelles, utiliser la liste générale
+    if (tasks.length === 0) {
+      const allTasksEntity = entities['sensor.kids_tasks_all_tasks_list'];
+      if (allTasksEntity && allTasksEntity.attributes && allTasksEntity.attributes.tasks) {
+        allTasksEntity.attributes.tasks.forEach(taskData => {
+          if (taskData.assigned_child && taskData.assigned_child === this.getChild()?.name) {
+            tasks.push({
+              id: taskData.task_id,
+              name: taskData.name,
+              description: taskData.description || '',
+              category: taskData.category?.toLowerCase() || 'other',
+              points: parseInt(taskData.points) || 10,
+              status: this._mapDisplayStatusToInternal(taskData.status),
+              validation_required: taskData.validation_required !== false
+            });
+          }
+        });
+      }
+    }
+    
     // Trier par statut (en attente en premier, puis à faire)
     return tasks.sort((a, b) => {
       const statusOrder = { 'pending_validation': 0, 'todo': 1, 'completed': 2, 'validated': 3 };
       return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
     });
+  }
+
+  // Mapper les statuts d'affichage vers les statuts internes
+  _mapDisplayStatusToInternal(displayStatus) {
+    const statusMap = {
+      'À faire': 'todo',
+      'En cours': 'in_progress', 
+      'Terminé': 'completed',
+      'En attente de validation': 'pending_validation',
+      'Validé ✅': 'validated',
+      'Validé': 'validated',
+      'Échoué': 'failed'
+    };
+    return statusMap[displayStatus] || displayStatus.toLowerCase();
   }
 
   // Récupérer les récompenses disponibles
@@ -147,6 +231,7 @@ class KidsTasksChildCard extends HTMLElement {
     const rewards = [];
     
     Object.keys(entities).forEach(entityId => {
+      // Mise à jour: cherche les nouvelles entités créées par l'intégration
       if (entityId.startsWith('sensor.kids_tasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes) {
@@ -154,18 +239,38 @@ class KidsTasksChildCard extends HTMLElement {
           
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kids_tasks_reward_', ''),
-            name: attrs.friendly_name || attrs.reward_name || 'Récompense',
-            cost: parseInt(attrs.cost) || 50,
+            name: attrs.reward_name || attrs.friendly_name || 'Récompense',
+            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
             category: attrs.category || 'fun',
             description: attrs.description || '',
             active: attrs.active !== false,
-            remaining_quantity: attrs.remaining_quantity
+            remaining_quantity: attrs.remaining_quantity,
+            is_available: attrs.is_available !== false
           });
         }
       }
     });
     
-    return rewards.filter(r => r.active).sort((a, b) => a.cost - b.cost);
+    // Fallback: si pas de récompenses individuelles, utiliser la liste générale
+    if (rewards.length === 0) {
+      const allRewardsEntity = entities['sensor.kids_tasks_all_rewards_list'];
+      if (allRewardsEntity && allRewardsEntity.attributes && allRewardsEntity.attributes.rewards) {
+        allRewardsEntity.attributes.rewards.forEach(rewardData => {
+          rewards.push({
+            id: rewardData.reward_id,
+            name: rewardData.name,
+            cost: parseInt(rewardData.cost) || 50,
+            category: rewardData.category?.toLowerCase() || 'fun',
+            description: rewardData.description || '',
+            active: rewardData.active !== false,
+            remaining_quantity: rewardData.remaining_quantity,
+            is_available: rewardData.is_available !== false
+          });
+        });
+      }
+    }
+    
+    return rewards.filter(r => r.active && r.is_available).sort((a, b) => a.cost - b.cost);
   }
 
   showNotification(message, type = 'info') {
