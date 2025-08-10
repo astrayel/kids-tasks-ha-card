@@ -1042,7 +1042,7 @@ class KidsTasksCard extends HTMLElement {
   // Navigation et vues (réutilisation du code existant avec ajout des boutons de suppression)
   getNavigation() {
     const tabs = [
-      { id: 'dashboard', label: '📊 Tableau1', icon: '📊' },
+      { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
       { id: 'children', label: '👶 Enfants', icon: '👶' },
       { id: 'tasks', label: '📝 Tâches', icon: '📝' },
       { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' }
@@ -1078,7 +1078,7 @@ class KidsTasksCard extends HTMLElement {
 
     return `
       <div class="section">
-        <h2>Aperçu</h2>
+        <h2>${this.title}</h2>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon">👶</div>
