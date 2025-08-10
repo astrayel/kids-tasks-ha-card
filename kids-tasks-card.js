@@ -62,7 +62,8 @@ class KidsTasksCard extends HTMLElement {
     switch (action) {
       case 'switch-view':
         this.currentView = id;
-        this.render();
+        // Petit délai pour éviter les blocages lors du changement de vue
+        setTimeout(() => this.render(), 10);
         break;
       case 'add-child':
         this.showChildForm();
@@ -394,37 +395,8 @@ class KidsTasksCard extends HTMLElement {
     dialog.appendChild(contentDiv);
     document.body.appendChild(dialog);
     
-    // Attendre que les composants HA soient initialisés puis ouvrir la dialog
-    setTimeout(() => {
-      dialog.show();
-      
-      // Forcer la mise à jour des ha-select après l'ouverture
-      setTimeout(() => {
-        const selects = dialog.querySelectorAll('ha-select');
-        selects.forEach(select => {
-          const targetValue = select.getAttribute('value');
-          if (targetValue) {
-            // Définir la valeur via plusieurs méthodes pour assurer compatibilité
-            select.value = targetValue;
-            
-            // Marquer l'item correspondant comme sélectionné
-            const items = select.querySelectorAll('ha-list-item');
-            items.forEach(item => {
-              if (item.getAttribute('value') === targetValue) {
-                item.selected = true;
-                item.setAttribute('selected', '');
-              } else {
-                item.selected = false;
-                item.removeAttribute('selected');
-              }
-            });
-            
-            // Déclencher un événement de mise à jour
-            select.requestUpdate?.();
-          }
-        });
-      }, 150);
-    }, 50);
+    // Ouvrir immédiatement et laisser les composants s'initialiser naturellement
+    dialog.show();
     
     return dialog;
   }
@@ -515,10 +487,9 @@ class KidsTasksCard extends HTMLElement {
           <ha-select 
             label="Catégorie *"
             name="category"
-            required
-            value="${isEdit ? task.category : 'other'}">
+            required>
             ${categories.map(cat => `
-              <ha-list-item value="${cat}" ${isEdit && task.category === cat ? 'selected' : ''}>
+              <ha-list-item value="${cat}" ${(!isEdit && cat === 'other') || (isEdit && task.category === cat) ? 'selected' : ''}>
                 ${this.getCategoryLabel(cat)}
               </ha-list-item>
             `).join('')}
@@ -539,10 +510,9 @@ class KidsTasksCard extends HTMLElement {
           <ha-select
             label="Fréquence *"
             name="frequency"
-            required
-            value="${isEdit ? task.frequency : 'daily'}">
+            required>
             ${frequencies.map(freq => `
-              <ha-list-item value="${freq}" ${isEdit && task.frequency === freq ? 'selected' : ''}>
+              <ha-list-item value="${freq}" ${(!isEdit && freq === 'daily') || (isEdit && task.frequency === freq) ? 'selected' : ''}>
                 ${this.getFrequencyLabel(freq)}
               </ha-list-item>
             `).join('')}
@@ -636,10 +606,9 @@ class KidsTasksCard extends HTMLElement {
           <ha-select
             label="Catégorie *"
             name="category"
-            required
-            value="${isEdit ? reward.category : 'fun'}">
+            required>
             ${categories.map(cat => `
-              <ha-list-item value="${cat}" ${isEdit && reward.category === cat ? 'selected' : ''}>
+              <ha-list-item value="${cat}" ${(!isEdit && cat === 'fun') || (isEdit && reward.category === cat) ? 'selected' : ''}>
                 ${this.getCategoryLabel(cat)}
               </ha-list-item>
             `).join('')}
@@ -883,17 +852,7 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getRewards() {
-    // Cache pour éviter les recalculs fréquents
-    const cacheKey = JSON.stringify(Object.keys(this._hass.states).filter(k => 
-      k.startsWith('button.echanger_') || 
-      k.startsWith('number.cout_') || 
-      k.startsWith('switch.active_reward_') ||
-      k.startsWith('number.quantite_')
-    ).sort());
-    
-    if (this._rewardsCache && this._rewardsCacheKey === cacheKey) {
-      return this._rewardsCache;
-    }
+    if (!this._hass || !this._hass.states) return [];
     
     const rewards = [];
     const entities = this._hass.states;
@@ -962,13 +921,7 @@ class KidsTasksCard extends HTMLElement {
       }
     });
     
-    const result = rewards.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
-    
-    // Mettre en cache le résultat
-    this._rewardsCache = result;
-    this._rewardsCacheKey = cacheKey;
-    
-    return result;
+    return rewards.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getStats() {
@@ -1402,6 +1355,7 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 8px;
           border-left: 4px solid var(--accent-color, #ff4081);
           transition: all 0.3s;
+          position: relative;
         }
         
         .child-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -1466,7 +1420,25 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color, #212121);
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
-        .task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .task-actions { 
+          display: flex; 
+          gap: 8px; 
+          flex-wrap: nowrap; 
+          justify-content: center; 
+          align-items: center; 
+          margin-top: 8px;
+        }
+        
+        .child-card .task-actions {
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-top: 0;
+          flex-direction: row;
+          gap: 8px;
+          min-width: 160px;
+        }
         
         .task-status {
           padding: 4px 12px;
@@ -1518,7 +1490,7 @@ class KidsTasksCard extends HTMLElement {
         .delete-btn::before { content: "🗑 "; }
         .validate-btn::before { content: "✓ "; }
         .reject-btn::before { content: "✗ "; }
-        .claim-btn::before { content = "🎁 "; }
+        .claim-btn::before { content: "🎁 "; }
         
         .form-group { margin-bottom: 16px; }
         .form-label {
@@ -2710,12 +2682,20 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
     
     if (childSelect) {
-      childSelect.addEventListener('closed', (ev) => {
-        ev.stopPropagation(); // Empêcher la propagation de l'événement
-        if (!this.config || !ev.target.value) return;
-        this.config = { ...this.config, child_id: ev.target.value };
-        this.configChanged(this.config);
-      });
+      // Essayer plusieurs événements pour assurer compatibilité
+      const handleChildChange = () => {
+        setTimeout(() => {
+          const selectedValue = childSelect.value;
+          if (selectedValue && selectedValue !== this.config?.child_id) {
+            this.config = { ...this.config, child_id: selectedValue };
+            this.configChanged(this.config);
+          }
+        }, 10);
+      };
+      
+      childSelect.addEventListener('selected', handleChildChange);
+      childSelect.addEventListener('change', handleChildChange);
+      childSelect.addEventListener('value-changed', handleChildChange);
     }
     
     if (titleInput) {
