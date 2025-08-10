@@ -168,9 +168,11 @@ class KidsTasksCard extends HTMLElement {
     // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
     const description = form.querySelector('[name="description"]').value || '';
-    const category = form.querySelector('[name="category"]').value;
+    const categorySelect = form.querySelector('[name="category"]');
+    const category = categorySelect.value || categorySelect.getAttribute('value') || 'other';
     const points = parseInt(form.querySelector('[name="points"]').value);
-    const frequency = form.querySelector('[name="frequency"]').value;
+    const frequencySelect = form.querySelector('[name="frequency"]');
+    const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
     const assigned_child_id = form.querySelector('[name="assigned_child_id"]').value || null;
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
@@ -208,7 +210,8 @@ class KidsTasksCard extends HTMLElement {
     const name = form.querySelector('[name="name"]').value;
     const description = form.querySelector('[name="description"]').value || '';
     const cost = parseInt(form.querySelector('[name="cost"]').value);
-    const category = form.querySelector('[name="category"]').value;
+    const categorySelect = form.querySelector('[name="category"]');
+    const category = categorySelect.value || categorySelect.getAttribute('value') || 'fun';
     const limitedQuantityInput = form.querySelector('[name="limited_quantity"]');
     const limited_quantity = limitedQuantityInput.value ? parseInt(limitedQuantityInput.value) : null;
     
@@ -391,8 +394,37 @@ class KidsTasksCard extends HTMLElement {
     dialog.appendChild(contentDiv);
     document.body.appendChild(dialog);
     
-    // Ouvrir la dialog
-    dialog.show();
+    // Attendre que les composants HA soient initialisés puis ouvrir la dialog
+    setTimeout(() => {
+      dialog.show();
+      
+      // Forcer la mise à jour des ha-select après l'ouverture
+      setTimeout(() => {
+        const selects = dialog.querySelectorAll('ha-select');
+        selects.forEach(select => {
+          const targetValue = select.getAttribute('value');
+          if (targetValue) {
+            // Définir la valeur via plusieurs méthodes pour assurer compatibilité
+            select.value = targetValue;
+            
+            // Marquer l'item correspondant comme sélectionné
+            const items = select.querySelectorAll('ha-list-item');
+            items.forEach(item => {
+              if (item.getAttribute('value') === targetValue) {
+                item.selected = true;
+                item.setAttribute('selected', '');
+              } else {
+                item.selected = false;
+                item.removeAttribute('selected');
+              }
+            });
+            
+            // Déclencher un événement de mise à jour
+            select.requestUpdate?.();
+          }
+        });
+      }, 150);
+    }, 50);
     
     return dialog;
   }
@@ -851,6 +883,18 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getRewards() {
+    // Cache pour éviter les recalculs fréquents
+    const cacheKey = JSON.stringify(Object.keys(this._hass.states).filter(k => 
+      k.startsWith('button.echanger_') || 
+      k.startsWith('number.cout_') || 
+      k.startsWith('switch.active_reward_') ||
+      k.startsWith('number.quantite_')
+    ).sort());
+    
+    if (this._rewardsCache && this._rewardsCacheKey === cacheKey) {
+      return this._rewardsCache;
+    }
+    
     const rewards = [];
     const entities = this._hass.states;
     
@@ -918,7 +962,13 @@ class KidsTasksCard extends HTMLElement {
       }
     });
     
-    return rewards.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
+    const result = rewards.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Mettre en cache le résultat
+    this._rewardsCache = result;
+    this._rewardsCacheKey = cacheKey;
+    
+    return result;
   }
 
   getStats() {
@@ -2660,9 +2710,9 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
     
     if (childSelect) {
-      childSelect.addEventListener('change', (ev) => {
+      childSelect.addEventListener('closed', (ev) => {
         ev.stopPropagation(); // Empêcher la propagation de l'événement
-        if (!this.config) return;
+        if (!this.config || !ev.target.value) return;
         this.config = { ...this.config, child_id: ev.target.value };
         this.configChanged(this.config);
       });
