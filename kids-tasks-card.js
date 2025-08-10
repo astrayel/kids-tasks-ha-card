@@ -137,25 +137,50 @@ class KidsTasksCard extends HTMLElement {
     }
   }
 
-  async submitChildForm(dialog, isEdit = false) {
-    const form = dialog.querySelector('form');
-    const formData = new FormData(form);
+  async submitChildForm(isEdit = false) {
+    const form = document.querySelector('ha-dialog form');
+    
+    // Récupérer les valeurs des composants HA
+    const name = form.querySelector('[name="name"]').value;
+    const person_entity_id = form.querySelector('[name="person_entity_id"]')?.value || null;
+    const avatar_type = form.querySelector('[name="avatar_type"]').value;
+    const card_gradient_start = form.querySelector('[name="card_gradient_start"]')?.value || null;
+    const card_gradient_end = form.querySelector('[name="card_gradient_end"]')?.value || null;
+    
+    let avatar_data = null;
+    let avatar = '👶';
+
+    // Déterminer les données d'avatar selon le type
+    if (avatar_type === 'emoji') {
+      avatar = form.querySelector('[name="avatar"]').value;
+    } else if (avatar_type === 'url') {
+      avatar_data = form.querySelector('[name="avatar_url"]').value;
+    } else if (avatar_type === 'inline') {
+      avatar_data = form.querySelector('[name="avatar_inline"]').value;
+    }
     
     const serviceData = {
-      name: formData.get('name'),
-      avatar: formData.get('avatar') || '👶',
-      initial_points: parseInt(formData.get('initial_points') || '0')
+      name,
+      avatar,
+      person_entity_id,
+      avatar_type,
+      avatar_data,
+      card_gradient_start,
+      card_gradient_end
     };
 
+    if (!isEdit) {
+      serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
+    }
+
     if (isEdit) {
-      serviceData.child_id = formData.get('child_id');
-      delete serviceData.initial_points;
+      serviceData.child_id = form.querySelector('[name="child_id"]').value;
       if (await this.callService('kids_tasks', 'update_child', serviceData)) {
-        this.closeModal(dialog);
+        this.closeModal();
       }
     } else {
       if (await this.callService('kids_tasks', 'add_child', serviceData)) {
-        this.closeModal(dialog);
+        this.closeModal();
       }
     }
   }
@@ -274,10 +299,15 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color);
         }
         
-        /* Limiter la hauteur des ha-select pour éviter l'overflow */
+        /* Corriger la hauteur des ha-select pour éviter l'overflow */
         ha-select {
-          max-height: 56px;
-          overflow: visible;
+          --mdc-menu-max-height: 200px;
+          --mdc-menu-min-width: 100%;
+        }
+        
+        ha-select mwc-menu {
+          --mdc-menu-max-height: 200px;
+          --mdc-menu-item-height: 48px;
         }
         
         /* Améliorer l'affichage des modals */
@@ -309,15 +339,7 @@ class KidsTasksCard extends HTMLElement {
           width: 100%;
         }
         
-        /* Corriger la taille des select */
-        ha-select {
-          max-height: 56px;
-          overflow: visible;
-        }
-        
-        ha-select[opened] {
-          max-height: none;
-        }
+        /* Correction déjà appliquée plus haut */
         
         /* Uniformiser les tailles de police */
         ha-textfield, ha-textarea, ha-select {
@@ -423,42 +445,135 @@ class KidsTasksCard extends HTMLElement {
     const children = this.getChildren();
     const child = childId ? children.find(c => c.id === childId) : null;
     const isEdit = !!child;
+    const persons = this.getPersonEntities();
 
     const avatarOptions = ['👶', '👧', '👦', '🧒', '🧸', '🎈', '⭐', '🌟', '🏆', '🎯'];
 
     const content = `
       <form>
         ${isEdit ? `<input type="hidden" name="child_id" value="${child.id}">` : ''}
-        <div class="form-group">
-          <label class="form-label">Nom de l'enfant*</label>
-          <input type="text" name="name" class="form-input" required 
-                 value="${isEdit ? child.name : ''}"
-                 placeholder="Prénom de l'enfant">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Avatar</label>
-          <div class="avatar-options">
-            ${avatarOptions.map(avatar => `
-              <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}" 
-                      onclick="this.closest('ha-dialog').querySelector('input[name=avatar]').value = '${avatar}'; this.closest('.avatar-options').querySelectorAll('.avatar-option').forEach(btn => btn.classList.remove('selected')); this.classList.add('selected');">
-                ${avatar}
-              </button>
+        
+        <ha-textfield
+          label="Nom de l'enfant *"
+          name="name"
+          required
+          value="${isEdit ? child.name : ''}"
+          placeholder="Prénom de l'enfant">
+        </ha-textfield>
+
+        ${persons.length > 0 ? `
+          <ha-select
+            label="Lier à une personne (optionnel)"
+            name="person_entity_id"
+            value="${isEdit && child.person_entity_id ? child.person_entity_id : ''}">
+            <ha-list-item value="">Aucune liaison</ha-list-item>
+            ${persons.map(person => `
+              <ha-list-item value="${person.entity_id}" ${isEdit && child.person_entity_id === person.entity_id ? 'selected' : ''}>
+                ${person.name}
+              </ha-list-item>
             `).join('')}
-          </div>
-          <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
-        </div>
-        ${!isEdit ? `
-          <div class="form-group">
-            <label class="form-label">Points initiaux</label>
-            <input type="number" name="initial_points" class="form-input" 
-                   value="0" min="0" max="1000" step="1">
-          </div>
+          </ha-select>
         ` : ''}
-        <div style="margin-top: 20px; text-align: right;">
-          <button type="button" class="btn btn-secondary" onclick="this.closest('ha-dialog').close()" style="margin-right: 10px;">Annuler</button>
-          <button type="button" class="btn btn-primary" onclick="this.closest('ha-dialog')._cardInstance.submitChildForm(this.closest('ha-dialog'), ${isEdit})">${isEdit ? 'Modifier' : 'Ajouter'}</button>
+
+        <ha-select
+          label="Type d'avatar"
+          name="avatar_type"
+          required
+          value="${isEdit ? child.avatar_type || 'emoji' : 'emoji'}">
+          <ha-list-item value="emoji">Emoji</ha-list-item>
+          <ha-list-item value="url">URL d'image</ha-list-item>
+          <ha-list-item value="inline">Image inline (base64)</ha-list-item>
+          ${persons.length > 0 ? '<ha-list-item value="person_entity">Photo de la personne liée</ha-list-item>' : ''}
+        </ha-select>
+
+        <div id="avatar-config">
+          <div id="emoji-config" style="display: ${isEdit && child.avatar_type !== 'emoji' ? 'none' : 'block'};">
+            <label class="form-label">Choisir un emoji</label>
+            <div class="avatar-options">
+              ${avatarOptions.map(avatar => `
+                <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}" 
+                        data-avatar="${avatar}">
+                  ${avatar}
+                </button>
+              `).join('')}
+            </div>
+            <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
+          </div>
+
+          <div id="url-config" style="display: ${isEdit && child.avatar_type === 'url' ? 'block' : 'none'};">
+            <ha-textfield
+              label="URL de l'image"
+              name="avatar_url"
+              value="${isEdit && child.avatar_type === 'url' ? child.avatar_data || '' : ''}"
+              placeholder="https://example.com/photo.png">
+            </ha-textfield>
+          </div>
+
+          <div id="inline-config" style="display: ${isEdit && child.avatar_type === 'inline' ? 'block' : 'none'};">
+            <label class="form-label">Image base64 (sans le préfixe data:image)</label>
+            <ha-textarea
+              name="avatar_inline"
+              value="${isEdit && child.avatar_type === 'inline' ? child.avatar_data || '' : ''}"
+              placeholder="iVBORw0KGgoAAAANSUhEUgAA...">
+            </ha-textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="Couleur dégradé début"
+            name="card_gradient_start"
+            value="${isEdit ? child.card_gradient_start || '' : ''}"
+            placeholder="#3f51b5">
+          </ha-textfield>
+          
+          <ha-textfield
+            label="Couleur dégradé fin"
+            name="card_gradient_end"
+            value="${isEdit ? child.card_gradient_end || '' : ''}"
+            placeholder="#ff4081">
+          </ha-textfield>
+        </div>
+
+        ${!isEdit ? `
+          <ha-textfield
+            label="Points initiaux"
+            name="initial_points"
+            type="number"
+            value="0"
+            min="0"
+            max="1000">
+          </ha-textfield>
+        ` : ''}
+
+        <div class="dialog-actions">
+          <ha-button @click=${() => this.closeModal()}>Annuler</ha-button>
+          <ha-button @click=${() => this.submitChildForm(isEdit)} class="primary">${isEdit ? 'Modifier' : 'Ajouter'}</ha-button>
         </div>
       </form>
+
+      <script>
+        // Gérer le changement de type d'avatar
+        const avatarTypeSelect = document.querySelector('ha-select[name="avatar_type"]');
+        const avatarConfig = document.getElementById('avatar-config');
+        
+        avatarTypeSelect.addEventListener('selected', (e) => {
+          const selectedType = e.target.value;
+          avatarConfig.querySelectorAll('[id$="-config"]').forEach(div => {
+            div.style.display = 'none';
+          });
+          document.getElementById(selectedType + '-config').style.display = 'block';
+        });
+
+        // Gérer la sélection d'emoji
+        avatarConfig.querySelectorAll('.avatar-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            avatarConfig.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.querySelector('input[name="avatar"]').value = btn.dataset.avatar;
+          });
+        });
+      </script>
     `;
 
     this.showModal(content, isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant');
@@ -771,13 +886,40 @@ class KidsTasksCard extends HTMLElement {
             points: points,
             level: level,
             progress: progress,
-            avatar: pointsEntity.attributes.avatar || '👶'
+            avatar: pointsEntity.attributes.avatar || '👶',
+            person_entity_id: pointsEntity.attributes.person_entity_id,
+            avatar_type: pointsEntity.attributes.avatar_type || 'emoji',
+            avatar_data: pointsEntity.attributes.avatar_data,
+            card_gradient_start: pointsEntity.attributes.card_gradient_start,
+            card_gradient_end: pointsEntity.attributes.card_gradient_end
           });
         }
       }
     });
     
     return children.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  getPersonEntities() {
+    if (!this._hass) return [];
+    
+    const persons = [];
+    const entities = this._hass.states;
+    
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.startsWith('person.')) {
+        const personEntity = entities[entityId];
+        if (personEntity) {
+          persons.push({
+            entity_id: entityId,
+            name: personEntity.attributes.friendly_name || personEntity.attributes.name || entityId.replace('person.', ''),
+            picture: personEntity.attributes.entity_picture
+          });
+        }
+      }
+    });
+    
+    return persons.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getTasks() {
@@ -1196,8 +1338,17 @@ class KidsTasksCard extends HTMLElement {
 
   // Styles CSS identiques au fichier précédent
   getStyles() {
+    const tabColor = this.config?.tab_color || 'var(--primary-color, #3f51b5)';
+    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--primary-color, #3f51b5)';
+    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--accent-color, #ff4081)';
+    
     return `
       <style>
+        :host {
+          --custom-tab-color: ${tabColor};
+          --custom-dashboard-primary: ${dashboardPrimary};
+          --custom-dashboard-secondary: ${dashboardSecondary};
+        }
         * { box-sizing: border-box; }
         
         .kids-tasks-manager {
@@ -1211,7 +1362,7 @@ class KidsTasksCard extends HTMLElement {
         
         .nav-tabs {
           display: flex;
-          background: var(--primary-color, #3f51b5);
+          background: var(--custom-tab-color);
           margin: 0;
           padding: 0;
         }
@@ -1259,7 +1410,7 @@ class KidsTasksCard extends HTMLElement {
           padding: 16px;
           background: var(--secondary-background-color, #fafafa);
           border-radius: 8px;
-          border-left: 4px solid var(--accent-color, #ff4081);
+          border-left: 4px solid var(--custom-dashboard-secondary);
           display: flex;
           align-items: center;
         }
@@ -1280,7 +1431,7 @@ class KidsTasksCard extends HTMLElement {
           margin: 8px 0;
           background: var(--secondary-background-color, #fafafa);
           border-radius: 8px;
-          border-left: 4px solid var(--accent-color, #ff4081);
+          border-left: 4px solid var(--custom-dashboard-secondary);
           transition: all 0.3s;
           position: relative;
         }
@@ -1301,7 +1452,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .level-badge {
-          background: var(--accent-color, #ff4081);
+          background: var(--custom-dashboard-secondary);
           color: white;
           padding: 4px 12px;
           border-radius: 16px;
@@ -1321,7 +1472,7 @@ class KidsTasksCard extends HTMLElement {
         
         .progress-fill {
           height: 100%;
-          background: var(--accent-color, #ff4081);
+          background: var(--custom-dashboard-secondary);
           transition: width 0.3s ease;
         }
         
@@ -1401,7 +1552,7 @@ class KidsTasksCard extends HTMLElement {
         .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn:active { transform: translateY(0); }
         
-        .btn-primary { background: var(--primary-color, #3f51b5); color: white; }
+        .btn-primary { background: var(--custom-dashboard-primary); color: white; }
         .btn-success { background: #4caf50; color: white; }
         .btn-danger { background: #f44336; color: white; }
         .btn-secondary {
@@ -1665,12 +1816,36 @@ class KidsTasksCardEditor extends HTMLElement {
           </ha-switch>
           <label>Afficher la navigation par onglets</label>
         </div>
+
+        <ha-textfield
+          id="tab-color-input"
+          label="Couleur des onglets"
+          value="${this.config?.tab_color || ''}"
+          placeholder="#3f51b5">
+        </ha-textfield>
+
+        <ha-textfield
+          id="dashboard-primary-input"
+          label="Couleur primaire dashboard"
+          value="${this.config?.dashboard_primary_color || ''}"
+          placeholder="#2196f3">
+        </ha-textfield>
+
+        <ha-textfield
+          id="dashboard-secondary-input"
+          label="Couleur secondaire dashboard"
+          value="${this.config?.dashboard_secondary_color || ''}"
+          placeholder="#ff4081">
+        </ha-textfield>
       </div>
     `;
 
     // Attacher les événements après le rendu
     const titleInput = this.shadowRoot.getElementById('title-input');
     const navSwitch = this.shadowRoot.getElementById('navigation-switch');
+    const tabColorInput = this.shadowRoot.getElementById('tab-color-input');
+    const dashboardPrimaryInput = this.shadowRoot.getElementById('dashboard-primary-input');
+    const dashboardSecondaryInput = this.shadowRoot.getElementById('dashboard-secondary-input');
     
     if (titleInput) {
       titleInput.addEventListener('input', (ev) => {
@@ -1684,6 +1859,30 @@ class KidsTasksCardEditor extends HTMLElement {
       navSwitch.addEventListener('change', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, show_navigation: ev.target.checked };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (tabColorInput) {
+      tabColorInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, tab_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (dashboardPrimaryInput) {
+      dashboardPrimaryInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, dashboard_primary_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (dashboardSecondaryInput) {
+      dashboardSecondaryInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, dashboard_secondary_color: ev.target.value };
         this.configChanged(this.config);
       });
     }
@@ -1782,6 +1981,23 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
+  // Méthode pour résoudre l'avatar effectif
+  getEffectiveAvatar(child) {
+    if (child.avatar_type === 'emoji') {
+      return child.avatar || '👶';
+    } else if (child.avatar_type === 'url' && child.avatar_data) {
+      return `<img src="${child.avatar_data}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+    } else if (child.avatar_type === 'inline' && child.avatar_data) {
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+    } else if (child.avatar_type === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes.entity_picture) {
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+      }
+    }
+    return child.avatar || '👶';
+  }
+
   // Récupérer les données de l'enfant spécifique
   getChild() {
     if (!this._hass) return null;
@@ -1808,7 +2024,12 @@ class KidsTasksChildCard extends HTMLElement {
       level: level,
       progress: progress,
       avatar: pointsEntity.attributes.avatar || '👶',
-      pointsToNext: pointsEntity.attributes.points_to_next_level || (100 - (points % 100))
+      pointsToNext: pointsEntity.attributes.points_to_next_level || (100 - (points % 100)),
+      card_gradient_start: pointsEntity.attributes.card_gradient_start,
+      card_gradient_end: pointsEntity.attributes.card_gradient_end,
+      avatar_type: pointsEntity.attributes.avatar_type || 'emoji',
+      avatar_data: pointsEntity.attributes.avatar_data,
+      person_entity_id: pointsEntity.attributes.person_entity_id
     };
   }
 
@@ -1973,7 +2194,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .header {
-          background: linear-gradient(135deg, var(--primary-color, #3f51b5) 0%, var(--accent-color, #ff4081) 100%);
+          background: linear-gradient(135deg, ${child.card_gradient_start || 'var(--primary-color, #3f51b5)'} 0%, ${child.card_gradient_end || 'var(--accent-color, #ff4081)'} 100%);
           color: white;
           padding: 24px;
           text-align: center;
@@ -2146,7 +2367,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .task-points {
-          background: var(--accent-color, #ff4081);
+          background: var(--custom-dashboard-secondary);
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
@@ -2214,7 +2435,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .claim-btn {
-          background: var(--accent-color, #ff4081);
+          background: var(--custom-dashboard-secondary);
           color: white;
           border: none;
           padding: 8px 16px;
@@ -2284,7 +2505,7 @@ class KidsTasksChildCard extends HTMLElement {
       
       <div class="child-card">
         <div class="header">
-          ${this.config.show_avatar ? `<span class="avatar">${child.avatar}</span>` : ''}
+          ${this.config.show_avatar ? `<span class="avatar">${this.getEffectiveAvatar(child)}</span>` : ''}
           <div class="child-name">${child.name}</div>
           <div class="level-badge">Niveau ${child.level}</div>
           
