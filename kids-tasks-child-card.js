@@ -714,51 +714,48 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 20px;">
-        <div style="margin-bottom: 16px;">
-          <label>ID de l'enfant*:</label>
-          <input type="text" class="form-control" 
-                 placeholder="child_id (ex: abc-123-def)"
-                 .value="\${this.config.child_id || ''}"
-                 .configValue="child_id"
-                 required>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>Titre de la carte:</label>
-          <input type="text" class="form-control" 
-                 placeholder="Mes Tâches"
-                 .value="\${this.config.title || ''}"
-                 .configValue="title">
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_avatar !== false}"
-                   .configValue="show_avatar"> 
-            Afficher l'avatar
-          </label>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_progress !== false}"
-                   .configValue="show_progress"> 
-            Afficher la progression
-          </label>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_rewards !== false}"
-                   .configValue="show_rewards"> 
-            Afficher les récompenses
-          </label>
-        </div>
-      </div>
-    `;
-    return element;
+    return {
+      type: 'form',
+      schema: [
+        {
+          name: 'child_id',
+          required: true,
+          selector: {
+            text: {
+              placeholder: 'ID de l\'enfant (ex: abc-123-def)'
+            }
+          }
+        },
+        {
+          name: 'title', 
+          default: 'Mes Tâches',
+          selector: {
+            text: {}
+          }
+        },
+        {
+          name: 'show_avatar',
+          default: true,
+          selector: {
+            boolean: {}
+          }
+        },
+        {
+          name: 'show_progress',
+          default: true,
+          selector: {
+            boolean: {}
+          }
+        },
+        {
+          name: 'show_rewards',
+          default: true,
+          selector: {
+            boolean: {}
+          }
+        }
+      ]
+    };
   }
 
   static getStubConfig() {
