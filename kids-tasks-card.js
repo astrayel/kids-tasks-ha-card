@@ -296,6 +296,21 @@ class KidsTasksCard extends HTMLElement {
           width: 100%;
         }
         
+        /* Corriger la taille des select */
+        ha-select {
+          max-height: 56px;
+          overflow: visible;
+        }
+        
+        ha-select[opened] {
+          max-height: none;
+        }
+        
+        /* Uniformiser les tailles de police */
+        ha-textfield, ha-textarea, ha-select {
+          --mdc-typography-subtitle1-font-size: 16px;
+        }
+        
         .form-row {
           display: flex;
           gap: 16px;
@@ -763,19 +778,19 @@ class KidsTasksCard extends HTMLElement {
     const taskGroups = new Map();
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités button, number, select avec préfixe KT_
-      if (entityId.startsWith('button.KT_') || 
-          entityId.startsWith('number.KT_') || 
-          entityId.startsWith('select.KT_')) {
+      // Chercher les entités button, number, select de tâches
+      if (entityId.startsWith('button.terminer_') || 
+          entityId.startsWith('number.points_') || 
+          entityId.startsWith('select.statut_')) {
         
         // Extraire le nom de base de la tâche
         let taskBaseName;
-        if (entityId.startsWith('button.KT_terminer_')) {
-          taskBaseName = entityId.replace('button.KT_terminer_', '');
-        } else if (entityId.startsWith('number.KT_points_')) {
-          taskBaseName = entityId.replace('number.KT_points_', '');
-        } else if (entityId.startsWith('select.KT_statut_')) {
-          taskBaseName = entityId.replace('select.KT_statut_', '');
+        if (entityId.startsWith('button.terminer_')) {
+          taskBaseName = entityId.replace('button.terminer_', '');
+        } else if (entityId.startsWith('number.points_')) {
+          taskBaseName = entityId.replace('number.points_', '');
+        } else if (entityId.startsWith('select.statut_')) {
+          taskBaseName = entityId.replace('select.statut_', '');
         }
         
         if (taskBaseName) {
@@ -784,11 +799,11 @@ class KidsTasksCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.KT_terminer_')) {
+          if (entityId.startsWith('button.terminer_')) {
             taskGroups.get(taskBaseName).button = entity;
-          } else if (entityId.startsWith('number.KT_points_')) {
+          } else if (entityId.startsWith('number.points_')) {
             taskGroups.get(taskBaseName).points = entity;
-          } else if (entityId.startsWith('select.KT_statut_')) {
+          } else if (entityId.startsWith('select.statut_')) {
             taskGroups.get(taskBaseName).status = entity;
           }
         }
@@ -1622,27 +1637,7 @@ class KidsTasksCard extends HTMLElement {
 
   // Configuration pour Home Assistant
   static getConfigElement() {
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 20px;">
-        <div style="margin-bottom: 16px;">
-          <label>Titre de la carte:</label>
-          <input type="text" class="form-control" 
-                 placeholder="Gestionnaire de Tâches Enfants"
-                 .value="\${this.config.title || ''}"
-                 .configValue="title">
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_navigation !== false}"
-                   .configValue="show_navigation"> 
-            Afficher la navigation par onglets
-          </label>
-        </div>
-      </div>
-    `;
-    return element;
+    return document.createElement('kids-tasks-card-editor');
   }
 
   static getStubConfig() {
@@ -1654,6 +1649,87 @@ class KidsTasksCard extends HTMLElement {
 }
 
 customElements.define('kids-tasks-card', KidsTasksCard);
+
+// Éditeur de configuration pour la carte principale
+class KidsTasksCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  setConfig(config) {
+    this.config = config;
+    this.render();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+  }
+
+  configChanged(newConfig) {
+    const event = new CustomEvent('config-changed', {
+      detail: { config: newConfig },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        .config-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .config-row label {
+          margin-left: 8px;
+        }
+        ha-textfield {
+          width: 100%;
+          margin-bottom: 16px;
+        }
+        ha-switch {
+          margin-right: 8px;
+        }
+      </style>
+      <div>
+        <ha-textfield
+          id="title-input"
+          label="Titre de la carte"
+          .value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
+        </ha-textfield>
+        
+        <div class="config-row">
+          <ha-switch
+            id="navigation-switch"
+            .checked="${this.config?.show_navigation !== false}">
+          </ha-switch>
+          <label>Afficher la navigation par onglets</label>
+        </div>
+      </div>
+    `;
+
+    // Attacher les événements après le rendu
+    this.shadowRoot.getElementById('title-input')?.addEventListener('input', this._titleChanged.bind(this));
+    this.shadowRoot.getElementById('navigation-switch')?.addEventListener('change', this._navigationChanged.bind(this));
+  }
+
+  _titleChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, title: ev.target.value };
+    this.configChanged(this.config);
+  }
+
+  _navigationChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, show_navigation: ev.target.checked };
+    this.configChanged(this.config);
+  }
+}
+
+customElements.define('kids-tasks-card-editor', KidsTasksCardEditor);
 
 // Déclaration pour HACS
 window.customCards = window.customCards || [];
@@ -1784,19 +1860,19 @@ class KidsTasksChildCard extends HTMLElement {
     const taskGroups = new Map();
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités button, number, select avec préfixe KT_
-      if (entityId.startsWith('button.KT_') || 
-          entityId.startsWith('number.KT_') || 
-          entityId.startsWith('select.KT_')) {
+      // Chercher les entités button, number, select de tâches
+      if (entityId.startsWith('button.terminer_') || 
+          entityId.startsWith('number.points_') || 
+          entityId.startsWith('select.statut_')) {
         
         // Extraire le nom de base de la tâche
         let taskBaseName;
-        if (entityId.startsWith('button.KT_terminer_')) {
-          taskBaseName = entityId.replace('button.KT_terminer_', '');
-        } else if (entityId.startsWith('number.KT_points_')) {
-          taskBaseName = entityId.replace('number.KT_points_', '');
-        } else if (entityId.startsWith('select.KT_statut_')) {
-          taskBaseName = entityId.replace('select.KT_statut_', '');
+        if (entityId.startsWith('button.terminer_')) {
+          taskBaseName = entityId.replace('button.terminer_', '');
+        } else if (entityId.startsWith('number.points_')) {
+          taskBaseName = entityId.replace('number.points_', '');
+        } else if (entityId.startsWith('select.statut_')) {
+          taskBaseName = entityId.replace('select.statut_', '');
         }
         
         if (taskBaseName) {
@@ -1805,11 +1881,11 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           const entity = entities[entityId];
-          if (entityId.startsWith('button.KT_terminer_')) {
+          if (entityId.startsWith('button.terminer_')) {
             taskGroups.get(taskBaseName).button = entity;
-          } else if (entityId.startsWith('number.KT_points_')) {
+          } else if (entityId.startsWith('number.points_')) {
             taskGroups.get(taskBaseName).points = entity;
-          } else if (entityId.startsWith('select.KT_statut_')) {
+          } else if (entityId.startsWith('select.statut_')) {
             taskGroups.get(taskBaseName).status = entity;
           }
         }
@@ -2420,51 +2496,7 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 20px;">
-        <div style="margin-bottom: 16px;">
-          <label>ID de l'enfant*:</label>
-          <input type="text" class="form-control" 
-                 placeholder="child_id (ex: abc-123-def)"
-                 .value="\${this.config.child_id || ''}"
-                 .configValue="child_id"
-                 required>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>Titre de la carte:</label>
-          <input type="text" class="form-control" 
-                 placeholder="Mes Tâches"
-                 .value="\${this.config.title || ''}"
-                 .configValue="title">
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_avatar !== false}"
-                   .configValue="show_avatar"> 
-            Afficher l'avatar
-          </label>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_progress !== false}"
-                   .configValue="show_progress"> 
-            Afficher la progression
-          </label>
-        </div>
-        <div style="margin-bottom: 16px;">
-          <label>
-            <input type="checkbox" 
-                   .checked="\${this.config.show_rewards !== false}"
-                   .configValue="show_rewards"> 
-            Afficher les récompenses
-          </label>
-        </div>
-      </div>
-    `;
-    return element;
+    return document.createElement('kids-tasks-child-card-editor');
   }
 
   static getStubConfig() {
@@ -2480,6 +2512,163 @@ class KidsTasksChildCard extends HTMLElement {
 
 // Enregistrer le composant enfant
 customElements.define('kids-tasks-child-card', KidsTasksChildCard);
+
+// Éditeur de configuration pour la carte enfant
+class KidsTasksChildCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  setConfig(config) {
+    this.config = config;
+    this.render();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (hass) {
+      this.render();
+    }
+  }
+
+  configChanged(newConfig) {
+    const event = new CustomEvent('config-changed', {
+      detail: { config: newConfig },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  getChildren() {
+    if (!this._hass) return [];
+    
+    const children = [];
+    const entities = this._hass.states;
+    
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.endsWith('_points')) {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
+          children.push({
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
+            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
+          });
+        }
+      }
+    });
+    
+    return children.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  render() {
+    const children = this.getChildren();
+    
+    this.shadowRoot.innerHTML = `
+      <style>
+        .config-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .config-row label {
+          margin-left: 8px;
+        }
+        ha-textfield, ha-select {
+          width: 100%;
+          margin-bottom: 16px;
+        }
+        ha-switch {
+          margin-right: 8px;
+        }
+      </style>
+      <div>
+        <ha-select
+          id="child-select"
+          label="Enfant *"
+          .value="${this.config?.child_id || ''}"
+          required>
+          <ha-list-item value="">Sélectionner un enfant...</ha-list-item>
+          ${children.map(child => `
+            <ha-list-item value="${child.id}" ${this.config?.child_id === child.id ? 'selected' : ''}>
+              ${child.name}
+            </ha-list-item>
+          `).join('')}
+        </ha-select>
+        
+        <ha-textfield
+          id="title-input"
+          label="Titre de la carte"
+          .value="${this.config?.title || 'Mes Tâches'}">
+        </ha-textfield>
+        
+        <div class="config-row">
+          <ha-switch
+            id="avatar-switch"
+            .checked="${this.config?.show_avatar !== false}">
+          </ha-switch>
+          <label>Afficher l'avatar</label>
+        </div>
+        
+        <div class="config-row">
+          <ha-switch
+            id="progress-switch"
+            .checked="${this.config?.show_progress !== false}">
+          </ha-switch>
+          <label>Afficher la progression</label>
+        </div>
+        
+        <div class="config-row">
+          <ha-switch
+            id="rewards-switch"
+            .checked="${this.config?.show_rewards !== false}">
+          </ha-switch>
+          <label>Afficher les récompenses</label>
+        </div>
+      </div>
+    `;
+
+    // Attacher les événements après le rendu
+    this.shadowRoot.getElementById('child-select')?.addEventListener('selected', this._childChanged.bind(this));
+    this.shadowRoot.getElementById('title-input')?.addEventListener('input', this._titleChanged.bind(this));
+    this.shadowRoot.getElementById('avatar-switch')?.addEventListener('change', this._avatarChanged.bind(this));
+    this.shadowRoot.getElementById('progress-switch')?.addEventListener('change', this._progressChanged.bind(this));
+    this.shadowRoot.getElementById('rewards-switch')?.addEventListener('change', this._rewardsChanged.bind(this));
+  }
+
+  _childChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, child_id: ev.detail.value };
+    this.configChanged(this.config);
+  }
+
+  _titleChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, title: ev.target.value };
+    this.configChanged(this.config);
+  }
+
+  _avatarChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, show_avatar: ev.target.checked };
+    this.configChanged(this.config);
+  }
+
+  _progressChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, show_progress: ev.target.checked };
+    this.configChanged(this.config);
+  }
+
+  _rewardsChanged(ev) {
+    if (!this.config) return;
+    this.config = { ...this.config, show_rewards: ev.target.checked };
+    this.configChanged(this.config);
+  }
+}
+
+customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
 
 // Ajouter à la liste des cartes personnalisées
 window.customCards.push({
