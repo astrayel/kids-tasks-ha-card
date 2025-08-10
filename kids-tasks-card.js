@@ -2696,32 +2696,32 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
     
     if (childSelect) {
-      const handleChildChange = (ev) => {
-        ev.stopPropagation();
-        ev.preventDefault();
-        
-        // Récupérer la valeur sélectionnée de manière robuste
-        let selectedValue = null;
-        if (ev.target.value) {
-          selectedValue = ev.target.value;
-        } else if (ev.detail && ev.detail.value) {
-          selectedValue = ev.detail.value;
-        } else {
-          // Chercher l'item sélectionné
-          const selectedItem = childSelect.querySelector('ha-list-item[selected]');
-          if (selectedItem) {
-            selectedValue = selectedItem.getAttribute('value');
+      // Approche simplifiée sans preventDefault qui peut bloquer HA
+      // Essayer avec l'événement 'change' aussi au cas où
+      const handleChange = (ev) => {
+        // Attendre que la valeur soit vraiment mise à jour
+        setTimeout(() => {
+          const selectedValue = childSelect.value;
+          if (selectedValue && selectedValue !== this.config?.child_id) {
+            // Créer une nouvelle config au lieu de modifier l'existante
+            const newConfig = {
+              ...this.config,
+              child_id: selectedValue
+            };
+            
+            // Déclencher l'événement de manière plus compatible HA
+            const event = new CustomEvent('config-changed', {
+              detail: { config: newConfig },
+              bubbles: true,
+              composed: true
+            });
+            this.dispatchEvent(event);
           }
-        }
-        
-        if (selectedValue && selectedValue !== this.config?.child_id) {
-          this.config = { ...this.config, child_id: selectedValue };
-          this.configChanged(this.config);
-        }
+        }, 100);
       };
       
-      // Utiliser seulement l'événement le plus fiable
-      childSelect.addEventListener('selected', handleChildChange);
+      childSelect.addEventListener('selected', handleChange);
+      childSelect.addEventListener('change', handleChange);
     }
     
     if (titleInput) {
