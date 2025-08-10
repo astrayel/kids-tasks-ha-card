@@ -2394,192 +2394,156 @@ customElements.define('kids-tasks-child-card', KidsTasksChildCard);
 class KidsTasksChildCardEditor extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this._rendered = false;
+    this._config = {};
   }
 
   setConfig(config) {
-    const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
-    this.config = config;
-    if (!this._rendered || configChanged) {
-      this._rendered = false; // Permettre le re-rendu si la config a changé
-      this.render();
-      this._rendered = true;
-    }
+    this._config = Object.assign({}, config);
+    this.render();
   }
 
-  set hass(hass) {
-    this._hass = hass;
-    if (hass && !this._rendered) {
-      this.render();
-      this._rendered = true;
-    }
+  get _child_id() {
+    return this._config.child_id || '';
   }
 
-  configChanged(newConfig) {
-    const event = new CustomEvent('config-changed', {
-      detail: { config: newConfig },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+  get _title() {
+    return this._config.title || 'Mes Tâches';
   }
 
-  getChildren() {
-    if (!this._hass) return [];
-    
-    const children = [];
-    const entities = this._hass.states;
-    
-    Object.keys(entities).forEach(entityId => {
-      if (entityId.endsWith('_points')) {
-        const pointsEntity = entities[entityId];
-        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
-          children.push({
-            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
-            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
-          });
-        }
-      }
-    });
-    
-    return children.sort((a, b) => a.name.localeCompare(b.name));
+  get _show_avatar() {
+    return this._config.show_avatar !== false;
+  }
+
+  get _show_progress() {
+    return this._config.show_progress !== false;
+  }
+
+  get _show_rewards() {
+    return this._config.show_rewards !== false;
   }
 
   render() {
-    
-    const children = this.getChildren();
-    
-    this.shadowRoot.innerHTML = `
-      <style>
-        .config-row {
-          display: flex;
-          align-items: center;
-          margin-bottom: 16px;
-        }
-        .config-row label {
-          margin-left: 8px;
-          cursor: pointer;
-        }
-        ha-textfield, ha-select {
-          width: 100%;
-          margin-bottom: 16px;
-        }
-        ha-switch {
-          margin-right: 8px;
-        }
-      </style>
-      <div>
-        <ha-select
-          id="child-select"
-          label="Enfant *"
-          value="${this.config?.child_id || ''}"
-          required>
-          <ha-list-item value="">Sélectionner un enfant...</ha-list-item>
-          ${children.map(child => `
-            <ha-list-item value="${child.id}" ${this.config?.child_id === child.id ? 'selected' : ''}>
-              ${child.name}
-            </ha-list-item>
-          `).join('')}
-        </ha-select>
-        
-        <ha-textfield
-          id="title-input"
-          label="Titre de la carte"
-          value="${this.config?.title || 'Mes Tâches'}">
-        </ha-textfield>
-        
-        <div class="config-row">
-          <ha-switch
-            id="avatar-switch"
-            ${this.config?.show_avatar !== false ? 'checked' : ''}>
-          </ha-switch>
-          <label>Afficher l'avatar</label>
+    if (!this.innerHTML) {
+      this.innerHTML = `
+        <div class="card-config">
+          <div class="config-row">
+            <div class="config-item">
+              <label>ID de l'enfant (requis)</label>
+              <input 
+                id="child_id" 
+                type="text" 
+                placeholder="ID de l'enfant"
+                value="${this._child_id}"
+              >
+              <small>Récupérez l'ID depuis les logs Home Assistant</small>
+            </div>
+          </div>
+          
+          <div class="config-row">
+            <div class="config-item">
+              <label>Titre de la carte</label>
+              <input 
+                id="title" 
+                type="text" 
+                value="${this._title}"
+              >
+            </div>
+          </div>
+          
+          <div class="config-row">
+            <div class="config-item">
+              <label>
+                <input id="show_avatar" type="checkbox" ${this._show_avatar ? 'checked' : ''}>
+                Afficher l'avatar
+              </label>
+            </div>
+            <div class="config-item">
+              <label>
+                <input id="show_progress" type="checkbox" ${this._show_progress ? 'checked' : ''}>
+                Afficher la progression
+              </label>
+            </div>
+            <div class="config-item">
+              <label>
+                <input id="show_rewards" type="checkbox" ${this._show_rewards ? 'checked' : ''}>
+                Afficher les récompenses
+              </label>
+            </div>
+          </div>
         </div>
         
-        <div class="config-row">
-          <ha-switch
-            id="progress-switch"
-            ${this.config?.show_progress !== false ? 'checked' : ''}>
-          </ha-switch>
-          <label>Afficher la progression</label>
-        </div>
-        
-        <div class="config-row">
-          <ha-switch
-            id="rewards-switch"
-            ${this.config?.show_rewards !== false ? 'checked' : ''}>
-          </ha-switch>
-          <label>Afficher les récompenses</label>
-        </div>
-      </div>
-    `;
-
-    // Attacher les événements après le rendu
-    const childSelect = this.shadowRoot.getElementById('child-select');
-    const titleInput = this.shadowRoot.getElementById('title-input');
-    const avatarSwitch = this.shadowRoot.getElementById('avatar-switch');
-    const progressSwitch = this.shadowRoot.getElementById('progress-switch');
-    const rewardsSwitch = this.shadowRoot.getElementById('rewards-switch');
-    
-    if (childSelect) {
-      childSelect.addEventListener('selected', (ev) => {
-        setTimeout(() => {
-          const selectedValue = childSelect.value;
-          if (selectedValue && selectedValue !== this.config?.child_id) {
-            const newConfig = {
-              ...this.config,
-              child_id: selectedValue
-            };
-            
-            // Déclencher l'événement de configuration
-            const event = new CustomEvent('config-changed', {
-              detail: { config: newConfig },
-              bubbles: true,
-              composed: true
-            });
-            this.dispatchEvent(event);
+        <style>
+          .card-config {
+            padding: 16px;
           }
-        }, 100);
+          .config-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+          }
+          .config-item {
+            flex: 1;
+          }
+          .config-item label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: var(--primary-text-color, #000);
+          }
+          .config-item input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--divider-color, #ccc);
+            border-radius: 4px;
+            background: var(--card-background-color, #fff);
+            color: var(--primary-text-color, #000);
+          }
+          .config-item input[type="checkbox"] {
+            margin-right: 8px;
+          }
+          .config-item small {
+            display: block;
+            color: var(--secondary-text-color, #666);
+            font-size: 12px;
+            margin-top: 4px;
+          }
+        </style>
+      `;
+
+      // Ajouter les event listeners
+      this.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', this._valueChanged.bind(this));
+        input.addEventListener('input', this._valueChanged.bind(this));
       });
     }
-    
-    if (titleInput) {
-      titleInput.addEventListener('input', (ev) => {
-        if (!this.config) return;
-        this.config = { ...this.config, title: ev.target.value };
-        this.configChanged(this.config);
-      });
-    }
-    
-    if (avatarSwitch) {
-      avatarSwitch.addEventListener('change', (ev) => {
-        if (!this.config) return;
-        this.config = { ...this.config, show_avatar: ev.target.checked };
-        this.configChanged(this.config);
-      });
-    }
-    
-    if (progressSwitch) {
-      progressSwitch.addEventListener('change', (ev) => {
-        if (!this.config) return;
-        this.config = { ...this.config, show_progress: ev.target.checked };
-        this.configChanged(this.config);
-      });
-    }
-    
-    if (rewardsSwitch) {
-      rewardsSwitch.addEventListener('change', (ev) => {
-        if (!this.config) return;
-        this.config = { ...this.config, show_rewards: ev.target.checked };
-        this.configChanged(this.config);
-      });
-    }
-    
-    this._rendered = true;
+  }
+
+  _valueChanged() {
+    const child_id = this.querySelector('#child_id').value;
+    const title = this.querySelector('#title').value;
+    const show_avatar = this.querySelector('#show_avatar').checked;
+    const show_progress = this.querySelector('#show_progress').checked;
+    const show_rewards = this.querySelector('#show_rewards').checked;
+
+    this._config = {
+      child_id,
+      title,
+      show_avatar,
+      show_progress,
+      show_rewards
+    };
+
+    // Fire config-changed event
+    const event = new CustomEvent('config-changed', {
+      detail: { config: this._config },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
   }
 }
 
+// Enregistrer l'éditeur
 customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
 
 // Ajouter à la liste des cartes personnalisées
