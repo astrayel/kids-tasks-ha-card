@@ -714,139 +714,60 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    // Créer un élément de configuration personnalisé
-    class KidsTasksChildCardEditor extends HTMLElement {
-      setConfig(config) {
-        this._config = { ...config };
-        this.render();
-      }
-
-      get _child_id() {
-        return this._config?.child_id || '';
-      }
-
-      get _title() {
-        return this._config?.title || 'Mes Tâches';
-      }
-
-      get _show_avatar() {
-        return this._config?.show_avatar !== false;
-      }
-
-      get _show_progress() {
-        return this._config?.show_progress !== false;
-      }
-
-      get _show_rewards() {
-        return this._config?.show_rewards !== false;
-      }
-
-      render() {
-        if (!this.shadowRoot) {
-          this.attachShadow({ mode: 'open' });
-        }
+    // Configuration simplifiée avec sélecteur d'enfant dynamique
+    return null; // Force Home Assistant à utiliser l'éditeur YAML/manuel
+  }
+  
+  // Version alternative plus simple - essayons avec un formulaire basique
+  static getConfigElement2() {
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="padding: 20px; background: var(--card-background-color); border-radius: 8px;">
+        <h3 style="margin-top: 0; color: var(--primary-text-color);">Configuration Carte Enfant</h3>
         
-        this.shadowRoot.innerHTML = `
-          <div style="padding: 16px;">
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 4px; font-weight: bold;">
-                ID de l'enfant (requis) *
-              </label>
-              <input
-                type="text"
-                value="${this._child_id}"
-                placeholder="Coller l'ID de l'enfant ici"
-                data-config-key="child_id"
-                style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-              >
-              <small style="color: #666;">Récupérez l'ID depuis les logs de Home Assistant lors de la création d'un enfant</small>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; margin-bottom: 4px; font-weight: bold;">
-                Titre de la carte
-              </label>
-              <input
-                type="text"
-                value="${this._title}"
-                placeholder="Mes Tâches"
-                data-config-key="title"
-                style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-              >
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: flex; align-items: center;">
-                <input
-                  type="checkbox"
-                  ${this._show_avatar ? 'checked' : ''}
-                  data-config-key="show_avatar"
-                  style="margin-right: 8px;"
-                >
-                Afficher l'avatar
-              </label>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: flex; align-items: center;">
-                <input
-                  type="checkbox"
-                  ${this._show_progress ? 'checked' : ''}
-                  data-config-key="show_progress"
-                  style="margin-right: 8px;"
-                >
-                Afficher la progression
-              </label>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-              <label style="display: flex; align-items: center;">
-                <input
-                  type="checkbox"
-                  ${this._show_rewards ? 'checked' : ''}
-                  data-config-key="show_rewards"
-                  style="margin-right: 8px;"
-                >
-                Afficher les récompenses
-              </label>
-            </div>
-          </div>
-        `;
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 4px; font-weight: bold; color: var(--primary-text-color);">
+            ID de l'enfant (requis) *
+          </label>
+          <input
+            type="text"
+            name="child_id"
+            placeholder="Coller l'ID de l'enfant ici (ex: 54e2d411-05a4-4268-9645-da2a0dc517a8)"
+            style="width: 100%; padding: 8px; border: 1px solid var(--divider-color); border-radius: 4px; background: var(--card-background-color); color: var(--primary-text-color);"
+            required
+          >
+          <small style="color: var(--secondary-text-color);">Récupérez l'ID depuis les logs Home Assistant</small>
+        </div>
         
-        // Ajouter les event listeners
-        this.shadowRoot.querySelectorAll('[data-config-key]').forEach(element => {
-          const eventType = element.type === 'checkbox' ? 'change' : 'input';
-          element.addEventListener(eventType, this._valueChanged.bind(this));
-        });
-      }
-
-      _valueChanged(ev) {
-        if (!this._config) {
-          this._config = {};
-        }
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 4px; font-weight: bold; color: var(--primary-text-color);">
+            Titre de la carte
+          </label>
+          <input
+            type="text"
+            name="title"
+            value="Mes Tâches"
+            style="width: 100%; padding: 8px; border: 1px solid var(--divider-color); border-radius: 4px; background: var(--card-background-color); color: var(--primary-text-color);"
+          >
+        </div>
         
-        const key = ev.target.dataset.configKey;
-        const value = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value;
-        
-        if (this._config[key] !== value) {
-          this._config = { ...this._config, [key]: value };
-          
-          // Fire config-changed event
-          const event = new CustomEvent('config-changed', {
-            detail: { config: this._config },
-            bubbles: true,
-            composed: true
-          });
-          this.dispatchEvent(event);
-        }
-      }
-    }
-    
-    if (!customElements.get('kids-tasks-child-card-editor')) {
-      customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
-    }
-    
-    return document.createElement('kids-tasks-child-card-editor');
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px;">
+          <label style="display: flex; align-items: center; color: var(--primary-text-color);">
+            <input type="checkbox" name="show_avatar" checked style="margin-right: 8px;">
+            Afficher l'avatar
+          </label>
+          <label style="display: flex; align-items: center; color: var(--primary-text-color);">
+            <input type="checkbox" name="show_progress" checked style="margin-right: 8px;">
+            Afficher la progression
+          </label>
+          <label style="display: flex; align-items: center; color: var(--primary-text-color);">
+            <input type="checkbox" name="show_rewards" checked style="margin-right: 8px;">
+            Afficher les récompenses
+          </label>
+        </div>
+      </div>
+    `;
+    return element;
   }
 
   static getStubConfig() {
