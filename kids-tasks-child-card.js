@@ -714,48 +714,139 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return {
-      type: 'form',
-      schema: [
-        {
-          name: 'child_id',
-          required: true,
-          selector: {
-            text: {
-              placeholder: 'ID de l\'enfant (ex: abc-123-def)'
-            }
-          }
-        },
-        {
-          name: 'title', 
-          default: 'Mes Tâches',
-          selector: {
-            text: {}
-          }
-        },
-        {
-          name: 'show_avatar',
-          default: true,
-          selector: {
-            boolean: {}
-          }
-        },
-        {
-          name: 'show_progress',
-          default: true,
-          selector: {
-            boolean: {}
-          }
-        },
-        {
-          name: 'show_rewards',
-          default: true,
-          selector: {
-            boolean: {}
-          }
+    // Créer un élément de configuration personnalisé
+    class KidsTasksChildCardEditor extends HTMLElement {
+      setConfig(config) {
+        this._config = { ...config };
+        this.render();
+      }
+
+      get _child_id() {
+        return this._config?.child_id || '';
+      }
+
+      get _title() {
+        return this._config?.title || 'Mes Tâches';
+      }
+
+      get _show_avatar() {
+        return this._config?.show_avatar !== false;
+      }
+
+      get _show_progress() {
+        return this._config?.show_progress !== false;
+      }
+
+      get _show_rewards() {
+        return this._config?.show_rewards !== false;
+      }
+
+      render() {
+        if (!this.shadowRoot) {
+          this.attachShadow({ mode: 'open' });
         }
-      ]
-    };
+        
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 16px;">
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 4px; font-weight: bold;">
+                ID de l'enfant (requis) *
+              </label>
+              <input
+                type="text"
+                value="${this._child_id}"
+                placeholder="Coller l'ID de l'enfant ici"
+                data-config-key="child_id"
+                style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+              >
+              <small style="color: #666;">Récupérez l'ID depuis les logs de Home Assistant lors de la création d'un enfant</small>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; margin-bottom: 4px; font-weight: bold;">
+                Titre de la carte
+              </label>
+              <input
+                type="text"
+                value="${this._title}"
+                placeholder="Mes Tâches"
+                data-config-key="title"
+                style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+              >
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center;">
+                <input
+                  type="checkbox"
+                  ${this._show_avatar ? 'checked' : ''}
+                  data-config-key="show_avatar"
+                  style="margin-right: 8px;"
+                >
+                Afficher l'avatar
+              </label>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center;">
+                <input
+                  type="checkbox"
+                  ${this._show_progress ? 'checked' : ''}
+                  data-config-key="show_progress"
+                  style="margin-right: 8px;"
+                >
+                Afficher la progression
+              </label>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center;">
+                <input
+                  type="checkbox"
+                  ${this._show_rewards ? 'checked' : ''}
+                  data-config-key="show_rewards"
+                  style="margin-right: 8px;"
+                >
+                Afficher les récompenses
+              </label>
+            </div>
+          </div>
+        `;
+        
+        // Ajouter les event listeners
+        this.shadowRoot.querySelectorAll('[data-config-key]').forEach(element => {
+          const eventType = element.type === 'checkbox' ? 'change' : 'input';
+          element.addEventListener(eventType, this._valueChanged.bind(this));
+        });
+      }
+
+      _valueChanged(ev) {
+        if (!this._config) {
+          this._config = {};
+        }
+        
+        const key = ev.target.dataset.configKey;
+        const value = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value;
+        
+        if (this._config[key] !== value) {
+          this._config = { ...this._config, [key]: value };
+          
+          // Fire config-changed event
+          const event = new CustomEvent('config-changed', {
+            detail: { config: this._config },
+            bubbles: true,
+            composed: true
+          });
+          this.dispatchEvent(event);
+        }
+      }
+    }
+    
+    if (!customElements.get('kids-tasks-child-card-editor')) {
+      customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
+    }
+    
+    return document.createElement('kids-tasks-child-card-editor');
   }
 
   static getStubConfig() {
