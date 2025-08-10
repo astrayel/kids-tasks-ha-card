@@ -162,12 +162,14 @@ class KidsTasksCard extends HTMLElement {
     const serviceData = {
       name,
       avatar,
-      person_entity_id,
       avatar_type,
-      avatar_data,
-      card_gradient_start,
-      card_gradient_end
     };
+
+    // Ajouter seulement les champs non-null
+    if (person_entity_id) serviceData.person_entity_id = person_entity_id;
+    if (avatar_data) serviceData.avatar_data = avatar_data;
+    if (card_gradient_start) serviceData.card_gradient_start = card_gradient_start;
+    if (card_gradient_end) serviceData.card_gradient_end = card_gradient_end;
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
@@ -199,6 +201,10 @@ class KidsTasksCard extends HTMLElement {
     const assigned_child_id = form.querySelector('[name="assigned_child_id"]').value || null;
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
+    // Récupérer les jours sélectionnés pour les tâches journalières
+    const weeklyDaysCheckboxes = form.querySelectorAll('[name="weekly_days"]:checked');
+    const weekly_days = Array.from(weeklyDaysCheckboxes).map(cb => cb.value);
+    
     const serviceData = {
       name,
       description,
@@ -208,6 +214,11 @@ class KidsTasksCard extends HTMLElement {
       assigned_child_id,
       validation_required
     };
+    
+    // Ajouter weekly_days seulement si des jours sont sélectionnés
+    if (weekly_days.length > 0) {
+      serviceData.weekly_days = weekly_days;
+    }
 
     if (isEdit) {
       const taskIdInput = form.querySelector('[name="task_id"]');
@@ -355,6 +366,29 @@ class KidsTasksCard extends HTMLElement {
         .form-row > * {
           flex: 1;
           margin-bottom: 0;
+        }
+        
+        /* Styles pour la sélection des jours de la semaine */
+        .weekly-days-section {
+          margin-bottom: 20px;
+          padding: 16px;
+          border: 1px solid var(--divider-color);
+          border-radius: 8px;
+          background: var(--secondary-background-color, #fafafa);
+        }
+        
+        .days-selector {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 8px;
+        }
+        
+        .days-selector ha-formfield {
+          margin-bottom: 0;
+          flex: 0 0 auto;
+          min-width: 60px;
+          text-align: center;
         }
         
         .dialog-actions {
@@ -520,19 +554,17 @@ class KidsTasksCard extends HTMLElement {
         </div>
 
         <div class="form-row">
-          <ha-textfield
+          <ha-input-color-picker
             label="Couleur dégradé début"
             name="card_gradient_start"
-            value="${isEdit ? child.card_gradient_start || '' : ''}"
-            placeholder="#3f51b5">
-          </ha-textfield>
+            value="${isEdit ? child.card_gradient_start || '#3f51b5' : '#3f51b5'}">
+          </ha-input-color-picker>
           
-          <ha-textfield
+          <ha-input-color-picker
             label="Couleur dégradé fin"
             name="card_gradient_end"
-            value="${isEdit ? child.card_gradient_end || '' : ''}"
-            placeholder="#ff4081">
-          </ha-textfield>
+            value="${isEdit ? child.card_gradient_end || '#ff4081' : '#ff4081'}">
+          </ha-input-color-picker>
         </div>
 
         ${!isEdit ? `
@@ -552,17 +584,38 @@ class KidsTasksCard extends HTMLElement {
         </div>
       </form>
 
-      <script>
-        // Gérer le changement de type d'avatar
-        const avatarTypeSelect = document.querySelector('ha-select[name="avatar_type"]');
-        const avatarConfig = document.getElementById('avatar-config');
-        
-        avatarTypeSelect.addEventListener('selected', (e) => {
-          const selectedType = e.target.value;
+    `;
+
+    const dialog = this.showModal(content, isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant');
+    
+    // Attendre que le modal soit rendu et ajouter les event listeners
+    setTimeout(() => {
+      // Gérer le changement de type d'avatar
+      const avatarTypeSelect = dialog.querySelector('ha-select[name="avatar_type"]');
+      const avatarConfig = dialog.querySelector('#avatar-config');
+      
+      if (avatarTypeSelect && avatarConfig) {
+        // Fonction pour mettre à jour l'affichage des sections d'avatar
+        const updateAvatarDisplay = (selectedType) => {
           avatarConfig.querySelectorAll('[id$="-config"]').forEach(div => {
             div.style.display = 'none';
           });
-          document.getElementById(selectedType + '-config').style.display = 'block';
+          const targetDiv = dialog.querySelector('#' + selectedType + '-config');
+          if (targetDiv) {
+            targetDiv.style.display = 'block';
+          }
+        };
+        
+        // Event listener pour ha-select
+        avatarTypeSelect.addEventListener('selected', (e) => {
+          const selectedType = e.detail.value || e.target.value;
+          updateAvatarDisplay(selectedType);
+        });
+        
+        // Event listener alternatif pour change
+        avatarTypeSelect.addEventListener('change', (e) => {
+          const selectedType = e.target.value;
+          updateAvatarDisplay(selectedType);
         });
 
         // Gérer la sélection d'emoji
@@ -570,13 +623,14 @@ class KidsTasksCard extends HTMLElement {
           btn.addEventListener('click', () => {
             avatarConfig.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            document.querySelector('input[name="avatar"]').value = btn.dataset.avatar;
+            const avatarInput = dialog.querySelector('input[name="avatar"]');
+            if (avatarInput) {
+              avatarInput.value = btn.dataset.avatar;
+            }
           });
         });
-      </script>
-    `;
-
-    this.showModal(content, isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant');
+      }
+    }, 100);
   }
 
   showTaskForm(taskId = null) {
@@ -655,6 +709,29 @@ class KidsTasksCard extends HTMLElement {
           </ha-select>
         </div>
         
+        <!-- Sélection des jours de la semaine pour les tâches journalières -->
+        <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
+          <label class="form-label">Jours de la semaine (optionnel - tous les jours si aucun sélectionné)</label>
+          <div class="days-selector">
+            ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
+              const labels = {
+                'mon': 'L', 'tue': 'M', 'wed': 'M', 'thu': 'J', 
+                'fri': 'V', 'sat': 'S', 'sun': 'D'
+              };
+              const isSelected = isEdit && task.weekly_days && task.weekly_days.includes(day);
+              return `
+                <ha-formfield label="${labels[day]}">
+                  <ha-checkbox
+                    name="weekly_days"
+                    value="${day}"
+                    ${isSelected ? 'checked' : ''}>
+                  </ha-checkbox>
+                </ha-formfield>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        
         <ha-formfield label="Validation parentale requise">
           <ha-checkbox 
             name="validation_required"
@@ -687,7 +764,31 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche');
+    
+    // Ajouter les event listeners après affichage du modal
+    setTimeout(() => {
+      const frequencySelect = dialog.querySelector('[name="frequency"]');
+      const weeklyDaysSection = dialog.querySelector('.weekly-days-section');
+      
+      if (frequencySelect && weeklyDaysSection) {
+        // Fonction pour afficher/masquer la section des jours
+        const toggleWeeklyDays = (frequency) => {
+          weeklyDaysSection.style.display = frequency === 'daily' ? 'block' : 'none';
+        };
+        
+        // Event listeners pour ha-select
+        frequencySelect.addEventListener('selected', (e) => {
+          const selectedFreq = e.detail.value || e.target.value;
+          toggleWeeklyDays(selectedFreq);
+        });
+        
+        frequencySelect.addEventListener('change', (e) => {
+          const selectedFreq = e.target.value;
+          toggleWeeklyDays(selectedFreq);
+        });
+      }
+    }, 100);
   }
 
   showRewardForm(rewardId = null) {
@@ -1818,26 +1919,23 @@ class KidsTasksCardEditor extends HTMLElement {
           <label>Afficher la navigation par onglets</label>
         </div>
 
-        <ha-textfield
+        <ha-input-color-picker
           id="tab-color-input"
           label="Couleur des onglets"
-          value="${this.config?.tab_color || ''}"
-          placeholder="#3f51b5">
-        </ha-textfield>
+          value="${this.config?.tab_color || '#3f51b5'}">
+        </ha-input-color-picker>
 
-        <ha-textfield
+        <ha-input-color-picker
           id="dashboard-primary-input"
           label="Couleur primaire dashboard"
-          value="${this.config?.dashboard_primary_color || ''}"
-          placeholder="#2196f3">
-        </ha-textfield>
+          value="${this.config?.dashboard_primary_color || '#2196f3'}">
+        </ha-input-color-picker>
 
-        <ha-textfield
+        <ha-input-color-picker
           id="dashboard-secondary-input"
           label="Couleur secondaire dashboard"
-          value="${this.config?.dashboard_secondary_color || ''}"
-          placeholder="#ff4081">
-        </ha-textfield>
+          value="${this.config?.dashboard_secondary_color || '#ff4081'}">
+        </ha-input-color-picker>
       </div>
     `;
 
