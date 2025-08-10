@@ -1906,69 +1906,25 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
-    // Utiliser la même logique que la carte principale
-    const taskGroups = new Map();
-    
-    Object.keys(entities).forEach(entityId => {
-      // Chercher les entités button, number, select de tâches
-      if (entityId.startsWith('button.terminer_') || 
-          entityId.startsWith('number.points_') || 
-          entityId.startsWith('select.statut_')) {
-        
-        // Extraire le nom de base de la tâche
-        let taskBaseName;
-        if (entityId.startsWith('button.terminer_')) {
-          taskBaseName = entityId.replace('button.terminer_', '');
-        } else if (entityId.startsWith('number.points_')) {
-          taskBaseName = entityId.replace('number.points_', '');
-        } else if (entityId.startsWith('select.statut_')) {
-          taskBaseName = entityId.replace('select.statut_', '');
-        }
-        
-        if (taskBaseName) {
-          if (!taskGroups.has(taskBaseName)) {
-            taskGroups.set(taskBaseName, {});
-          }
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les nouveaux capteurs TaskSensor
+    Object.keys(entities).forEach(entityId => { 
+      if (entityId.startsWith('sensor.kids_tasks_task_')) {
+        const taskEntity = entities[entityId];
+        if (taskEntity && 
+            taskEntity.attributes && 
+            taskEntity.attributes.assigned_child_id === this.config.child_id) {
           
-          const entity = entities[entityId];
-          if (entityId.startsWith('button.terminer_')) {
-            taskGroups.get(taskBaseName).button = entity;
-          } else if (entityId.startsWith('number.points_')) {
-            taskGroups.get(taskBaseName).points = entity;
-          } else if (entityId.startsWith('select.statut_')) {
-            taskGroups.get(taskBaseName).status = entity;
-          }
+          const attrs = taskEntity.attributes;
+          tasks.push({
+            id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
+            name: attrs.task_name || attrs.friendly_name || 'Tâche',
+            description: attrs.description || '',
+            category: attrs.category || 'other',
+            points: parseInt(attrs.points) || 10,
+            status: taskEntity.state || 'todo',
+            validation_required: attrs.validation_required !== false
+          });
         }
-      }
-    });
-    
-    // Créer les tâches assignées à cet enfant
-    taskGroups.forEach((group, taskBaseName) => {
-      if (group.status && group.points && 
-          group.status.attributes.assigned_child_id === this.config.child_id) {
-        
-        const statusEntity = group.status;
-        const pointsEntity = group.points;
-        
-        // Convertir le statut français en statut système
-        const statusMapping = {
-          'À faire': 'todo',
-          'En cours': 'in_progress', 
-          'Terminé': 'completed',
-          'En attente validation': 'pending_validation',
-          'Validé': 'validated',
-          'Échoué': 'failed'
-        };
-        
-        tasks.push({
-          id: taskBaseName,
-          name: statusEntity.attributes.friendly_name?.replace('Statut: ', '') || taskBaseName.replace(/_/g, ' '),
-          description: statusEntity.attributes.description || '',
-          category: statusEntity.attributes.category || 'other',
-          points: parseInt(pointsEntity.state) || 10,
-          status: statusMapping[statusEntity.state] || 'todo',
-          validation_required: statusEntity.attributes.validation_required !== false
-        });
       }
     });
     
@@ -1986,70 +1942,28 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
-    // Utiliser la même logique que la carte principale pour les récompenses KT_
-    const rewardGroups = new Map();
-    
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les nouveaux capteurs RewardSensor
     Object.keys(entities).forEach(entityId => {
-      // Chercher les entités de récompenses sans préfixe
-      if (entityId.startsWith('button.echanger_') || 
-          entityId.startsWith('number.cout_') || 
-          entityId.startsWith('switch.active_reward_') ||
-          entityId.startsWith('number.quantite_')) {
-        
-        // Extraire le nom de base de la récompense
-        let rewardBaseName;
-        if (entityId.startsWith('button.echanger_')) {
-          rewardBaseName = entityId.replace('button.echanger_', '');
-        } else if (entityId.startsWith('number.cout_')) {
-          rewardBaseName = entityId.replace('number.cout_', '');
-        } else if (entityId.startsWith('switch.active_reward_')) {
-          rewardBaseName = entityId.replace('switch.active_reward_', '');
-        } else if (entityId.startsWith('number.quantite_')) {
-          rewardBaseName = entityId.replace('number.quantite_', '');
-        }
-        
-        if (rewardBaseName) {
-          if (!rewardGroups.has(rewardBaseName)) {
-            rewardGroups.set(rewardBaseName, {});
-          }
+      if (entityId.startsWith('sensor.kids_tasks_reward_')) {
+        const rewardEntity = entities[entityId];
+        if (rewardEntity && rewardEntity.attributes) {
+          const attrs = rewardEntity.attributes;
           
-          const entity = entities[entityId];
-          if (entityId.startsWith('button.echanger_')) {
-            rewardGroups.get(rewardBaseName).button = entity;
-          } else if (entityId.startsWith('number.cout_')) {
-            rewardGroups.get(rewardBaseName).cost = entity;
-          } else if (entityId.startsWith('switch.active_reward_')) {
-            rewardGroups.get(rewardBaseName).active = entity;
-          } else if (entityId.startsWith('number.quantite_')) {
-            rewardGroups.get(rewardBaseName).quantity = entity;
-          }
+          rewards.push({
+            id: attrs.reward_id || entityId.replace('sensor.kids_tasks_reward_', ''),
+            name: attrs.reward_name || attrs.friendly_name || 'Récompense',
+            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
+            category: attrs.category || 'fun',
+            description: attrs.description || '',
+            active: attrs.active !== false,
+            remaining_quantity: attrs.remaining_quantity,
+            is_available: attrs.is_available !== false
+          });
         }
       }
     });
     
-    // Créer les récompenses à partir des groupes
-    rewardGroups.forEach((group, rewardBaseName) => {
-      if (group.cost) {
-        const costEntity = group.cost;
-        const activeEntity = group.active;
-        const quantityEntity = group.quantity;
-        const buttonEntity = group.button;
-        
-        rewards.push({
-          id: rewardBaseName,
-          name: costEntity.attributes.friendly_name?.replace('Coût: ', '') || 
-                buttonEntity?.attributes.friendly_name?.replace('Échanger: ', '') || 
-                rewardBaseName.replace(/_/g, ' '),
-          description: costEntity.attributes.description || '',
-          category: costEntity.attributes.category || 'fun',
-          cost: parseInt(costEntity.state) || 50,
-          active: activeEntity ? activeEntity.state === 'on' : true,
-          remaining_quantity: quantityEntity ? parseInt(quantityEntity.state) : null
-        });
-      }
-    });
-    
-    return rewards.filter(r => r.active).sort((a, b) => a.cost - b.cost);
+    return rewards.filter(r => r.active && r.is_available).sort((a, b) => a.cost - b.cost);
   }
 
   showNotification(message, type = 'info') {
