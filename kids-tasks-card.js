@@ -16,12 +16,57 @@ class KidsTasksCard extends HTMLElement {
   }
 
   set hass(hass) {
+    const oldHass = this._hass;
     this._hass = hass;
     if (!this._initialized && hass) {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
+      this.render();
+    } else if (hass && this.shouldUpdate(oldHass, hass)) {
+      this.render();
     }
-    this.render();
+  }
+
+  shouldUpdate(oldHass, newHass) {
+    if (!oldHass) return true;
+    
+    // Vérifier si les entités enfants ont changé
+    const oldChildren = this.getChildrenFromHass(oldHass);
+    const newChildren = this.getChildrenFromHass(newHass);
+    
+    if (oldChildren.length !== newChildren.length) return true;
+    
+    // Vérifier si les données des enfants ont changé
+    for (let i = 0; i < oldChildren.length; i++) {
+      const oldChild = oldChildren[i];
+      const newChild = newChildren[i];
+      if (JSON.stringify(oldChild) !== JSON.stringify(newChild)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  getChildrenFromHass(hass) {
+    const children = [];
+    const entities = hass.states;
+    
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.endsWith('_points') || entityId.startsWith('sensor.KT_')) {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && 
+            (pointsEntity.attributes.type === 'child' || entityId.startsWith('sensor.KT_'))) {
+          children.push({
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
+            state: pointsEntity.state,
+            attributes: pointsEntity.attributes
+          });
+        }
+      }
+    });
+    
+    return children;
   }
 
   connectedCallback() {
@@ -204,7 +249,15 @@ class KidsTasksCard extends HTMLElement {
         console.log('update_child result:', success);
         if (success) {
           console.log('Closing dialog...');
-          this.closeModal(dialog);
+          // Délai pour s'assurer que la notification est affichée avant fermeture
+          setTimeout(() => {
+            if (dialog && dialog.close) {
+              console.log('Dialog still exists, closing...');
+              this.closeModal(dialog);
+            } else {
+              console.log('Dialog no longer exists or cannot be closed');
+            }
+          }, 500);
         }
       } else {
         console.log('Calling add_child with:', serviceData);
@@ -212,7 +265,15 @@ class KidsTasksCard extends HTMLElement {
         console.log('add_child result:', success);
         if (success) {
           console.log('Closing dialog...');
-          this.closeModal(dialog);
+          // Délai pour s'assurer que la notification est affichée avant fermeture
+          setTimeout(() => {
+            if (dialog && dialog.close) {
+              console.log('Dialog still exists, closing...');
+              this.closeModal(dialog);
+            } else {
+              console.log('Dialog no longer exists or cannot be closed');
+            }
+          }, 500);
         }
       }
     } catch (error) {
@@ -1707,12 +1768,17 @@ class KidsTasksCard extends HTMLElement {
         .child-card .task-actions {
           position: absolute;
           right: 16px;
-          top: 50%;
-          transform: translateY(-50%);
+          bottom: 16px;
           margin-top: 0;
-          flex-direction: row;
-          gap: 8px;
-          min-width: 160px;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 80px;
+        }
+        
+        .child-card .task-actions .btn {
+          padding: 4px 8px;
+          font-size: 0.8em;
+          min-width: 70px;
         }
         
         .task-status {
