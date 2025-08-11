@@ -1272,7 +1272,14 @@ class KidsTasksCard extends HTMLElement {
       ${children.length > 0 ? `
         <div class="section">
           <h2>Enfants</h2>
-          ${children.map(child => this.renderChildCard(child)).join('')}
+          ${children.map(child => {
+            try {
+              return this.renderChildCard(child);
+            } catch (error) {
+              console.error('Erreur lors du rendu d\'un enfant:', error, child);
+              return '<div class="child-card"><div class="error">Erreur rendu enfant</div></div>';
+            }
+          }).join('')}
         </div>
       ` : `
         <div class="empty-state">
@@ -1301,7 +1308,14 @@ class KidsTasksCard extends HTMLElement {
         </h2>
         ${children.length > 0 ? `
           <div class="grid grid-2">
-            ${children.map(child => this.renderChildCard(child, true)).join('')}
+            ${children.map(child => {
+              try {
+                return this.renderChildCard(child, true);
+              } catch (error) {
+                console.error('Erreur lors du rendu d\'un enfant:', error, child);
+                return '<div class="child-card"><div class="error">Erreur rendu enfant</div></div>';
+              }
+            }).join('')}
           </div>
         ` : `
           <div class="empty-state">
@@ -1358,24 +1372,29 @@ class KidsTasksCard extends HTMLElement {
   }
 
   renderChildCard(child, showActions = false) {
+    // Protection contre les enfants undefined/null
+    if (!child) {
+      return '<div class="child-card"><div class="error">Erreur: enfant non trouvé</div></div>';
+    }
+    
     const tasks = this.getTasks();
     const completedToday = this.getChildCompletedToday(child.id, tasks).length;
     const todayTasks = this.getChildTasksToday(child.id, tasks).length;
 
     return `
       <div class="child-card">
-        <div class="child-avatar">${this.getEffectiveAvatar(child, 'large')}</div>
+        <div class="child-avatar">${this.getEffectiveAvatar(child) || child.avatar || '👶'}</div>
         <div class="child-info">
-          <div class="child-name">${child.name}</div>
+          <div class="child-name">${child.name || 'Enfant sans nom'}</div>
           <div class="child-stats">
-            ${child.points} points • Niveau ${child.level}<br>
+            ${child.points || 0} points • Niveau ${child.level || 1}<br>
             ${completedToday}/${todayTasks} tâches aujourd'hui
             <div class="progress-bar">
               <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
             </div>
           </div>
         </div>
-        <div class="level-badge">Niveau ${child.level}</div>
+        <div class="level-badge">Niveau ${child.level || 1}</div>
         ${showActions ? `
           <div class="task-actions">
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id}">Modifier</button>
@@ -2101,20 +2120,28 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Méthode pour résoudre l'avatar effectif
   getEffectiveAvatar(child, context = 'normal') {
-    if (child.avatar_type === 'emoji') {
+    // Gérer les cas où child peut être undefined ou null
+    if (!child) {
+      return '👶';
+    }
+    
+    // Si avatar_type n'existe pas, utiliser le comportement par défaut (emoji)
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
       return child.avatar || '👶';
-    } else if (child.avatar_type === 'url' && child.avatar_data) {
+    } else if (avatarType === 'url' && child.avatar_data) {
       // Pour les URLs, on peut optimiser l'affichage selon le contexte
       const size = context === 'large' ? '4em' : '3em';
-      return `<img src="${child.avatar_data}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (child.avatar_type === 'inline' && child.avatar_data) {
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'inline' && child.avatar_data) {
       const size = context === 'large' ? '4em' : '3em';
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (child.avatar_type === 'person_entity' && child.person_entity_id && this._hass) {
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
-      if (personEntity && personEntity.attributes.entity_picture) {
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
         const size = context === 'large' ? '4em' : '3em';
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
       }
     }
     return child.avatar || '👶';
