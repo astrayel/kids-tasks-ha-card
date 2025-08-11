@@ -1432,14 +1432,8 @@ class KidsTasksCard extends HTMLElement {
         console.warn('Erreur lors du calcul des tâches:', taskError);
       }
       
-      // Utiliser getEffectiveAvatar avec protection
-      let avatar = '👶';
-      try {
-        avatar = this.getEffectiveAvatar(child, 'large');
-      } catch (avatarError) {
-        console.warn('Erreur avatar:', avatarError);
-        avatar = child.avatar || '👶';
-      }
+      // Utiliser getEffectiveAvatar
+      const avatar = this.getEffectiveAvatar(child, 'large');
       
       return `
         <div class="child-card">
@@ -1949,6 +1943,32 @@ class KidsTasksCard extends HTMLElement {
       title: "Gestionnaire de Tâches Enfants",
       show_navigation: true
     };
+  }
+
+  // Méthode pour résoudre l'avatar effectif
+  getEffectiveAvatar(child, context = 'normal') {
+    if (!child) {
+      return '👶';
+    }
+    
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
+      return child.avatar || '👶';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'inline' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        const size = context === 'large' ? '4em' : '3em';
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+      }
+    }
+    return child.avatar || '👶';
   }
 }
 
