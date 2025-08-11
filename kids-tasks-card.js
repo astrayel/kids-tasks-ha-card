@@ -1770,15 +1770,15 @@ class KidsTasksCard extends HTMLElement {
           right: 16px;
           bottom: 16px;
           margin-top: 0;
-          flex-direction: column;
-          gap: 4px;
-          min-width: 80px;
+          flex-direction: row;
+          gap: 8px;
+          min-width: 140px;
         }
         
         .child-card .task-actions .btn {
-          padding: 4px 8px;
-          font-size: 0.8em;
-          min-width: 70px;
+          padding: 6px 12px;
+          font-size: 0.85em;
+          min-width: 65px;
         }
         
         .task-status {
@@ -2218,12 +2218,15 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   set hass(hass) {
+    const oldHass = this._hass;
     this._hass = hass;
     if (!this._initialized && hass) {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
+      this.render();
+    } else if (hass && this.shouldUpdate(oldHass, hass)) {
+      this.render();
     }
-    this.render();
   }
 
   handleClick(event) {
@@ -2451,6 +2454,62 @@ class KidsTasksChildCard extends HTMLElement {
       'validated': 'Validé ✅'
     };
     return labels[status] || status;
+  }
+
+  shouldUpdate(oldHass, newHass) {
+    if (!oldHass) return true;
+    
+    // Vérifier si les données de l'enfant ont changé
+    const oldChild = this.getChildFromHass(oldHass);
+    const newChild = this.getChildFromHass(newHass);
+    
+    if (JSON.stringify(oldChild) !== JSON.stringify(newChild)) {
+      return true;
+    }
+    
+    // Vérifier si les tâches ont changé
+    const oldTasks = this.getTasksFromHass(oldHass);
+    const newTasks = this.getTasksFromHass(newHass);
+    
+    if (JSON.stringify(oldTasks) !== JSON.stringify(newTasks)) {
+      return true;
+    }
+    
+    // Vérifier si les récompenses ont changé
+    const oldRewards = this.getRewardsFromHass(oldHass);
+    const newRewards = this.getRewardsFromHass(newHass);
+    
+    if (JSON.stringify(oldRewards) !== JSON.stringify(newRewards)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  getChildFromHass(hass) {
+    if (!hass) return null;
+    const childEntity = hass.states[`sensor.kids_tasks_child_${this.config.child_id}`];
+    return childEntity ? childEntity.attributes : null;
+  }
+
+  getTasksFromHass(hass) {
+    if (!hass) return [];
+    return Object.values(hass.states)
+      .filter(entity => 
+        entity.entity_id.startsWith('sensor.kids_tasks_task_') &&
+        entity.attributes &&
+        entity.attributes.child_id === this.config.child_id
+      )
+      .map(entity => entity.attributes);
+  }
+
+  getRewardsFromHass(hass) {
+    if (!hass || !this.config.show_rewards) return [];
+    return Object.values(hass.states)
+      .filter(entity => 
+        entity.entity_id.startsWith('sensor.kids_tasks_reward_')
+      )
+      .map(entity => entity.attributes);
   }
 
   render() {
