@@ -29,20 +29,31 @@ class KidsTasksCard extends HTMLElement {
   }
 
   render() {
-    if (!this._hass) {
-      this.shadowRoot.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
+    try {
+      if (!this._hass) {
+        this.shadowRoot.innerHTML = '<div class="loading">Chargement...</div>';
+        return;
+      }
 
-    this.shadowRoot.innerHTML = `
-      ${this.getStyles()}
-      <div class="kids-tasks-manager">
-        ${this.showNavigation ? this.getNavigation() : ''}
-        <div class="content">
-          ${this.getCurrentView()}
+      this.shadowRoot.innerHTML = `
+        ${this.getStyles()}
+        <div class="kids-tasks-manager">
+          ${this.showNavigation ? this.getNavigation() : ''}
+          <div class="content">
+            ${this.getCurrentView()}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } catch (error) {
+      console.error('Erreur lors du rendu de la carte:', error);
+      this.shadowRoot.innerHTML = `
+        <div class="error-state" style="padding: 20px; color: red; border: 1px solid red; border-radius: 4px; margin: 10px;">
+          <h3>Erreur de rendu de la carte</h3>
+          <p>Veuillez vérifier la console pour plus de détails.</p>
+          <button onclick="this.closest('kids-tasks-card').render()" style="margin-top: 10px;">Réessayer</button>
+        </div>
+      `;
+    }
   }
 
   handleClick(event) {
@@ -2118,32 +2129,14 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
-  // Méthode pour résoudre l'avatar effectif
+  // Méthode pour résoudre l'avatar effectif - Version simplifiée pour éviter conflits HA
   getEffectiveAvatar(child, context = 'normal') {
-    // Gérer les cas où child peut être undefined ou null
+    // Temporairement, retourner seulement des emojis pour éviter les conflits HTML
     if (!child) {
       return '👶';
     }
     
-    // Si avatar_type n'existe pas, utiliser le comportement par défaut (emoji)
-    const avatarType = child.avatar_type || 'emoji';
-    
-    if (avatarType === 'emoji') {
-      return child.avatar || '👶';
-    } else if (avatarType === 'url' && child.avatar_data) {
-      // Pour les URLs, on peut optimiser l'affichage selon le contexte
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'inline' && child.avatar_data) {
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
-      const personEntity = this._hass.states[child.person_entity_id];
-      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
-        const size = context === 'large' ? '4em' : '3em';
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-      }
-    }
+    // Pour le moment, toujours retourner l'emoji ou fallback
     return child.avatar || '👶';
   }
 
