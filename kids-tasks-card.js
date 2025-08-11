@@ -1283,12 +1283,15 @@ class KidsTasksCard extends HTMLElement {
       ${children.length > 0 ? `
         <div class="section">
           <h2>Enfants</h2>
-          ${children.map(child => {
+          ${children.map((child, index) => {
             try {
-              return this.renderChildCard(child);
+              console.log(`Rendu enfant ${index}:`, child);
+              const result = this.renderChildCard(child);
+              console.log(`Rendu enfant ${index} réussi`);
+              return result;
             } catch (error) {
-              console.error('Erreur lors du rendu d\'un enfant:', error, child);
-              return '<div class="child-card"><div class="error">Erreur rendu enfant</div></div>';
+              console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
+              return `<div class="child-card"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
             }
           }).join('')}
         </div>
@@ -1319,12 +1322,15 @@ class KidsTasksCard extends HTMLElement {
         </h2>
         ${children.length > 0 ? `
           <div class="grid grid-2">
-            ${children.map(child => {
+            ${children.map((child, index) => {
               try {
-                return this.renderChildCard(child, true);
+                console.log(`Rendu enfant gestion ${index}:`, child);
+                const result = this.renderChildCard(child, true);
+                console.log(`Rendu enfant gestion ${index} réussi`);
+                return result;
               } catch (error) {
-                console.error('Erreur lors du rendu d\'un enfant:', error, child);
-                return '<div class="child-card"><div class="error">Erreur rendu enfant</div></div>';
+                console.error(`Erreur lors du rendu de l'enfant gestion ${index}:`, error, child);
+                return `<div class="child-card"><div class="error">Erreur enfant gestion ${index}: ${error.message}</div></div>`;
               }
             }).join('')}
           </div>
@@ -1388,32 +1394,51 @@ class KidsTasksCard extends HTMLElement {
       return '<div class="child-card"><div class="error">Erreur: enfant non trouvé</div></div>';
     }
     
-    const tasks = this.getTasks();
-    const completedToday = this.getChildCompletedToday(child.id, tasks).length;
-    const todayTasks = this.getChildTasksToday(child.id, tasks).length;
-
-    return `
-      <div class="child-card">
-        <div class="child-avatar">${this.getEffectiveAvatar(child) || child.avatar || '👶'}</div>
-        <div class="child-info">
-          <div class="child-name">${child.name || 'Enfant sans nom'}</div>
-          <div class="child-stats">
-            ${child.points || 0} points • Niveau ${child.level || 1}<br>
-            ${completedToday}/${todayTasks} tâches aujourd'hui
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
+    // Version ultra-simplifiée pour déboguer
+    try {
+      const avatar = child.avatar || '👶';
+      const name = child.name || 'Enfant sans nom';
+      const points = child.points || 0;
+      const level = child.level || 1;
+      
+      // Calculer les tâches de manière sûre
+      let completedToday = 0;
+      let todayTasks = 0;
+      
+      try {
+        const tasks = this.getTasks();
+        completedToday = this.getChildCompletedToday(child.id, tasks).length;
+        todayTasks = this.getChildTasksToday(child.id, tasks).length;
+      } catch (taskError) {
+        console.warn('Erreur lors du calcul des tâches:', taskError);
+      }
+      
+      return `
+        <div class="child-card">
+          <div class="child-avatar">${avatar}</div>
+          <div class="child-info">
+            <div class="child-name">${name}</div>
+            <div class="child-stats">
+              ${points} points • Niveau ${level}<br>
+              ${completedToday}/${todayTasks} tâches aujourd'hui
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
+              </div>
             </div>
           </div>
+          <div class="level-badge">Niveau ${level}</div>
+          ${showActions ? `
+            <div class="task-actions">
+              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
+              <button class="btn btn-danger btn-icon delete-btn" data-action="remove-child" data-id="${child.id || 'unknown'}">Supprimer</button>
+            </div>
+          ` : ''}
         </div>
-        <div class="level-badge">Niveau ${child.level || 1}</div>
-        ${showActions ? `
-          <div class="task-actions">
-            <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id}">Modifier</button>
-            <button class="btn btn-danger btn-icon delete-btn" data-action="remove-child" data-id="${child.id}">Supprimer</button>
-          </div>
-        ` : ''}
-      </div>
-    `;
+      `;
+    } catch (error) {
+      console.error('Erreur dans renderChildCard:', error, 'Child data:', child);
+      return `<div class="child-card"><div class="error">Erreur rendu: ${error.message}</div></div>`;
+    }
   }
 
   renderTaskItem(task, children, showValidation = false, showManagement = false) {
