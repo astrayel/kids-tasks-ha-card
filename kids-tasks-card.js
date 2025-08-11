@@ -138,7 +138,8 @@ class KidsTasksCard extends HTMLElement {
   }
 
   async submitChildForm(isEdit = false) {
-    const form = document.querySelector('ha-dialog form');
+    const dialog = document.querySelector('ha-dialog');
+    const form = dialog.querySelector('form');
     
     // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
@@ -178,11 +179,11 @@ class KidsTasksCard extends HTMLElement {
     if (isEdit) {
       serviceData.child_id = form.querySelector('[name="child_id"]').value;
       if (await this.callService('kids_tasks', 'update_child', serviceData)) {
-        this.closeModal();
+        this.closeModal(dialog);
       }
     } else {
       if (await this.callService('kids_tasks', 'add_child', serviceData)) {
-        this.closeModal();
+        this.closeModal(dialog);
       }
     }
   }
@@ -1363,7 +1364,7 @@ class KidsTasksCard extends HTMLElement {
 
     return `
       <div class="child-card">
-        <div class="child-avatar">${child.avatar || '👶'}</div>
+        <div class="child-avatar">${this.getEffectiveAvatar(child, 'large')}</div>
         <div class="child-info">
           <div class="child-name">${child.name}</div>
           <div class="child-stats">
@@ -1538,7 +1539,25 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .child-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .child-avatar { font-size: 2.5em; margin-right: 16px; }
+        .child-avatar { 
+          font-size: 2.5em; 
+          margin-right: 16px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          min-width: 3em;
+          min-height: 3em;
+        }
+        .child-avatar img {
+          max-width: 4em !important;
+          max-height: 4em !important;
+          min-width: 3em !important;
+          min-height: 3em !important;
+          border-radius: 50% !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255,255,255,0.2);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         .child-info { flex: 1; }
         .child-name {
           font-size: 1.1em;
@@ -2081,17 +2100,21 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   // Méthode pour résoudre l'avatar effectif
-  getEffectiveAvatar(child) {
+  getEffectiveAvatar(child, context = 'normal') {
     if (child.avatar_type === 'emoji') {
       return child.avatar || '👶';
     } else if (child.avatar_type === 'url' && child.avatar_data) {
-      return `<img src="${child.avatar_data}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+      // Pour les URLs, on peut optimiser l'affichage selon le contexte
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="${child.avatar_data}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
     } else if (child.avatar_type === 'inline' && child.avatar_data) {
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
     } else if (child.avatar_type === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
       if (personEntity && personEntity.attributes.entity_picture) {
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name}" style="width: 3em; height: 3em; border-radius: 50%; object-fit: cover;">`;
+        const size = context === 'large' ? '4em' : '3em';
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
       }
     }
     return child.avatar || '👶';
