@@ -1781,6 +1781,28 @@ class KidsTasksCard extends HTMLElement {
           min-width: 65px;
         }
         
+        .child-card .task-actions .edit-btn {
+          background-color: #4caf50;
+          color: white;
+          border: 1px solid #4caf50;
+          order: 2;
+        }
+        
+        .child-card .task-actions .edit-btn:hover {
+          background-color: #45a049;
+        }
+        
+        .child-card .task-actions .delete-btn {
+          background-color: #f44336;
+          color: white;
+          border: 1px solid #f44336;
+          order: 1;
+        }
+        
+        .child-card .task-actions .delete-btn:hover {
+          background-color: #d32f2f;
+        }
+        
         .task-status {
           padding: 4px 12px;
           border-radius: 12px;
@@ -2997,11 +3019,16 @@ class KidsTasksChildCard extends HTMLElement {
     if (img.naturalWidth && img.naturalHeight) {
       const ratio = img.naturalWidth / img.naturalHeight;
       if (Math.abs(ratio - 2) < Math.abs(ratio - 1)) {
-        // L'image est plus proche d'un ratio 2:1 que 1:1
+        // L'image est plus proche d'un ratio 2:1 que 1:1 - mode bannière
         img.setAttribute('data-wide', 'true');
-        img.style.borderRadius = '20px';
-        img.style.width = '6em';
-        img.style.height = '3em';
+        img.style.borderRadius = '16px';
+        img.style.width = '100%';
+        img.style.height = '4em';
+        img.style.maxWidth = '100%';
+        img.style.objectFit = 'cover';
+        img.style.objectPosition = 'center';
+        // Conserver la transparence pour les PNG
+        img.style.backgroundColor = 'transparent';
       }
     }
   }
