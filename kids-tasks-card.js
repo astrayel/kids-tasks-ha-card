@@ -2785,7 +2785,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
               <option value="">Sélectionner un enfant...</option>
               ${children.map(child => `
                 <option value="${child.id}" ${this._child_id === child.id ? 'selected' : ''}>
-                  ${child.name} (${child.id.substring(0, 8)}...)
+                  ${child.name}
                 </option>
               `).join('')}
             </select>
