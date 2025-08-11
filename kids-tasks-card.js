@@ -45,6 +45,37 @@ class KidsTasksCard extends HTMLElement {
       }
     }
     
+    // Vérifier si les tâches ou récompenses ont changé
+    const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kids_tasks_task_'));
+    const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kids_tasks_task_'));
+    
+    if (oldTaskEntities.length !== newTaskEntities.length) return true;
+    
+    // Vérifier les changements d'état des tâches
+    for (const entityId of oldTaskEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state || 
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+    
+    // Vérifier les récompenses
+    const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kids_tasks_reward_'));
+    const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kids_tasks_reward_'));
+    
+    if (oldRewardEntities.length !== newRewardEntities.length) return true;
+    
+    for (const entityId of oldRewardEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state || 
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+    
     return false;
   }
 
@@ -2516,28 +2547,52 @@ class KidsTasksChildCard extends HTMLElement {
   shouldUpdate(oldHass, newHass) {
     if (!oldHass) return true;
     
-    // Vérifier si les données de l'enfant ont changé
-    const oldChild = this.getChildFromHass(oldHass);
-    const newChild = this.getChildFromHass(newHass);
+    // Vérifier si les données de l'enfant ont changé (entité points)
+    const oldChildEntity = oldHass.states[`sensor.kids_tasks_child_${this.config.child_id}`];
+    const newChildEntity = newHass.states[`sensor.kids_tasks_child_${this.config.child_id}`];
     
-    if (JSON.stringify(oldChild) !== JSON.stringify(newChild)) {
-      return true;
+    if (!oldChildEntity !== !newChildEntity) return true;
+    if (oldChildEntity && newChildEntity) {
+      if (oldChildEntity.state !== newChildEntity.state || 
+          JSON.stringify(oldChildEntity.attributes) !== JSON.stringify(newChildEntity.attributes)) {
+        return true;
+      }
     }
     
-    // Vérifier si les tâches ont changé
-    const oldTasks = this.getTasksFromHass(oldHass);
-    const newTasks = this.getTasksFromHass(newHass);
+    // Vérifier si les tâches de cet enfant ont changé
+    const oldTaskEntities = Object.keys(oldHass.states)
+      .filter(id => id.startsWith('sensor.kids_tasks_task_'))
+      .filter(id => oldHass.states[id].attributes && oldHass.states[id].attributes.child_id === this.config.child_id);
+    const newTaskEntities = Object.keys(newHass.states)
+      .filter(id => id.startsWith('sensor.kids_tasks_task_'))
+      .filter(id => newHass.states[id].attributes && newHass.states[id].attributes.child_id === this.config.child_id);
     
-    if (JSON.stringify(oldTasks) !== JSON.stringify(newTasks)) {
-      return true;
+    if (oldTaskEntities.length !== newTaskEntities.length) return true;
+    
+    for (const entityId of oldTaskEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state || 
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
     }
     
-    // Vérifier si les récompenses ont changé
-    const oldRewards = this.getRewardsFromHass(oldHass);
-    const newRewards = this.getRewardsFromHass(newHass);
-    
-    if (JSON.stringify(oldRewards) !== JSON.stringify(newRewards)) {
-      return true;
+    // Vérifier si les récompenses ont changé (pour l'affichage des récompenses disponibles)
+    if (this.config.show_rewards) {
+      const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kids_tasks_reward_'));
+      const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kids_tasks_reward_'));
+      
+      if (oldRewardEntities.length !== newRewardEntities.length) return true;
+      
+      for (const entityId of oldRewardEntities) {
+        const oldEntity = oldHass.states[entityId];
+        const newEntity = newHass.states[entityId];
+        if (!newEntity || oldEntity.state !== newEntity.state || 
+            JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+          return true;
+        }
+      }
     }
     
     return false;
