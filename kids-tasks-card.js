@@ -1981,18 +1981,53 @@ class KidsTasksCard extends HTMLElement {
           color: var(--secondary-text-color, #757575);
         }
         
+        /* Tablette */
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .child-card {
+            padding: 14px;
+            padding-bottom: 50px;
+          }
+          .child-card .task-actions {
+            right: 8px;
+            bottom: 12px;
+          }
+        }
+        
+        /* Téléphone */
         @media (max-width: 768px) {
           .content { padding: 16px; }
           .nav-tab { font-size: 11px; padding: 8px 4px; }
           .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-          .child-card { flex-direction: column; text-align: center; padding: 16px 12px; }
+          .child-card { 
+            flex-direction: column; 
+            text-align: center; 
+            padding: 16px 12px;
+            padding-bottom: 50px;
+            position: relative;
+          }
           .child-avatar { margin: 0 0 12px 0; }
           .task-item { flex-direction: column; align-items: flex-start; }
           .task-actions { margin-top: 12px; width: 100%; justify-content: center; }
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: 16px; }
+          
+          .child-card .task-actions {
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 0;
+            min-width: auto;
+          }
+          
+          .child-card .task-actions .btn {
+            min-width: 70px;
+            padding: 8px 12px;
+          }
         }
       </style>
     `;
@@ -2942,6 +2977,33 @@ class KidsTasksChildCard extends HTMLElement {
         </div>
       </div>
     `;
+    
+    // Ajouter gestionnaire pour détecter les ratios d'images après le rendu
+    setTimeout(() => this.handleImageAspectRatios(), 10);
+  }
+  
+  handleImageAspectRatios() {
+    const avatarImages = this.shadowRoot.querySelectorAll('.avatar img');
+    avatarImages.forEach(img => {
+      if (img.complete && img.naturalWidth && img.naturalHeight) {
+        this.checkImageRatio(img);
+      } else {
+        img.addEventListener('load', () => this.checkImageRatio(img), { once: true });
+      }
+    });
+  }
+  
+  checkImageRatio(img) {
+    if (img.naturalWidth && img.naturalHeight) {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      if (Math.abs(ratio - 2) < Math.abs(ratio - 1)) {
+        // L'image est plus proche d'un ratio 2:1 que 1:1
+        img.setAttribute('data-wide', 'true');
+        img.style.borderRadius = '20px';
+        img.style.width = '6em';
+        img.style.height = '3em';
+      }
+    }
   }
 
   getCardSize() {
