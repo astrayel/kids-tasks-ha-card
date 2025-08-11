@@ -149,8 +149,17 @@ class KidsTasksCard extends HTMLElement {
   }
 
   async submitChildForm(isEdit = false) {
+    console.log('submitChildForm called, isEdit:', isEdit);
     const dialog = document.querySelector('ha-dialog');
+    if (!dialog) {
+      console.error('No dialog found');
+      return;
+    }
     const form = dialog.querySelector('form');
+    if (!form) {
+      console.error('No form found in dialog');
+      return;
+    }
     
     // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
@@ -187,15 +196,27 @@ class KidsTasksCard extends HTMLElement {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
     }
 
-    if (isEdit) {
-      serviceData.child_id = form.querySelector('[name="child_id"]').value;
-      if (await this.callService('kids_tasks', 'update_child', serviceData)) {
-        this.closeModal(dialog);
+    try {
+      if (isEdit) {
+        serviceData.child_id = form.querySelector('[name="child_id"]').value;
+        console.log('Calling update_child with:', serviceData);
+        const success = await this.callService('kids_tasks', 'update_child', serviceData);
+        console.log('update_child result:', success);
+        if (success) {
+          console.log('Closing dialog...');
+          this.closeModal(dialog);
+        }
+      } else {
+        console.log('Calling add_child with:', serviceData);
+        const success = await this.callService('kids_tasks', 'add_child', serviceData);
+        console.log('add_child result:', success);
+        if (success) {
+          console.log('Closing dialog...');
+          this.closeModal(dialog);
+        }
       }
-    } else {
-      if (await this.callService('kids_tasks', 'add_child', serviceData)) {
-        this.closeModal(dialog);
-      }
+    } catch (error) {
+      console.error('Error in submitChildForm:', error);
     }
   }
 
@@ -1394,9 +1415,7 @@ class KidsTasksCard extends HTMLElement {
       return '<div class="child-card"><div class="error">Erreur: enfant non trouvé</div></div>';
     }
     
-    // Version ultra-simplifiée pour déboguer
     try {
-      const avatar = child.avatar || '👶';
       const name = child.name || 'Enfant sans nom';
       const points = child.points || 0;
       const level = child.level || 1;
@@ -1411,6 +1430,15 @@ class KidsTasksCard extends HTMLElement {
         todayTasks = this.getChildTasksToday(child.id, tasks).length;
       } catch (taskError) {
         console.warn('Erreur lors du calcul des tâches:', taskError);
+      }
+      
+      // Utiliser getEffectiveAvatar avec protection
+      let avatar = '👶';
+      try {
+        avatar = this.getEffectiveAvatar(child, 'large');
+      } catch (avatarError) {
+        console.warn('Erreur avatar:', avatarError);
+        avatar = child.avatar || '👶';
       }
       
       return `
@@ -2154,14 +2182,29 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
-  // Méthode pour résoudre l'avatar effectif - Version simplifiée pour éviter conflits HA
+  // Méthode pour résoudre l'avatar effectif
   getEffectiveAvatar(child, context = 'normal') {
-    // Temporairement, retourner seulement des emojis pour éviter les conflits HTML
     if (!child) {
       return '👶';
     }
     
-    // Pour le moment, toujours retourner l'emoji ou fallback
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
+      return child.avatar || '👶';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'inline' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        const size = context === 'large' ? '4em' : '3em';
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+      }
+    }
     return child.avatar || '👶';
   }
 
@@ -2672,7 +2715,7 @@ class KidsTasksChildCard extends HTMLElement {
       
       <div class="child-card">
         <div class="header">
-          ${this.config.show_avatar ? `<span class="avatar">${child.avatar || '👶'}</span>` : ''}
+          ${this.config.show_avatar ? `<span class="avatar">${this.getEffectiveAvatar(child)}</span>` : ''}
           <div class="child-name">${child.name}</div>
           <div class="level-badge">Niveau ${child.level}</div>
           
