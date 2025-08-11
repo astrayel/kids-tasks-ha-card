@@ -2672,7 +2672,7 @@ class KidsTasksChildCard extends HTMLElement {
       
       <div class="child-card">
         <div class="header">
-          ${this.config.show_avatar ? `<span class="avatar">${this.getEffectiveAvatar(child)}</span>` : ''}
+          ${this.config.show_avatar ? `<span class="avatar">${child.avatar || '👶'}</span>` : ''}
           <div class="child-name">${child.name}</div>
           <div class="level-badge">Niveau ${child.level}</div>
           
