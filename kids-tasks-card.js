@@ -1727,12 +1727,15 @@ class KidsTasksCard extends HTMLElement {
           border: 2px solid rgba(255,255,255,0.2);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .child-info { flex: 1; }
+        .child-info { 
+          flex: 1; 
+          display: flex;
+          align-items: center;
+        }
         .child-name {
           font-size: 1.6em;
           font-weight: bold;
-          margin-bottom: 8px;
-          margin-top: -4px;
+          margin: 0;
           color: var(--primary-text-color, #212121);
         }
         .child-stats {
