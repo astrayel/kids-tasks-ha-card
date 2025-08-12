@@ -1736,6 +1736,10 @@ class KidsTasksCard extends HTMLElement {
           flex-direction: column;
           justify-content: flex-start;
         }
+        .child-wrapper {
+          display: flex;
+          flex-direction: row;
+        }
         .child-name {
           font-size: 1.6em;
           font-weight: bold;
@@ -1756,7 +1760,7 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 16px;
           font-weight: bold;
           font-size: 0.8em;
-          margin: 0 8px;
+          margin: 8px 8px;
         }
         
         .progress-bar {
