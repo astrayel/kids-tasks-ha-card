@@ -1529,6 +1529,9 @@ class KidsTasksCard extends HTMLElement {
       
       return `
         <div class="child-card">
+          ${showActions ? `
+            <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
+          ` : ''}
           <div class="child-avatar">${avatar}</div>
           <div class="child-info">
             <div class='child-wrapper'><div class="child-name">${name}</div><div class="level-badge">Niveau ${level}</div></div>
@@ -1543,7 +1546,6 @@ class KidsTasksCard extends HTMLElement {
           ${showActions ? `
             <div class="task-actions">
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
-              <button class="btn btn-danger btn-icon delete-btn" data-action="remove-child" data-id="${child.id || 'unknown'}">Supprimer</button>
             </div>
           ` : ''}
         </div>
@@ -1846,6 +1848,31 @@ class KidsTasksCard extends HTMLElement {
         
         .child-card .task-actions .delete-btn:hover {
           background-color: #d32f2f;
+        }
+        
+        .btn-close {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 24px;
+          height: 24px;
+          border: none;
+          background: #f44336;
+          color: white;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10;
+          transition: all 0.2s;
+        }
+        
+        .btn-close:hover {
+          background: #d32f2f;
+          transform: scale(1.1);
         }
         
         .task-status {
