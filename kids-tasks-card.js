@@ -1716,16 +1716,16 @@ class KidsTasksCard extends HTMLElement {
           justify-content: center;
           min-width: 3em;
           min-height: 3em;
+          flex-shrink: 0;
         }
         .child-avatar img {
-          max-width: 4em !important;
-          max-height: 4em !important;
-          min-width: 3em !important;
-          min-height: 3em !important;
+          width: 3em !important;
+          height: 3em !important;
           border-radius: 50% !important;
           object-fit: cover !important;
           border: 2px solid rgba(255,255,255,0.2);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
         }
         .child-info { 
           flex: 1; 
