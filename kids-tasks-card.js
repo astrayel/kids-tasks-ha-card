@@ -1710,7 +1710,11 @@ class KidsTasksCard extends HTMLElement {
           height: 160px;
         }
         
-        .child-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .child-card:hover { 
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15); 
+          transform: translateY(-2px);
+          border-left-color: var(--accent-color, #ff4081);
+        }
         .child-avatar { 
           font-size: 2.5em; 
           margin-right: 16px; 
@@ -1819,7 +1823,6 @@ class KidsTasksCard extends HTMLElement {
           margin-top: 0;
           flex-direction: row;
           gap: 8px;
-          min-width: 140px;
         }
         
         .child-card .task-actions .btn {
