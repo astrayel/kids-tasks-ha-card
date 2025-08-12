@@ -1729,9 +1729,10 @@ class KidsTasksCard extends HTMLElement {
         }
         .child-info { flex: 1; }
         .child-name {
-          font-size: 1.1em;
+          font-size: 1.6em;
           font-weight: bold;
-          margin-bottom: 4px;
+          margin-bottom: 8px;
+          margin-top: -4px;
           color: var(--primary-text-color, #212121);
         }
         .child-stats {
@@ -1798,8 +1799,8 @@ class KidsTasksCard extends HTMLElement {
         
         .child-card .task-actions {
           position: absolute;
-          right: 16px;
-          bottom: 16px;
+          right: 20px;
+          bottom: 20px;
           margin-top: 0;
           flex-direction: row;
           gap: 8px;
