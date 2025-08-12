@@ -1761,6 +1761,7 @@ class KidsTasksCard extends HTMLElement {
           font-weight: bold;
           font-size: 0.8em;
           margin: 8px 8px;
+          height: 24px
         }
         
         .progress-bar {
