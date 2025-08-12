@@ -1705,6 +1705,8 @@ class KidsTasksCard extends HTMLElement {
           border-left: 4px solid var(--custom-dashboard-secondary);
           transition: all 0.3s;
           position: relative;
+          min-height: 80px;
+          height: 80px;
         }
         
         .child-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
