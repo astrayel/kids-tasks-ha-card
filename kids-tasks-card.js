@@ -1733,13 +1733,15 @@ class KidsTasksCard extends HTMLElement {
           flex: 1; 
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-start;
+          padding-top: 8px;
         }
         .child-name {
           font-size: 1.6em;
           font-weight: bold;
-          margin: 0;
+          margin: 0 0 8px 0;
           color: var(--primary-text-color, #212121);
+          text-align: left;
         }
         .child-stats {
           color: var(--secondary-text-color, #757575);
