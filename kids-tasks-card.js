@@ -1714,11 +1714,12 @@ class KidsTasksCard extends HTMLElement {
           font-size: 2.5em; 
           margin-right: 16px; 
           display: flex; 
-          align-items: center; 
+          align-items: flex-start; 
           justify-content: center;
           min-width: 3em;
           min-height: 3em;
           flex-shrink: 0;
+          padding-top: 8px;
         }
         .child-avatar img {
           width: 3em !important;
