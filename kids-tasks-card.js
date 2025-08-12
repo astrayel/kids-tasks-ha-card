@@ -1531,7 +1531,7 @@ class KidsTasksCard extends HTMLElement {
         <div class="child-card">
           <div class="child-avatar">${avatar}</div>
           <div class="child-info">
-            <div class="child-name">${name}</div>
+            <div class='child-wrapper'><div class="child-name">${name}</div><div class="level-badge">Niveau ${level}</div></div>
             <div class="child-stats">
               ${points} points • Niveau ${level}<br>
               ${completedToday}/${todayTasks} tâches aujourd'hui
@@ -1540,7 +1540,6 @@ class KidsTasksCard extends HTMLElement {
               </div>
             </div>
           </div>
-          <div class="level-badge">Niveau ${level}</div>
           ${showActions ? `
             <div class="task-actions">
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
@@ -1697,8 +1696,8 @@ class KidsTasksCard extends HTMLElement {
         
         .child-card {
           display: flex;
-          align-items: center;
-          padding: 16px;
+          align-items: flex-start;
+          padding: 8px;
           margin: 8px 0;
           background: var(--secondary-background-color, #fafafa);
           border-radius: 8px;
@@ -1714,12 +1713,13 @@ class KidsTasksCard extends HTMLElement {
           font-size: 2.5em; 
           margin-right: 16px; 
           display: flex; 
-          align-items: flex-start; 
+          align-items: center; 
           justify-content: center;
           min-width: 3em;
           min-height: 3em;
           flex-shrink: 0;
           padding-top: 8px;
+          height: 100%
         }
         .child-avatar img {
           width: 3em !important;
@@ -1735,7 +1735,6 @@ class KidsTasksCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
-          padding-top: 8px;
         }
         .child-name {
           font-size: 1.6em;
@@ -1808,8 +1807,8 @@ class KidsTasksCard extends HTMLElement {
         
         .child-card .task-actions {
           position: absolute;
-          right: 20px;
-          bottom: 20px;
+          right: 8px;
+          bottom: 8px;
           margin-top: 0;
           flex-direction: row;
           gap: 8px;
