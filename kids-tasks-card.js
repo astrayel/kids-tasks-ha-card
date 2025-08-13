@@ -323,7 +323,11 @@ class KidsTasksCard extends HTMLElement {
     const points = parseInt(form.querySelector('[name="points"]').value);
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
-    const assigned_child_id = form.querySelector('[name="assigned_child_id"]').value || null;
+    // Récupérer les enfants assignés (nouveau format multi-sélection)
+    const assignedChildSelect = form.querySelector('[name="assigned_child_ids"]');
+    const assigned_child_ids = assignedChildSelect ? 
+      Array.from(assignedChildSelect.selectedOptions).map(option => option.value).filter(v => v) : [];
+    
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
     // Récupérer les jours sélectionnés pour les tâches journalières
@@ -336,9 +340,16 @@ class KidsTasksCard extends HTMLElement {
       category,
       points,
       frequency,
-      assigned_child_id,
       validation_required
     };
+    
+    // Ajouter l'assignation (nouveau format si multi-enfants, ancien si un seul)
+    if (assigned_child_ids.length > 1) {
+      serviceData.assigned_child_ids = assigned_child_ids;
+    } else if (assigned_child_ids.length === 1) {
+      serviceData.assigned_child_id = assigned_child_ids[0];
+    }
+    // Si aucun enfant sélectionné, ne pas ajouter de champ d'assignation
     
     // Ajouter weekly_days seulement si des jours sont sélectionnés
     if (weekly_days.length > 0) {
@@ -822,16 +833,24 @@ class KidsTasksCard extends HTMLElement {
           </ha-select>
           
           <ha-select
-            label="Enfant assigné"
-            name="assigned_child_id"
-            value="${isEdit ? task.assigned_child_id || '' : ''}">
-            <ha-list-item value="">Non assigné</ha-list-item>
-            ${children.map(child => `
-              <ha-list-item value="${child.id}" ${isEdit && task.assigned_child_id === child.id ? 'selected' : ''}>
+            label="Enfants assignés (maintenir Ctrl/Cmd pour sélection multiple)"
+            name="assigned_child_ids"
+            multiple>
+            ${children.map(child => {
+              let isSelected = false;
+              if (isEdit) {
+                // Vérifier dans assigned_child_ids ou fallback assigned_child_id
+                const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+                isSelected = assignedIds.includes(child.id);
+              }
+              return `<ha-list-item value="${child.id}" ${isSelected ? 'selected' : ''}>
                 ${child.name}
-              </ha-list-item>
-            `).join('')}
+              </ha-list-item>`;
+            }).join('')}
           </ha-select>
+          
+          <!-- Ancien champ pour compatibilité (masqué) -->
+          <input type="hidden" name="assigned_child_id" value="${isEdit ? task.assigned_child_id || '' : ''}" />
         </div>
         
         <!-- Sélection des jours de la semaine pour les tâches journalières -->
@@ -2487,7 +2506,9 @@ class KidsTasksChildCard extends HTMLElement {
             category: attrs.category || 'other',
             points: parseInt(attrs.points) || 10,
             status: taskEntity.state || 'todo',
-            validation_required: attrs.validation_required !== false
+            validation_required: attrs.validation_required !== false,
+            assigned_child_id: attrs.assigned_child_id,
+            assigned_child_ids: attrs.assigned_child_ids || []
           });
         }
       }
@@ -2586,6 +2607,25 @@ class KidsTasksChildCard extends HTMLElement {
       'validated': 'Validé ✅'
     };
     return labels[status] || status;
+  }
+  
+  getAssignedChildrenNames(task) {
+    if (!this._hass) return [];
+    
+    const children = this.getChildren();
+    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+    
+    return assignedIds.map(childId => {
+      const child = children.find(c => c.id === childId);
+      return child ? child.name : 'Enfant inconnu';
+    }).filter(name => name);
+  }
+  
+  formatAssignedChildren(task) {
+    const childrenNames = this.getAssignedChildrenNames(task);
+    if (childrenNames.length === 0) return 'Non assigné';
+    if (childrenNames.length === 1) return childrenNames[0];
+    return childrenNames.join(', ');
   }
 
   shouldUpdate(oldHass, newHass) {
@@ -2853,6 +2893,17 @@ class KidsTasksChildCard extends HTMLElement {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .task-assigned {
+          font-size: 0.8em;
+          color: var(--secondary-text-color, #757575);
+          background: var(--secondary-background-color, #f0f0f0);
+          padding: 2px 6px;
+          border-radius: 8px;
+          white-space: nowrap;
         }
         
         .task-status {
@@ -3052,6 +3103,7 @@ class KidsTasksChildCard extends HTMLElement {
                         <div class="task-meta">
                           <div class="task-status ${task.status}">${this.getStatusLabel(task.status)}</div>
                           <div class="task-points">+${task.points} points</div>
+                          <div class="task-assigned">👥 ${this.formatAssignedChildren(task)}</div>
                         </div>
                       </div>
                     </div>
@@ -3130,6 +3182,46 @@ class KidsTasksChildCard extends HTMLElement {
         img.style.backgroundColor = 'transparent';
       }
     }
+  }
+  
+  getAssignedChildrenNames(task) {
+    if (!this._hass) return [];
+    
+    const children = this.getChildren();
+    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+    
+    return assignedIds.map(childId => {
+      const child = children.find(c => c.id === childId);
+      return child ? child.name : 'Enfant inconnu';
+    }).filter(name => name);
+  }
+  
+  formatAssignedChildren(task) {
+    const childrenNames = this.getAssignedChildrenNames(task);
+    if (childrenNames.length === 0) return 'Non assigné';
+    if (childrenNames.length === 1) return childrenNames[0];
+    return childrenNames.join(', ');
+  }
+  
+  getChildren() {
+    if (!this._hass) return [];
+    const children = [];
+    
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('sensor.kids_tasks_child_')) {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.attributes && entity.attributes.type === 'child') {
+          children.push({
+            id: entity.attributes.child_id || entityId.replace('sensor.kids_tasks_child_', ''),
+            name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
+            points: parseInt(entity.state) || 0,
+            level: entity.attributes.level || 1
+          });
+        }
+      }
+    });
+    
+    return children;
   }
 
   getCardSize() {
