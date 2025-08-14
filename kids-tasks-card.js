@@ -323,10 +323,9 @@ class KidsTasksCard extends HTMLElement {
     const points = parseInt(form.querySelector('[name="points"]').value);
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
-    // Récupérer les enfants assignés (nouveau format multi-sélection)
-    const assignedChildSelect = form.querySelector('[name="assigned_child_ids"]');
-    const assigned_child_ids = assignedChildSelect ? 
-      Array.from(assignedChildSelect.selectedOptions).map(option => option.value).filter(v => v) : [];
+    // Récupérer les enfants assignés (checkboxes)
+    const assignedChildCheckboxes = form.querySelectorAll('[name="assigned_child_ids"]:checked');
+    const assigned_child_ids = Array.from(assignedChildCheckboxes).map(checkbox => checkbox.value).filter(v => v);
     
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
@@ -832,22 +831,29 @@ class KidsTasksCard extends HTMLElement {
             `).join('')}
           </ha-select>
           
-          <ha-select
-            label="Enfants assignés (maintenir Ctrl/Cmd pour sélection multiple)"
-            name="assigned_child_ids"
-            multiple>
-            ${children.map(child => {
-              let isSelected = false;
-              if (isEdit) {
-                // Vérifier dans assigned_child_ids ou fallback assigned_child_id
-                const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
-                isSelected = assignedIds.includes(child.id);
-              }
-              return `<ha-list-item value="${child.id}" ${isSelected ? 'selected' : ''}>
-                ${child.name}
-              </ha-list-item>`;
-            }).join('')}
-          </ha-select>
+          <div class="form-group">
+            <label class="form-label">Enfants assignés</label>
+            <div class="children-selection">
+              ${children.map(child => {
+                let isChecked = false;
+                if (isEdit) {
+                  // Vérifier dans assigned_child_ids ou fallback assigned_child_id
+                  const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+                  isChecked = assignedIds.includes(child.id);
+                }
+                return `
+                  <label class="child-checkbox">
+                    <ha-checkbox 
+                      name="assigned_child_ids" 
+                      value="${child.id}"
+                      ${isChecked ? 'checked' : ''}>
+                    </ha-checkbox>
+                    <span class="child-label">${child.name}</span>
+                  </label>
+                `;
+              }).join('')}
+            </div>
+          </div>
           
           <!-- Ancien champ pour compatibilité (masqué) -->
           <input type="hidden" name="assigned_child_id" value="${isEdit ? task.assigned_child_id || '' : ''}" />
@@ -1895,6 +1901,38 @@ class KidsTasksCard extends HTMLElement {
         .btn-close:hover {
           background: #d32f2f;
           transform: scale(1.1);
+        }
+        
+        .children-selection {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 8px;
+          max-height: 200px;
+          overflow-y: auto;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          padding: 12px;
+        }
+        
+        .child-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .child-checkbox:hover {
+          background-color: var(--secondary-background-color, #f5f5f5);
+        }
+        
+        .child-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
         }
         
         .task-status {
