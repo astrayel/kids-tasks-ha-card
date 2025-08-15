@@ -557,7 +557,12 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .day-checkbox:hover {
-          background-color: var(--secondary-background-color, #f5f5f5);
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
+        }
+        
+        .day-checkbox:hover .day-label {
+          color: white;
         }
         
         .day-label {
@@ -2016,7 +2021,12 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .day-checkbox:hover {
-          background-color: var(--secondary-background-color, #f5f5f5);
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
+        }
+        
+        .day-checkbox:hover .day-label {
+          color: white;
         }
         
         .day-label {
