@@ -888,7 +888,7 @@ class KidsTasksCard extends HTMLElement {
           <!-- Enfants assignés -->
           <div class="form-group children-column">
             <div class="children-selection">
-              <label class="form-label">Enfants assignés:</label>
+              <label class="form-label">Enfants assignés</label>
               ${children.map(child => {
                 let isChecked = false;
                 if (isEdit) {
@@ -913,7 +913,7 @@ class KidsTasksCard extends HTMLElement {
           <!-- Jours de la semaine -->
           <div class="form-group days-column">
             <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
-              <label class="form-label">Jours de la semaine<br><small>(optionnel)</small></label>
+              <label class="form-label">Jours de la semaine:<br><small>(optionnel)</small></label>
               <div class="days-selector">
                 ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
                   const labels = {
@@ -1961,20 +1961,6 @@ class KidsTasksCard extends HTMLElement {
           transform: scale(1.1);
         }
         
-        .children-selection {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-top: 8px;
-          max-height: 200px;
-          overflow-y: auto;
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
-          padding: 16px;
-          background: var(--card-background-color, white);
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
         .child-checkbox {
           display: flex;
           align-items: center;
@@ -2013,7 +1999,7 @@ class KidsTasksCard extends HTMLElement {
         
         
         /* Styles pour la section des jours de la semaine avec cadre */
-        .weekly-days-section {
+        .weekly-days-section, .children-selection {
           margin-bottom: 20px;
           padding: 16px;
           border: 1px solid var(--divider-color, #e0e0e0);
@@ -2021,7 +2007,7 @@ class KidsTasksCard extends HTMLElement {
           background: var(--secondary-background-color, #fafafa);
         }
         
-        .weekly-days-section .form-label {
+        .weekly-days-section .form-label,.children-selection .form-label {
           margin-bottom: 12px;
           font-weight: 600;
           color: var(--primary-text-color, #212121);
