@@ -865,8 +865,8 @@ class KidsTasksCard extends HTMLElement {
           <div class="days-selector">
             ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
               const labels = {
-                'mon': 'L', 'tue': 'M', 'wed': 'M', 'thu': 'J', 
-                'fri': 'V', 'sat': 'S', 'sun': 'D'
+                'mon': 'Lundi', 'tue': 'Mardi', 'wed': 'Mercredi', 'thu': 'Jeudi', 
+                'fri': 'Vendredi', 'sat': 'Samedi', 'sun': 'Dimanche'
               };
               const isSelected = isEdit && task.weekly_days && task.weekly_days.includes(day);
               return `
