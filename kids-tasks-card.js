@@ -342,11 +342,19 @@ class KidsTasksCard extends HTMLElement {
       validation_required
     };
     
-    // Ajouter l'assignation (nouveau format si multi-enfants, ancien si un seul)
-    if (assigned_child_ids.length > 1) {
+    // Debug : Afficher les enfants sélectionnés
+    console.log('🎯 DEBUG: assigned_child_ids trouvés:', assigned_child_ids);
+    
+    // Ajouter l'assignation (toujours envoyer les deux champs pour compatibilité)
+    if (assigned_child_ids.length > 0) {
       serviceData.assigned_child_ids = assigned_child_ids;
-    } else if (assigned_child_ids.length === 1) {
-      serviceData.assigned_child_id = assigned_child_ids[0];
+      serviceData.assigned_child_id = assigned_child_ids[0]; // Premier enfant pour compatibilité
+      console.log('✅ DEBUG: Assignation ajoutée:', { 
+        assigned_child_ids: serviceData.assigned_child_ids, 
+        assigned_child_id: serviceData.assigned_child_id 
+      });
+    } else {
+      console.log('❌ DEBUG: Aucun enfant sélectionné');
     }
     // Si aucun enfant sélectionné, ne pas ajouter de champ d'assignation
     
@@ -362,10 +370,12 @@ class KidsTasksCard extends HTMLElement {
       const activeCheckbox = form.querySelector('[name="active"]');
       serviceData.active = activeCheckbox ? activeCheckbox.checked : true;
       
+      console.log('🔧 DEBUG: Service update_task avec données:', serviceData);
       if (await this.callService('kids_tasks', 'update_task', serviceData)) {
         this.closeModal(dialog);
       }
     } else {
+      console.log('🔧 DEBUG: Service add_task avec données:', serviceData);
       if (await this.callService('kids_tasks', 'add_task', serviceData)) {
         this.closeModal(dialog);
       }
