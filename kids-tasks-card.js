@@ -503,6 +503,18 @@ class KidsTasksCard extends HTMLElement {
           margin-bottom: 0;
         }
         
+        .children-selection {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 8px;
+          max-height: 200px;
+          overflow-y: auto;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          padding: 12px;
+        }
+
         /* Styles pour la sélection des jours de la semaine */
         .weekly-days-section {
           margin-bottom: 20px;
@@ -1948,11 +1960,6 @@ class KidsTasksCard extends HTMLElement {
         .children-column {
           flex: 1;
           min-width: 0;
-          margin-bottom: 20px;
-          padding: 16px;
-          border: 1px solid var(--divider-color);
-          border-radius: 8px;
-          background: var(--secondary-background-color, #fafafa);
         }
         
         .days-column {
