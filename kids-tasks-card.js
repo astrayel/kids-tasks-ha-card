@@ -1948,6 +1948,11 @@ class KidsTasksCard extends HTMLElement {
         .children-column {
           flex: 1;
           min-width: 0;
+          margin-bottom: 20px;
+          padding: 16px;
+          border: 1px solid var(--divider-color);
+          border-radius: 8px;
+          background: var(--secondary-background-color, #fafafa);
         }
         
         .days-column {
