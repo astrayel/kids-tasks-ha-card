@@ -983,7 +983,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.4');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.5');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
@@ -1736,15 +1736,33 @@ class KidsTasksCard extends HTMLElement {
   // Styles CSS identiques au fichier précédent
   getStyles() {
     const tabColor = this.config?.tab_color || 'var(--primary-color, #3f51b5)';
+    const headerColor = this.config?.header_color || 'var(--primary-color, #1976d2)';
     const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--primary-color, #3f51b5)';
     const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--accent-color, #ff4081)';
+    const childGradientStart = this.config?.child_gradient_start || '#4CAF50';
+    const childGradientEnd = this.config?.child_gradient_end || '#8BC34A';
+    const childBorderColor = this.config?.child_border_color || '#2E7D32';
+    const childTextColor = this.config?.child_text_color || '#ffffff';
+    const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
+    const progressBarColor = this.config?.progress_bar_color || '#4CAF50';
+    const pointsBadgeColor = this.config?.points_badge_color || '#FF9800';
+    const iconColor = this.config?.icon_color || '#757575';
     
     return `
       <style>
         :host {
           --custom-tab-color: ${tabColor};
+          --custom-header-color: ${headerColor};
           --custom-dashboard-primary: ${dashboardPrimary};
           --custom-dashboard-secondary: ${dashboardSecondary};
+          --custom-child-gradient-start: ${childGradientStart};
+          --custom-child-gradient-end: ${childGradientEnd};
+          --custom-child-border-color: ${childBorderColor};
+          --custom-child-text-color: ${childTextColor};
+          --custom-button-hover-color: ${buttonHoverColor};
+          --custom-progress-bar-color: ${progressBarColor};
+          --custom-points-badge-color: ${pointsBadgeColor};
+          --custom-icon-color: ${iconColor};
         }
         * { box-sizing: border-box; }
         
@@ -1885,7 +1903,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .level-badge {
-          background: var(--custom-dashboard-secondary);
+          background: var(--custom-points-badge-color);
           color: white;
           padding: 4px 12px;
           border-radius: 16px;
@@ -1906,7 +1924,7 @@ class KidsTasksCard extends HTMLElement {
         
         .progress-fill {
           height: 100%;
-          background: var(--custom-dashboard-secondary);
+          background: var(--custom-progress-bar-color);
           transition: width 0.3s ease;
         }
         
@@ -2146,7 +2164,11 @@ class KidsTasksCard extends HTMLElement {
           text-decoration: none;
         }
         
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn:hover { 
+          transform: translateY(-1px); 
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+          background: var(--custom-button-hover-color);
+        }
         .btn:active { transform: translateY(0); }
         
         .btn-primary { background: var(--custom-dashboard-primary); color: white; }
@@ -2454,6 +2476,24 @@ class KidsTasksCardEditor extends HTMLElement {
     
     this.shadowRoot.innerHTML = `
       <style>
+        .config-container {
+          padding: 16px;
+          max-width: 600px;
+        }
+        .config-section {
+          margin-bottom: 24px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          padding: 16px;
+        }
+        .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          color: var(--primary-text-color, #000);
+          border-bottom: 2px solid var(--primary-color, #1976d2);
+          padding-bottom: 4px;
+        }
         .config-row {
           display: flex;
           align-items: center;
@@ -2462,6 +2502,19 @@ class KidsTasksCardEditor extends HTMLElement {
         .config-row label {
           margin-left: 8px;
           cursor: pointer;
+          font-weight: 500;
+        }
+        .config-row-vertical {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 16px;
+          gap: 8px;
+        }
+        .config-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
         }
         ha-textfield {
           width: 100%;
@@ -2470,39 +2523,200 @@ class KidsTasksCardEditor extends HTMLElement {
         ha-switch {
           margin-right: 8px;
         }
+        .color-input-container {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .color-input-container label {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--primary-text-color, #000);
+        }
+        .help-text {
+          font-size: 12px;
+          color: var(--secondary-text-color, #666);
+          margin-top: 4px;
+          font-style: italic;
+        }
+        .preview-card {
+          background: linear-gradient(135deg, var(--primary-color, #1976d2), var(--accent-color, #ff4081));
+          color: white;
+          padding: 12px;
+          border-radius: 8px;
+          text-align: center;
+          margin-top: 8px;
+          font-weight: 500;
+        }
       </style>
-      <div>
-        <ha-textfield
-          id="title-input"
-          label="Titre de la carte"
-          value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
-        </ha-textfield>
-        
-        <div class="config-row">
-          <ha-switch
-            id="navigation-switch"
-            ${this.config?.show_navigation !== false ? 'checked' : ''}>
-          </ha-switch>
-          <label>Afficher la navigation par onglets</label>
+      <div class="config-container">
+        <!-- Section Configuration Générale -->
+        <div class="config-section">
+          <div class="section-title">🔧 Configuration Générale</div>
+          
+          <ha-textfield
+            id="title-input"
+            label="Titre de la carte"
+            value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
+          </ha-textfield>
+          
+          <div class="config-row">
+            <ha-switch
+              id="navigation-switch"
+              ${this.config?.show_navigation !== false ? 'checked' : ''}>
+            </ha-switch>
+            <label>Afficher la navigation par onglets</label>
+          </div>
         </div>
 
-        <ha-input-color-picker
-          id="tab-color-input"
-          label="Couleur des onglets"
-          value="${this.config?.tab_color || '#3f51b5'}">
-        </ha-input-color-picker>
+        <!-- Section Couleurs Carte Principale -->
+        <div class="config-section">
+          <div class="section-title">🎨 Couleurs Carte Principale</div>
+          
+          <div class="config-grid">
+            <div class="color-input-container">
+              <label>Couleur des onglets</label>
+              <input
+                type="color"
+                id="tab-color-input"
+                value="${this.config?.tab_color || '#3f51b5'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur de fond des onglets de navigation</div>
+            </div>
 
-        <ha-input-color-picker
-          id="dashboard-primary-input"
-          label="Couleur primaire dashboard"
-          value="${this.config?.dashboard_primary_color || '#2196f3'}">
-        </ha-input-color-picker>
+            <div class="color-input-container">
+              <label>Couleur d'entête</label>
+              <input
+                type="color"
+                id="header-color-input"
+                value="${this.config?.header_color || '#1976d2'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur de l'entête du dashboard</div>
+            </div>
 
-        <ha-input-color-picker
-          id="dashboard-secondary-input"
-          label="Couleur secondaire dashboard"
-          value="${this.config?.dashboard_secondary_color || '#ff4081'}">
-        </ha-input-color-picker>
+            <div class="color-input-container">
+              <label>Couleur primaire dashboard</label>
+              <input
+                type="color"
+                id="dashboard-primary-input"
+                value="${this.config?.dashboard_primary_color || '#2196f3'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur principale des éléments du dashboard</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur secondaire dashboard</label>
+              <input
+                type="color"
+                id="dashboard-secondary-input"
+                value="${this.config?.dashboard_secondary_color || '#ff4081'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des accents et boutons secondaires</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Couleurs Cartes Enfants -->
+        <div class="config-section">
+          <div class="section-title">👶 Couleurs Cartes Enfants</div>
+          
+          <div class="config-grid">
+            <div class="color-input-container">
+              <label>Début dégradé cartes enfants</label>
+              <input
+                type="color"
+                id="child-gradient-start-input"
+                value="${this.config?.child_gradient_start || '#4CAF50'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur de début du dégradé pour les cartes enfants</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Fin dégradé cartes enfants</label>
+              <input
+                type="color"
+                id="child-gradient-end-input"
+                value="${this.config?.child_gradient_end || '#8BC34A'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur de fin du dégradé pour les cartes enfants</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur bordure cartes enfants</label>
+              <input
+                type="color"
+                id="child-border-input"
+                value="${this.config?.child_border_color || '#2E7D32'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des bordures des cartes enfants</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur texte cartes enfants</label>
+              <input
+                type="color"
+                id="child-text-input"
+                value="${this.config?.child_text_color || '#ffffff'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur du texte sur les cartes enfants</div>
+            </div>
+          </div>
+
+          <!-- Aperçu du dégradé enfant -->
+          <div class="preview-card" id="child-preview" 
+               style="background: linear-gradient(135deg, ${this.config?.child_gradient_start || '#4CAF50'}, ${this.config?.child_gradient_end || '#8BC34A'}); 
+                      color: ${this.config?.child_text_color || '#ffffff'}; 
+                      border: 2px solid ${this.config?.child_border_color || '#2E7D32'};">
+            Aperçu carte enfant
+          </div>
+        </div>
+
+        <!-- Section Styles Avancés -->
+        <div class="config-section">
+          <div class="section-title">⚙️ Styles Avancés</div>
+          
+          <div class="config-grid">
+            <div class="color-input-container">
+              <label>Couleur survol boutons</label>
+              <input
+                type="color"
+                id="button-hover-input"
+                value="${this.config?.button_hover_color || '#1565C0'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des boutons au survol</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur barres de progression</label>
+              <input
+                type="color"
+                id="progress-bar-input"
+                value="${this.config?.progress_bar_color || '#4CAF50'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des barres de progression</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur badges points</label>
+              <input
+                type="color"
+                id="points-badge-input"
+                value="${this.config?.points_badge_color || '#FF9800'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des badges de points</div>
+            </div>
+
+            <div class="color-input-container">
+              <label>Couleur icônes</label>
+              <input
+                type="color"
+                id="icon-color-input"
+                value="${this.config?.icon_color || '#757575'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <div class="help-text">Couleur des icônes dans l'interface</div>
+            </div>
+          </div>
+        </div>
       </div>
     `;
 
@@ -2510,8 +2724,18 @@ class KidsTasksCardEditor extends HTMLElement {
     const titleInput = this.shadowRoot.getElementById('title-input');
     const navSwitch = this.shadowRoot.getElementById('navigation-switch');
     const tabColorInput = this.shadowRoot.getElementById('tab-color-input');
+    const headerColorInput = this.shadowRoot.getElementById('header-color-input');
     const dashboardPrimaryInput = this.shadowRoot.getElementById('dashboard-primary-input');
     const dashboardSecondaryInput = this.shadowRoot.getElementById('dashboard-secondary-input');
+    const childGradientStartInput = this.shadowRoot.getElementById('child-gradient-start-input');
+    const childGradientEndInput = this.shadowRoot.getElementById('child-gradient-end-input');
+    const childBorderInput = this.shadowRoot.getElementById('child-border-input');
+    const childTextInput = this.shadowRoot.getElementById('child-text-input');
+    const buttonHoverInput = this.shadowRoot.getElementById('button-hover-input');
+    const progressBarInput = this.shadowRoot.getElementById('progress-bar-input');
+    const pointsBadgeInput = this.shadowRoot.getElementById('points-badge-input');
+    const iconColorInput = this.shadowRoot.getElementById('icon-color-input');
+    const childPreview = this.shadowRoot.getElementById('child-preview');
     
     if (titleInput) {
       titleInput.addEventListener('input', (ev) => {
@@ -2537,6 +2761,14 @@ class KidsTasksCardEditor extends HTMLElement {
       });
     }
     
+    if (headerColorInput) {
+      headerColorInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, header_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
     if (dashboardPrimaryInput) {
       dashboardPrimaryInput.addEventListener('input', (ev) => {
         if (!this.config) return;
@@ -2552,8 +2784,92 @@ class KidsTasksCardEditor extends HTMLElement {
         this.configChanged(this.config);
       });
     }
+
+    // Event listeners pour les couleurs des cartes enfants
+    if (childGradientStartInput) {
+      childGradientStartInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, child_gradient_start: ev.target.value };
+        this.updateChildPreview();
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (childGradientEndInput) {
+      childGradientEndInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, child_gradient_end: ev.target.value };
+        this.updateChildPreview();
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (childBorderInput) {
+      childBorderInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, child_border_color: ev.target.value };
+        this.updateChildPreview();
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (childTextInput) {
+      childTextInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, child_text_color: ev.target.value };
+        this.updateChildPreview();
+        this.configChanged(this.config);
+      });
+    }
+
+    // Event listeners pour les styles avancés
+    if (buttonHoverInput) {
+      buttonHoverInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, button_hover_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (progressBarInput) {
+      progressBarInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, progress_bar_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (pointsBadgeInput) {
+      pointsBadgeInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, points_badge_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
+    
+    if (iconColorInput) {
+      iconColorInput.addEventListener('input', (ev) => {
+        if (!this.config) return;
+        this.config = { ...this.config, icon_color: ev.target.value };
+        this.configChanged(this.config);
+      });
+    }
     
     this._rendered = true;
+  }
+
+  updateChildPreview() {
+    const childPreview = this.shadowRoot.getElementById('child-preview');
+    if (childPreview && this.config) {
+      const gradientStart = this.config.child_gradient_start || '#4CAF50';
+      const gradientEnd = this.config.child_gradient_end || '#8BC34A';
+      const borderColor = this.config.child_border_color || '#2E7D32';
+      const textColor = this.config.child_text_color || '#ffffff';
+      
+      childPreview.style.background = `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`;
+      childPreview.style.color = textColor;
+      childPreview.style.border = `2px solid ${borderColor}`;
+    }
   }
 }
 
@@ -2973,11 +3289,12 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .header {
-          background: linear-gradient(135deg, ${child.card_gradient_start || 'var(--primary-color, #3f51b5)'} 0%, ${child.card_gradient_end || 'var(--accent-color, #ff4081)'} 100%);
-          color: white;
+          background: linear-gradient(135deg, ${child.card_gradient_start || this.config?.gradient_start || 'var(--custom-child-gradient-start, #4CAF50)'} 0%, ${child.card_gradient_end || this.config?.gradient_end || 'var(--custom-child-gradient-end, #8BC34A)'} 100%);
+          color: ${this.config?.text_color || 'white'};
           padding: 24px;
           text-align: center;
           position: relative;
+          border: 2px solid ${this.config?.border_color || 'var(--custom-child-border-color, #2E7D32)'};
         }
         
         .avatar {
@@ -3516,6 +3833,22 @@ class KidsTasksChildCardEditor extends HTMLElement {
     return this._config.show_rewards !== false;
   }
 
+  get _gradient_start() {
+    return this._config.gradient_start || '#4CAF50';
+  }
+
+  get _gradient_end() {
+    return this._config.gradient_end || '#8BC34A';
+  }
+
+  get _text_color() {
+    return this._config.text_color || '#ffffff';
+  }
+
+  get _border_color() {
+    return this._config.border_color || '#2E7D32';
+  }
+
   getChildren() {
     if (!this._hass) return [];
     
@@ -3589,6 +3922,60 @@ class KidsTasksChildCardEditor extends HTMLElement {
             </div>
           </div>
         </div>
+
+        <!-- Section Personnalisation visuelle -->
+        <div class="config-section">
+          <h3>🎨 Personnalisation Visuelle</h3>
+          
+          <div class="config-row">
+            <div class="config-item">
+              <label>Couleur début dégradé</label>
+              <input 
+                id="gradient_start" 
+                type="color" 
+                value="${this._config.gradient_start || '#4CAF50'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <small>Couleur de début du dégradé d'arrière-plan</small>
+            </div>
+            <div class="config-item">
+              <label>Couleur fin dégradé</label>
+              <input 
+                id="gradient_end" 
+                type="color" 
+                value="${this._config.gradient_end || '#8BC34A'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <small>Couleur de fin du dégradé d'arrière-plan</small>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <div class="config-item">
+              <label>Couleur texte principal</label>
+              <input 
+                id="text_color" 
+                type="color" 
+                value="${this._config.text_color || '#ffffff'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <small>Couleur du texte dans l'entête</small>
+            </div>
+            <div class="config-item">
+              <label>Couleur bordure</label>
+              <input 
+                id="border_color" 
+                type="color" 
+                value="${this._config.border_color || '#2E7D32'}"
+                style="width: 100%; height: 40px; border: none; border-radius: 4px; cursor: pointer;">
+              <small>Couleur de la bordure de la carte</small>
+            </div>
+          </div>
+
+          <!-- Aperçu -->
+          <div class="preview-header" id="preview-header">
+            <span class="preview-avatar">👶</span>
+            <div class="preview-name">Aperçu</div>
+            <div class="preview-level">Niveau 5</div>
+          </div>
+        </div>
       </div>
       
       <style>
@@ -3635,6 +4022,54 @@ class KidsTasksChildCardEditor extends HTMLElement {
           font-size: 12px;
           margin-top: 4px;
         }
+        .config-section {
+          margin-top: 24px;
+          padding: 16px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          background: var(--card-background-color, #fff);
+        }
+        .config-section h3 {
+          margin: 0 0 16px 0;
+          color: var(--primary-text-color, #000);
+          font-size: 16px;
+          font-weight: 600;
+          border-bottom: 2px solid var(--primary-color, #1976d2);
+          padding-bottom: 4px;
+        }
+        .preview-header {
+          margin-top: 16px;
+          padding: 16px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #4CAF50, #8BC34A);
+          color: white;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border: 2px solid #2E7D32;
+        }
+        .preview-avatar {
+          font-size: 2em;
+          width: 60px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+        }
+        .preview-name {
+          font-size: 1.2em;
+          font-weight: 600;
+          flex: 1;
+        }
+        .preview-level {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.9em;
+          font-weight: 500;
+        }
       </style>
     `;
 
@@ -3655,12 +4090,23 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const showAvatarSwitch = this.querySelector('#show_avatar');
     const showProgressSwitch = this.querySelector('#show_progress');
     const showRewardsSwitch = this.querySelector('#show_rewards');
+    const gradientStartInput = this.querySelector('#gradient_start');
+    const gradientEndInput = this.querySelector('#gradient_end');
+    const textColorInput = this.querySelector('#text_color');
+    const borderColorInput = this.querySelector('#border_color');
     
     if (childSelect) childSelect.value = this._child_id;
     if (titleInput) titleInput.value = this._title;
     if (showAvatarSwitch) showAvatarSwitch.checked = this._show_avatar;
     if (showProgressSwitch) showProgressSwitch.checked = this._show_progress;
     if (showRewardsSwitch) showRewardsSwitch.checked = this._show_rewards;
+    if (gradientStartInput) gradientStartInput.value = this._gradient_start;
+    if (gradientEndInput) gradientEndInput.value = this._gradient_end;
+    if (textColorInput) textColorInput.value = this._text_color;
+    if (borderColorInput) borderColorInput.value = this._border_color;
+    
+    // Mettre à jour l'aperçu après avoir mis à jour les valeurs
+    this.updatePreview();
   }
 
   _valueChanged() {
@@ -3669,6 +4115,10 @@ class KidsTasksChildCardEditor extends HTMLElement {
     const show_avatar = this.querySelector('#show_avatar').checked;
     const show_progress = this.querySelector('#show_progress').checked;
     const show_rewards = this.querySelector('#show_rewards').checked;
+    const gradient_start = this.querySelector('#gradient_start')?.value;
+    const gradient_end = this.querySelector('#gradient_end')?.value;
+    const text_color = this.querySelector('#text_color')?.value;
+    const border_color = this.querySelector('#border_color')?.value;
 
     this._config = {
       type: 'custom:kids-tasks-child-card',
@@ -3676,8 +4126,15 @@ class KidsTasksChildCardEditor extends HTMLElement {
       title,
       show_avatar,
       show_progress,
-      show_rewards
+      show_rewards,
+      gradient_start,
+      gradient_end,
+      text_color,
+      border_color,
     };
+
+    // Mettre à jour l'aperçu en temps réel
+    this.updatePreview();
 
     // Fire config-changed event
     const event = new CustomEvent('config-changed', {
@@ -3686,6 +4143,20 @@ class KidsTasksChildCardEditor extends HTMLElement {
       composed: true
     });
     this.dispatchEvent(event);
+  }
+
+  updatePreview() {
+    const previewHeader = this.querySelector('#preview-header');
+    if (previewHeader && this._config) {
+      const gradientStart = this._config.gradient_start || '#4CAF50';
+      const gradientEnd = this._config.gradient_end || '#8BC34A';
+      const textColor = this._config.text_color || '#ffffff';
+      const borderColor = this._config.border_color || '#2E7D32';
+      
+      previewHeader.style.background = `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`;
+      previewHeader.style.color = textColor;
+      previewHeader.style.border = `2px solid ${borderColor}`;
+    }
   }
 }
 
