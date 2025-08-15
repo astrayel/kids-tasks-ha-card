@@ -819,19 +819,21 @@ class KidsTasksCard extends HTMLElement {
           </ha-textfield>
         </div>
         
-        <div class="form-row">
-          <ha-select
-            label="Fréquence *"
-            name="frequency"
-            required>
-            ${frequencies.map(freq => `
-              <ha-list-item value="${freq}" ${(!isEdit && freq === 'daily') || (isEdit && task.frequency === freq) ? 'selected' : ''}>
-                ${this.getFrequencyLabel(freq)}
-              </ha-list-item>
-            `).join('')}
-          </ha-select>
-          
-          <div class="form-group">
+        <ha-select
+          label="Fréquence *"
+          name="frequency"
+          required>
+          ${frequencies.map(freq => `
+            <ha-list-item value="${freq}" ${(!isEdit && freq === 'daily') || (isEdit && task.frequency === freq) ? 'selected' : ''}>
+              ${this.getFrequencyLabel(freq)}
+            </ha-list-item>
+          `).join('')}
+        </ha-select>
+        
+        <!-- Conteneur pour enfants et jours côte à côte -->
+        <div class="selection-row">
+          <!-- Enfants assignés -->
+          <div class="form-group children-column">
             <label class="form-label">Enfants assignés</label>
             <div class="children-selection">
               ${children.map(child => {
@@ -855,32 +857,34 @@ class KidsTasksCard extends HTMLElement {
             </div>
           </div>
           
-          <!-- Ancien champ pour compatibilité (masqué) -->
-          <input type="hidden" name="assigned_child_id" value="${isEdit ? task.assigned_child_id || '' : ''}" />
-        </div>
-        
-        <!-- Sélection des jours de la semaine pour les tâches journalières -->
-        <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
-          <label class="form-label">Jours de la semaine (optionnel - tous les jours si aucun sélectionné)</label>
-          <div class="days-selector">
-            ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
-              const labels = {
-                'mon': 'Lundi', 'tue': 'Mardi', 'wed': 'Mercredi', 'thu': 'Jeudi', 
-                'fri': 'Vendredi', 'sat': 'Samedi', 'sun': 'Dimanche'
-              };
-              const isSelected = isEdit && task.weekly_days && task.weekly_days.includes(day);
-              return `
-                <ha-formfield label="${labels[day]}">
-                  <ha-checkbox
-                    name="weekly_days"
-                    value="${day}"
-                    ${isSelected ? 'checked' : ''}>
-                  </ha-checkbox>
-                </ha-formfield>
-              `;
-            }).join('')}
+          <!-- Jours de la semaine -->
+          <div class="form-group days-column">
+            <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
+              <label class="form-label">Jours de la semaine<br><small>(optionnel - tous si aucun sélectionné)</small></label>
+              <div class="days-selector">
+                ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
+                  const labels = {
+                    'mon': 'Lundi', 'tue': 'Mardi', 'wed': 'Mercredi', 'thu': 'Jeudi', 
+                    'fri': 'Vendredi', 'sat': 'Samedi', 'sun': 'Dimanche'
+                  };
+                  const isSelected = isEdit && task.weekly_days && task.weekly_days.includes(day);
+                  return `
+                    <ha-formfield label="${labels[day]}">
+                      <ha-checkbox
+                        name="weekly_days"
+                        value="${day}"
+                        ${isSelected ? 'checked' : ''}>
+                      </ha-checkbox>
+                    </ha-formfield>
+                  `;
+                }).join('')}
+              </div>
+            </div>
           </div>
         </div>
+        
+        <!-- Ancien champ pour compatibilité (masqué) -->
+        <input type="hidden" name="assigned_child_id" value="${isEdit ? task.assigned_child_id || '' : ''}" />
         
         <ha-formfield label="Validation parentale requise">
           <ha-checkbox 
@@ -1933,6 +1937,39 @@ class KidsTasksCard extends HTMLElement {
           font-size: 14px;
           color: var(--primary-text-color, #212121);
           user-select: none;
+        }
+        
+        .selection-row {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+        }
+        
+        .children-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .days-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .days-selector {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+        
+        @media (max-width: 768px) {
+          .selection-row {
+            flex-direction: column;
+            gap: 16px;
+          }
+          
+          .days-selector {
+            grid-template-columns: 1fr;
+          }
         }
         
         .task-status {
