@@ -462,6 +462,158 @@ class KidsTasksCard extends HTMLElement {
           --mdc-typography-subtitle1-font-size: 16px;
         }
         
+        /* Styles des formulaires pour les modales */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .form-row { 
+          display: flex; 
+          gap: 12px; 
+          margin-bottom: 16px;
+        }
+        .form-row > * { 
+          flex: 1; 
+          margin-bottom: 0;
+        }
+        
+        /* Layout côte à côte pour enfants et jours */
+        .selection-row {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+        }
+        
+        .children-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .days-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        /* Styles pour la sélection des enfants */
+        .children-selection {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 8px;
+          max-height: 200px;
+          overflow-y: auto;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          padding: 16px;
+          background: var(--card-background-color, white);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .child-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .child-checkbox:hover {
+          background-color: var(--secondary-background-color, #f5f5f5);
+        }
+        
+        .child-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
+        }
+        
+        /* Styles pour la section des jours de la semaine */
+        .weekly-days-section {
+          margin-bottom: 20px;
+          padding: 16px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          background: var(--secondary-background-color, #fafafa);
+        }
+        
+        .weekly-days-section .form-label {
+          margin-bottom: 12px;
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .weekly-days-section .days-selector {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 8px;
+        }
+        
+        .weekly-days-section .days-selector ha-formfield {
+          margin-bottom: 0;
+          flex: 0 0 auto;
+          min-width: 80px;
+          text-align: center;
+        }
+        
+        .days-selector {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+        
+        /* Actions des dialogues */
+        .dialog-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        /* Responsive design pour les modales */
+        @media (max-width: 768px) {
+          .selection-row {
+            flex-direction: column;
+            gap: 16px;
+          }
+          
+          .days-selector {
+            grid-template-columns: 1fr;
+          }
+          
+          .weekly-days-section .days-selector {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .weekly-days-section .days-selector ha-formfield {
+            min-width: auto;
+            text-align: left;
+          }
+          
+          .dialog-actions {
+            flex-direction: column-reverse;
+            gap: 8px;
+          }
+          
+          .form-row {
+            flex-direction: column;
+            gap: 0;
+          }
+          
+          .form-row > * {
+            margin-bottom: 16px;
+          }
+        }
+        
         /* Styles avatar spécifiques aux modales */
         .avatar-options { 
           display: flex; 
