@@ -437,15 +437,13 @@ class KidsTasksCard extends HTMLElement {
     const contentDiv = document.createElement('div');
     contentDiv.innerHTML = `
       <style>
-        .form-group { margin-bottom: 16px; }
-        .form-label {
-          display: block;
-          margin-bottom: 4px;
-          font-weight: 500;
-          color: var(--primary-text-color);
+        /* Styles spécifiques pour les modales ha-dialog */
+        ha-dialog {
+          max-height: 90vh;
+          overflow-y: auto;
         }
         
-        /* Corriger la hauteur des ha-select pour éviter l'overflow */
+        /* Corriger la hauteur des ha-select pour éviter l'overflow dans les modales */
         ha-select {
           --mdc-menu-max-height: 200px;
           --mdc-menu-min-width: 100%;
@@ -456,112 +454,15 @@ class KidsTasksCard extends HTMLElement {
           --mdc-menu-item-height: 48px;
         }
         
-        /* Améliorer l'affichage des modals */
-        ha-dialog {
-          max-height: 90vh;
-          overflow-y: auto;
-        }
-        .form-input, .form-select, .form-textarea {
-          width: 100%;
-          padding: 8px 12px;
-          border: 1px solid var(--divider-color);
-          border-radius: 4px;
-          background: var(--card-background-color);
-          color: var(--primary-text-color);
-          font-size: 14px;
-          font-family: inherit;
-          box-sizing: border-box;
-        }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-          outline: none;
-          border-color: var(--primary-color);
-          box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-        }
-        
-        /* Styles pour les composants HA */
+        /* Composants HA dans les modales */
         ha-textfield, ha-textarea, ha-select, ha-formfield {
           display: block;
           margin-bottom: 16px;
           width: 100%;
-        }
-        
-        /* Correction déjà appliquée plus haut */
-        
-        /* Uniformiser les tailles de police */
-        ha-textfield, ha-textarea, ha-select {
           --mdc-typography-subtitle1-font-size: 16px;
         }
         
-        .form-row {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 16px;
-        }
-        
-        .form-row > * {
-          flex: 1;
-          margin-bottom: 0;
-        }
-        
-        .children-selection {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-top: 8px;
-          max-height: 200px;
-          overflow-y: auto;
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 4px;
-          padding: 12px;
-        }
-
-        /* Styles pour la sélection des jours de la semaine */
-        .weekly-days-section {
-          margin-bottom: 20px;
-          padding: 16px;
-          border: 1px solid var(--divider-color);
-          border-radius: 8px;
-          background: var(--secondary-background-color, #fafafa);
-        }
-        
-        .days-selector {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 8px;
-        }
-        
-        .days-selector ha-formfield {
-          margin-bottom: 0;
-          flex: 0 0 auto;
-          min-width: 60px;
-          text-align: center;
-        }
-        
-        .dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          margin-top: 24px;
-          padding-top: 16px;
-          border-top: 1px solid var(--divider-color);
-        }
-        
-        /* Responsive design pour les formulaires */
-        @media (max-width: 768px) {
-          .form-row {
-            flex-direction: column;
-            gap: 0;
-          }
-          
-          .form-row > * {
-            margin-bottom: 16px;
-          }
-          
-          .dialog-actions {
-            flex-direction: column-reverse;
-          }
-        }
+        /* Styles avatar spécifiques aux modales */
         .avatar-options { 
           display: flex; 
           gap: 8px; 
@@ -581,21 +482,6 @@ class KidsTasksCard extends HTMLElement {
         .avatar-option.selected {
           border-color: var(--accent-color);
           background: rgba(255, 64, 129, 0.1);
-        }
-        .btn {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 500;
-          transition: all 0.3s;
-        }
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-secondary { 
-          background: var(--secondary-background-color); 
-          color: var(--primary-text-color);
-          border: 1px solid var(--divider-color);
         }
       </style>
       ${content}
