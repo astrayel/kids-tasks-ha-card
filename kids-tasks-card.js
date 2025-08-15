@@ -462,7 +462,7 @@ class KidsTasksCard extends HTMLElement {
           --mdc-typography-subtitle1-font-size: 16px;
         }
         
-        /* Effet hover pour les ha-formfield cliquables */
+        /* Effet hover pour les ha-formfield cliquables (validation requise, etc.) */
         ha-formfield {
           cursor: pointer;
           transition: background-color 0.2s;
@@ -561,19 +561,27 @@ class KidsTasksCard extends HTMLElement {
           margin-top: 8px;
         }
         
-        .weekly-days-section .days-selector ha-formfield {
-          margin-bottom: 0;
-          flex: 0 0 auto;
-          min-width: 80px;
-          text-align: center;
+        .day-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           cursor: pointer;
           padding: 4px 8px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          flex: 0 0 auto;
+          min-width: 80px;
+          justify-content: center;
         }
         
-        .weekly-days-section .days-selector ha-formfield:hover {
+        .day-checkbox:hover {
           background-color: var(--secondary-background-color, #f5f5f5);
+        }
+        
+        .day-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
         }
         
         .days-selector {
@@ -608,9 +616,9 @@ class KidsTasksCard extends HTMLElement {
             gap: 8px;
           }
           
-          .weekly-days-section .days-selector ha-formfield {
+          .weekly-days-section .days-selector .day-checkbox {
             min-width: auto;
-            text-align: left;
+            justify-content: flex-start;
           }
           
           .dialog-actions {
@@ -899,7 +907,7 @@ class KidsTasksCard extends HTMLElement {
           <!-- Enfants assignés -->
           <div class="form-group children-column">
             <div class="children-selection">
-              <label class="form-label">Enfants assignés</label>
+              <label class="form-label">Enfants assignés:</label>
               ${children.map(child => {
                 let isChecked = false;
                 if (isEdit) {
@@ -933,13 +941,14 @@ class KidsTasksCard extends HTMLElement {
                   };
                   const isSelected = isEdit && task.weekly_days && task.weekly_days.includes(day);
                   return `
-                    <ha-formfield label="${labels[day]}">
-                      <ha-checkbox
-                        name="weekly_days"
+                    <label class="day-checkbox">
+                      <ha-checkbox 
+                        name="weekly_days" 
                         value="${day}"
                         ${isSelected ? 'checked' : ''}>
                       </ha-checkbox>
-                    </ha-formfield>
+                      <span class="day-label">${labels[day]}</span>
+                    </label>
                   `;
                 }).join('')}
               </div>
@@ -2049,19 +2058,27 @@ class KidsTasksCard extends HTMLElement {
           margin-top: 8px;
         }
         
-        .weekly-days-section .days-selector ha-formfield {
-          margin-bottom: 0;
-          flex: 0 0 auto;
-          min-width: 80px;
-          text-align: center;
+        .day-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           cursor: pointer;
           padding: 4px 8px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          flex: 0 0 auto;
+          min-width: 80px;
+          justify-content: center;
         }
         
-        .weekly-days-section .days-selector ha-formfield:hover {
+        .day-checkbox:hover {
           background-color: var(--secondary-background-color, #f5f5f5);
+        }
+        
+        .day-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
         }
         
         @media (max-width: 768px) {
@@ -2079,9 +2096,9 @@ class KidsTasksCard extends HTMLElement {
             gap: 8px;
           }
           
-          .weekly-days-section .days-selector ha-formfield {
+          .weekly-days-section .days-selector .day-checkbox {
             min-width: auto;
-            text-align: left;
+            justify-content: flex-start;
           }
           
           .dialog-actions {
