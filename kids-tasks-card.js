@@ -506,6 +506,17 @@ class KidsTasksCard extends HTMLElement {
           min-width: 0;
         }
         
+        /* Quand la section des jours est masquée, masquer toute la colonne des jours */
+        .days-column .weekly-days-section[style*="display: none"],
+        .days-column .weekly-days-section[style*="display:none"] {
+          display: none !important;
+        }
+        
+        /* Masquer la colonne des jours si elle ne contient qu'une section masquée */
+        .days-column:has(.weekly-days-section[style*="display: none"]) {
+          display: none;
+        }
+        
         .child-checkbox {
           display: flex;
           align-items: center;
@@ -1996,6 +2007,16 @@ class KidsTasksCard extends HTMLElement {
           min-width: 0;
         }
         
+        /* Quand la section des jours est masquée, masquer toute la colonne des jours */
+        .days-column .weekly-days-section[style*="display: none"],
+        .days-column .weekly-days-section[style*="display:none"] {
+          display: none !important;
+        }
+        
+        /* Masquer la colonne des jours si elle ne contient qu'une section masquée */
+        .days-column:has(.weekly-days-section[style*="display: none"]) {
+          display: none;
+        }
         
         /* Styles pour la section des jours de la semaine avec cadre */
         .weekly-days-section, .children-section {
