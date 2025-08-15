@@ -831,7 +831,7 @@ class KidsTasksCard extends HTMLElement {
         </ha-select>
         
         <!-- Conteneur pour enfants et jours côte à côte -->
-        <div class="selection-row">
+        <div class="form-row">
           <!-- Enfants assignés -->
           <div class="form-group children-column">
             <label class="form-label">Enfants assignés</label>
