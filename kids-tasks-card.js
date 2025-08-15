@@ -1813,8 +1813,10 @@ class KidsTasksCard extends HTMLElement {
           max-height: 200px;
           overflow-y: auto;
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 4px;
-          padding: 12px;
+          border-radius: 8px;
+          padding: 16px;
+          background: var(--card-background-color, white);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .child-checkbox {
@@ -1859,6 +1861,35 @@ class KidsTasksCard extends HTMLElement {
           gap: 8px;
         }
         
+        /* Styles pour la section des jours de la semaine avec cadre */
+        .weekly-days-section {
+          margin-bottom: 20px;
+          padding: 16px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          background: var(--secondary-background-color, #fafafa);
+        }
+        
+        .weekly-days-section .form-label {
+          margin-bottom: 12px;
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .weekly-days-section .days-selector {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 8px;
+        }
+        
+        .weekly-days-section .days-selector ha-formfield {
+          margin-bottom: 0;
+          flex: 0 0 auto;
+          min-width: 80px;
+          text-align: center;
+        }
+        
         @media (max-width: 768px) {
           .selection-row {
             flex-direction: column;
@@ -1867,6 +1898,21 @@ class KidsTasksCard extends HTMLElement {
           
           .days-selector {
             grid-template-columns: 1fr;
+          }
+          
+          .weekly-days-section .days-selector {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .weekly-days-section .days-selector ha-formfield {
+            min-width: auto;
+            text-align: left;
+          }
+          
+          .dialog-actions {
+            flex-direction: column-reverse;
+            gap: 8px;
           }
         }
         
@@ -1950,6 +1996,16 @@ class KidsTasksCard extends HTMLElement {
         .form-textarea { height: 80px; resize: vertical; }
         .form-row { display: flex; gap: 12px; }
         .form-row .form-group { flex: 1; }
+        
+        /* Styles pour les actions des dialogues */
+        .dialog-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid var(--divider-color, #e0e0e0);
+        }
         
         .modal {
           position: fixed;
