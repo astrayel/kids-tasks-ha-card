@@ -517,7 +517,8 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .child-checkbox:hover {
-          background-color: var(--secondary-background-color, #f5f5f5);
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
         }
         
         .child-label {
@@ -969,7 +970,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.3');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.4');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
@@ -1969,7 +1970,8 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .child-checkbox:hover {
-          background-color: var(--secondary-background-color, #f5f5f5);
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
         }
         
         .child-label {
