@@ -758,7 +758,7 @@ class KidsTasksCard extends HTMLElement {
           <!-- Jours de la semaine -->
           <div class="form-group days-column">
             <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
-              <label class="form-label">Jours de la semaine<br><small>(optionnel - tous si aucun sélectionné)</small></label>
+              <label class="form-label">Jours de la semaine</label>
               <div class="days-selector">
                 ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
                   const labels = {
