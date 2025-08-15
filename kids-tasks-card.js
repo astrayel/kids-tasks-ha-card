@@ -462,6 +462,12 @@ class KidsTasksCard extends HTMLElement {
           --mdc-typography-subtitle1-font-size: 16px;
         }
         
+        /* Effet hover pour les ha-formfield cliquables */
+        ha-formfield {
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
         /* Styles des formulaires pour les modales */
         .form-group { margin-bottom: 16px; }
         .form-label {
@@ -560,6 +566,14 @@ class KidsTasksCard extends HTMLElement {
           flex: 0 0 auto;
           min-width: 80px;
           text-align: center;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .weekly-days-section .days-selector ha-formfield:hover {
+          background-color: var(--secondary-background-color, #f5f5f5);
         }
         
         .days-selector {
@@ -884,8 +898,8 @@ class KidsTasksCard extends HTMLElement {
         <div class="form-row">
           <!-- Enfants assignés -->
           <div class="form-group children-column">
-            <label class="form-label">Enfants assignés</label>
             <div class="children-selection">
+              <label class="form-label">Enfants assignés</label>
               ${children.map(child => {
                 let isChecked = false;
                 if (isEdit) {
@@ -2040,6 +2054,14 @@ class KidsTasksCard extends HTMLElement {
           flex: 0 0 auto;
           min-width: 80px;
           text-align: center;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+        
+        .weekly-days-section .days-selector ha-formfield:hover {
+          background-color: var(--secondary-background-color, #f5f5f5);
         }
         
         @media (max-width: 768px) {
