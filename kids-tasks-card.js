@@ -525,6 +525,7 @@ class KidsTasksCard extends HTMLElement {
           padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          user-select: none;
         }
         
         .child-checkbox:hover {
@@ -568,6 +569,7 @@ class KidsTasksCard extends HTMLElement {
           padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          user-select: none;
         }
         
         .day-checkbox:hover {
@@ -1005,6 +1007,37 @@ class KidsTasksCard extends HTMLElement {
           toggleWeeklyDays(selectedFreq);
         });
       }
+      
+      // Ajouter les event listeners pour les checkboxes cliquables
+      // Enfants
+      dialog.querySelectorAll('.child-checkbox').forEach(label => {
+        label.addEventListener('click', (e) => {
+          // Empêcher la propagation double si on clique directement sur la checkbox
+          if (e.target.tagName.toLowerCase() === 'ha-checkbox') return;
+          
+          const checkbox = label.querySelector('ha-checkbox');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            // Déclencher l'événement change pour la cohérence
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      });
+      
+      // Jours
+      dialog.querySelectorAll('.day-checkbox').forEach(label => {
+        label.addEventListener('click', (e) => {
+          // Empêcher la propagation double si on clique directement sur la checkbox
+          if (e.target.tagName.toLowerCase() === 'ha-checkbox') return;
+          
+          const checkbox = label.querySelector('ha-checkbox');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            // Déclencher l'événement change pour la cohérence
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      });
     }, 100);
   }
 
@@ -1978,6 +2011,7 @@ class KidsTasksCard extends HTMLElement {
           padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          user-select: none;
         }
         
         .child-checkbox:hover {
@@ -2048,6 +2082,7 @@ class KidsTasksCard extends HTMLElement {
           padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
+          user-select: none;
         }
         
         .day-checkbox:hover {
