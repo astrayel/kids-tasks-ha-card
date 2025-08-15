@@ -983,7 +983,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.4');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.5');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
