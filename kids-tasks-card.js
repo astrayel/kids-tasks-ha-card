@@ -1416,6 +1416,23 @@ class KidsTasksCard extends HTMLElement {
     return child ? child.name : 'Non assigné';
   }
 
+  getAssignedChildrenNames(task) {
+    const children = this.getChildren();
+    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+    
+    return assignedIds.map(childId => {
+      const child = children.find(c => c.id === childId);
+      return child ? child.name : 'Enfant inconnu';
+    }).filter(name => name);
+  }
+  
+  formatAssignedChildren(task) {
+    const childrenNames = this.getAssignedChildrenNames(task);
+    if (childrenNames.length === 0) return 'Non assigné';
+    if (childrenNames.length === 1) return childrenNames[0];
+    return childrenNames.join(', ');
+  }
+
   getStatusLabel(status) {
     const labels = {
       'todo': 'À faire',
