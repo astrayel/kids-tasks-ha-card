@@ -556,8 +556,8 @@ class KidsTasksCard extends HTMLElement {
         
         .weekly-days-section .days-selector {
           display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
+          flex-direction: column;
+          gap: 8px;
           margin-top: 8px;
         }
         
@@ -566,12 +566,9 @@ class KidsTasksCard extends HTMLElement {
           align-items: center;
           gap: 8px;
           cursor: pointer;
-          padding: 4px 8px;
+          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
-          flex: 0 0 auto;
-          min-width: 80px;
-          justify-content: center;
         }
         
         .day-checkbox:hover {
@@ -584,11 +581,6 @@ class KidsTasksCard extends HTMLElement {
           user-select: none;
         }
         
-        .days-selector {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 8px;
-        }
         
         /* Actions des dialogues */
         .dialog-actions {
@@ -607,19 +599,8 @@ class KidsTasksCard extends HTMLElement {
             gap: 16px;
           }
           
-          .days-selector {
-            grid-template-columns: 1fr;
-          }
           
-          .weekly-days-section .days-selector {
-            flex-direction: column;
-            gap: 8px;
-          }
           
-          .weekly-days-section .days-selector .day-checkbox {
-            min-width: auto;
-            justify-content: flex-start;
-          }
           
           .dialog-actions {
             flex-direction: column-reverse;
@@ -2030,11 +2011,6 @@ class KidsTasksCard extends HTMLElement {
           min-width: 0;
         }
         
-        .days-selector {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 8px;
-        }
         
         /* Styles pour la section des jours de la semaine avec cadre */
         .weekly-days-section {
@@ -2053,8 +2029,8 @@ class KidsTasksCard extends HTMLElement {
         
         .weekly-days-section .days-selector {
           display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
+          flex-direction: column;
+          gap: 8px;
           margin-top: 8px;
         }
         
@@ -2063,12 +2039,9 @@ class KidsTasksCard extends HTMLElement {
           align-items: center;
           gap: 8px;
           cursor: pointer;
-          padding: 4px 8px;
+          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
-          flex: 0 0 auto;
-          min-width: 80px;
-          justify-content: center;
         }
         
         .day-checkbox:hover {
@@ -2087,19 +2060,8 @@ class KidsTasksCard extends HTMLElement {
             gap: 16px;
           }
           
-          .days-selector {
-            grid-template-columns: 1fr;
-          }
           
-          .weekly-days-section .days-selector {
-            flex-direction: column;
-            gap: 8px;
-          }
           
-          .weekly-days-section .days-selector .day-checkbox {
-            min-width: auto;
-            justify-content: flex-start;
-          }
           
           .dialog-actions {
             flex-direction: column-reverse;
