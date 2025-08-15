@@ -1295,6 +1295,7 @@ class KidsTasksCard extends HTMLElement {
             frequency: attrs.frequency || 'daily',
             status: taskEntity.state || 'todo',
             assigned_child_id: attrs.assigned_child_id,
+            assigned_child_ids: attrs.assigned_child_ids || [],
             assigned_child_name: attrs.assigned_child_name || 'Non assigné',
             validation_required: attrs.validation_required !== false,
             active: attrs.active !== false,
@@ -1374,21 +1375,31 @@ class KidsTasksCard extends HTMLElement {
 
   getChildTasksToday(childId, tasks = null) {
     if (!tasks) tasks = this.getTasks();
-    return tasks.filter(task => 
-      task.assigned_child_id === childId && 
-      (task.frequency === 'daily' || 
-       (task.last_completed_at && this.isToday(task.last_completed_at)))
-    );
+    return tasks.filter(task => {
+      // Supporter la sélection multiple d'enfants
+      const isAssigned = task.assigned_child_ids 
+        ? task.assigned_child_ids.includes(childId)
+        : task.assigned_child_id === childId;
+      
+      return isAssigned && 
+        (task.frequency === 'daily' || 
+         (task.last_completed_at && this.isToday(task.last_completed_at)));
+    });
   }
 
   getChildCompletedToday(childId, tasks = null) {
     if (!tasks) tasks = this.getTasks();
-    return tasks.filter(task => 
-      task.assigned_child_id === childId && 
-      task.status === 'validated' &&
-      task.last_completed_at && 
-      this.isToday(task.last_completed_at)
-    );
+    return tasks.filter(task => {
+      // Supporter la sélection multiple d'enfants
+      const isAssigned = task.assigned_child_ids 
+        ? task.assigned_child_ids.includes(childId)
+        : task.assigned_child_id === childId;
+      
+      return isAssigned && 
+        task.status === 'validated' &&
+        task.last_completed_at && 
+        this.isToday(task.last_completed_at);
+    });
   }
 
   // Utilitaires
@@ -1682,7 +1693,7 @@ class KidsTasksCard extends HTMLElement {
   }
 
   renderTaskItem(task, children, showValidation = false, showManagement = false) {
-    const childName = this.getChildName(task.assigned_child_id, children);
+    const childName = this.formatAssignedChildren(task);
     
     return `
       <div class="task-item ${task.status}">
@@ -3038,22 +3049,26 @@ class KidsTasksChildCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => { 
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
-        if (taskEntity && 
-            taskEntity.attributes && 
-            taskEntity.attributes.assigned_child_id === this.config.child_id) {
-          
+        if (taskEntity && taskEntity.attributes) {
           const attrs = taskEntity.attributes;
-          tasks.push({
-            id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
-            name: attrs.task_name || attrs.friendly_name || 'Tâche',
-            description: attrs.description || '',
-            category: attrs.category || 'other',
-            points: parseInt(attrs.points) || 10,
-            status: taskEntity.state || 'todo',
-            validation_required: attrs.validation_required !== false,
-            assigned_child_id: attrs.assigned_child_id,
-            assigned_child_ids: attrs.assigned_child_ids || []
-          });
+          // Vérifier si l'enfant est assigné (nouveau format avec array ou ancien format)
+          const isAssigned = attrs.assigned_child_ids 
+            ? attrs.assigned_child_ids.includes(this.config.child_id)
+            : attrs.assigned_child_id === this.config.child_id;
+            
+          if (isAssigned) {
+            tasks.push({
+              id: attrs.task_id || entityId.replace('sensor.kids_tasks_task_', ''),
+              name: attrs.task_name || attrs.friendly_name || 'Tâche',
+              description: attrs.description || '',
+              category: attrs.category || 'other',
+              points: parseInt(attrs.points) || 10,
+              status: taskEntity.state || 'todo',
+              validation_required: attrs.validation_required !== false,
+              assigned_child_id: attrs.assigned_child_id,
+              assigned_child_ids: attrs.assigned_child_ids || []
+            });
+          }
         }
       }
     });
