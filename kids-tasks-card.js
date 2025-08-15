@@ -441,6 +441,8 @@ class KidsTasksCard extends HTMLElement {
         ha-dialog {
           max-height: 90vh;
           overflow-y: auto;
+          --mdc-dialog-max-width: 800px;
+          --mdc-dialog-min-width: 600px;
         }
         
         /* Corriger la hauteur des ha-select pour éviter l'overflow dans les modales */
@@ -584,6 +586,11 @@ class KidsTasksCard extends HTMLElement {
         
         /* Responsive design pour les modales */
         @media (max-width: 768px) {
+          ha-dialog {
+            --mdc-dialog-max-width: 95vw;
+            --mdc-dialog-min-width: 320px;
+          }
+          
           .selection-row {
             flex-direction: column;
             gap: 16px;
@@ -962,7 +969,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.1');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.2');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
