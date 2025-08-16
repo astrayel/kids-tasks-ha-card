@@ -1754,13 +1754,15 @@ class KidsTasksCard extends HTMLElement {
           <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
         ` : ''}
         <div class="task-content">
-          <div class="task-title">${task.name}</div>
+          <div class="task-header">
+            <div class="task-title">${task.name}</div>
+            <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
+          </div>
           <div class="task-meta">
             ${childName} • ${task.points} points • ${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
             ${task.description ? `<br>${task.description}` : ''}
           </div>
         </div>
-        <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
         <div class="task-actions">
           ${showValidation && task.status === 'pending_validation' ? `
             <button class="btn btn-success btn-icon validate-btn" data-action="validate-task" data-id="${task.id}">Valider</button>
@@ -2013,12 +2015,19 @@ class KidsTasksCard extends HTMLElement {
         .task-item.validated { border-left-color: #4caf50; }
         
         .task-content { flex: 1; }
+        .task-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 4px;
+        }
         .task-title {
           font-weight: bold;
-          margin-bottom: 4px;
           color: var(--primary-text-color, #212121);
+          flex: 1;
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
+
         .task-actions { 
           display: flex; 
           gap: 8px; 
@@ -2040,6 +2049,10 @@ class KidsTasksCard extends HTMLElement {
         .task-item .task-actions {
           margin-left: auto;
           flex-direction: row;
+          position: absolute;
+          right: 8px;
+          bottom: 8px;
+          margin-top: 0;
         }
         
         .child-card .task-actions .btn,
