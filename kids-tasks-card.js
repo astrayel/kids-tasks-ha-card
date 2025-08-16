@@ -2037,20 +2037,28 @@ class KidsTasksCard extends HTMLElement {
           gap: 8px;
         }
         
-        .child-card .task-actions .btn {
+        .task-item .task-actions {
+          margin-left: auto;
+          flex-direction: row;
+        }
+        
+        .child-card .task-actions .btn,
+        .task-item .task-actions .btn {
           padding: 6px 12px;
           font-size: 0.85em;
           min-width: 65px;
         }
         
-        .child-card .task-actions .edit-btn {
+        .child-card .task-actions .edit-btn,
+        .task-item .task-actions .edit-btn {
           background-color: #4caf50;
           color: white;
           border: 1px solid #4caf50;
           order: 2;
         }
         
-        .child-card .task-actions .edit-btn:hover {
+        .child-card .task-actions .edit-btn:hover,
+        .task-item .task-actions .edit-btn:hover {
           background-color: #45a049;
         }
         
