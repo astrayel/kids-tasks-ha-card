@@ -479,6 +479,7 @@ class KidsTasksCard extends HTMLElement {
           overflow-y: auto;
           --mdc-dialog-max-width: 800px;
           --mdc-dialog-min-width: 600px;
+          z-index: 10001 !important;
         }
         
         /* Corriger la hauteur des ha-select pour éviter l'overflow dans les modales */
@@ -1759,8 +1760,9 @@ class KidsTasksCard extends HTMLElement {
             <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
           </div>
           <div class="task-meta">
-            ${childName} • ${task.points} points • ${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
+            ${childName} • ${task.points} points
             ${task.description ? `<br>${task.description}` : ''}
+            <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
           </div>
         </div>
         <div class="task-actions">
