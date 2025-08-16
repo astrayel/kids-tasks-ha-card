@@ -198,7 +198,24 @@ class KidsTasksCard extends HTMLElement {
         }
         break;
       case 'remove-task':
-        if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+        const task = this.getTaskById(id);
+        const taskName = task ? task.name : 'cette tâche';
+        const assignedChildren = task ? this.formatAssignedChildren(task) : 'Aucun enfant assigné';
+        
+        const confirmTaskMessage = `Êtes-vous sûr de vouloir supprimer "${taskName}" ?\n\n` +
+                                  `Informations sur la tâche :\n` +
+                                  `• Nom : ${taskName}\n` +
+                                  `• Points : ${task ? task.points : 0} points\n` +
+                                  `• Assignée à : ${assignedChildren}\n` +
+                                  `• Catégorie : ${task ? this.getCategoryLabel(task.category) : 'Inconnue'}\n` +
+                                  `• Fréquence : ${task ? this.getFrequencyLabel(task.frequency) : 'Inconnue'}\n\n` +
+                                  `Cette action supprimera définitivement :\n` +
+                                  `• La tâche et sa configuration\n` +
+                                  `• Tout l'historique de completion\n` +
+                                  `• Tous les capteurs associés\n\n` +
+                                  `Cette action est IRRÉVERSIBLE !`;
+        
+        if (confirm(confirmTaskMessage)) {
           this.callService('kids_tasks', 'remove_task', { task_id: id });
         }
         break;
@@ -323,47 +340,12 @@ class KidsTasksCard extends HTMLElement {
     const points = parseInt(form.querySelector('[name="points"]').value);
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
-    // Debug détaillé des checkboxes
-    console.log('🔍 DEBUG: Recherche des checkboxes...');
+    // Récupérer les enfants assignés (checkboxes)
     const allChildCheckboxes = form.querySelectorAll('[name="assigned_child_ids"]');
-    console.log('🔍 DEBUG: Toutes les checkboxes trouvées:', allChildCheckboxes.length);
-    
-    allChildCheckboxes.forEach((checkbox, index) => {
-      console.log(`🔍 DEBUG: Checkbox ${index}:`, {
-        value: checkbox.value,
-        checked: checkbox.checked,
-        hasAttribute: checkbox.hasAttribute('checked'),
-        element: checkbox
-      });
-    });
-    
-    // Récupérer les enfants assignés (checkboxes) - Debug approfondi
-    console.log('🔧 DEBUG: Test de différentes méthodes...');
-    
-    // Méthode 1: Propriété checked
-    const method1 = Array.from(allChildCheckboxes)
+    const assigned_child_ids = Array.from(allChildCheckboxes)
       .filter(checkbox => checkbox.checked)
-      .map(checkbox => checkbox.value);
-    console.log('🔧 DEBUG: Méthode 1 (checked property):', method1);
-    
-    // Méthode 2: Attribut checked
-    const method2 = Array.from(allChildCheckboxes)
-      .filter(checkbox => checkbox.hasAttribute('checked'))
-      .map(checkbox => checkbox.value);
-    console.log('🔧 DEBUG: Méthode 2 (checked attribute):', method2);
-    
-    // Méthode 3: getAttribute
-    const method3 = Array.from(allChildCheckboxes)
-      .filter(checkbox => checkbox.getAttribute('checked') !== null)
-      .map(checkbox => checkbox.value);
-    console.log('🔧 DEBUG: Méthode 3 (getAttribute):', method3);
-    
-    // Utiliser la méthode qui fonctionne
-    const assigned_child_ids = method1.length > 0 ? method1 : 
-                               method2.length > 0 ? method2 : 
-                               method3;
-    
-    console.log('🔍 DEBUG: IDs des enfants cochés récupérés (final):', assigned_child_ids);
+      .map(checkbox => checkbox.value)
+      .filter(v => v);
     
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
@@ -382,21 +364,11 @@ class KidsTasksCard extends HTMLElement {
       validation_required
     };
     
-    // Debug : Afficher les enfants sélectionnés
-    console.log('🎯 DEBUG: assigned_child_ids trouvés:', assigned_child_ids);
-    
     // Ajouter l'assignation (toujours envoyer les deux champs pour compatibilité)
     if (assigned_child_ids.length > 0) {
       serviceData.assigned_child_ids = assigned_child_ids;
       serviceData.assigned_child_id = assigned_child_ids[0]; // Premier enfant pour compatibilité
-      console.log('✅ DEBUG: Assignation ajoutée:', { 
-        assigned_child_ids: serviceData.assigned_child_ids, 
-        assigned_child_id: serviceData.assigned_child_id 
-      });
-    } else {
-      console.log('❌ DEBUG: Aucun enfant sélectionné');
     }
-    // Si aucun enfant sélectionné, ne pas ajouter de champ d'assignation
     
     // Ajouter weekly_days seulement si des jours sont sélectionnés
     if (weekly_days.length > 0) {
@@ -410,12 +382,10 @@ class KidsTasksCard extends HTMLElement {
       const activeCheckbox = form.querySelector('[name="active"]');
       serviceData.active = activeCheckbox ? activeCheckbox.checked : true;
       
-      console.log('🔧 DEBUG: Service update_task avec données:', serviceData);
       if (await this.callService('kids_tasks', 'update_task', serviceData)) {
         this.closeModal(dialog);
       }
     } else {
-      console.log('🔧 DEBUG: Service add_task avec données:', serviceData);
       if (await this.callService('kids_tasks', 'add_task', serviceData)) {
         this.closeModal(dialog);
       }
