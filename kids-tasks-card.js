@@ -323,8 +323,24 @@ class KidsTasksCard extends HTMLElement {
     const points = parseInt(form.querySelector('[name="points"]').value);
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
+    // Debug détaillé des checkboxes
+    console.log('🔍 DEBUG: Recherche des checkboxes...');
+    const allChildCheckboxes = form.querySelectorAll('[name="assigned_child_ids"]');
+    console.log('🔍 DEBUG: Toutes les checkboxes trouvées:', allChildCheckboxes.length);
+    
+    allChildCheckboxes.forEach((checkbox, index) => {
+      console.log(`🔍 DEBUG: Checkbox ${index}:`, {
+        value: checkbox.value,
+        checked: checkbox.checked,
+        hasAttribute: checkbox.hasAttribute('checked'),
+        element: checkbox
+      });
+    });
+    
     // Récupérer les enfants assignés (checkboxes)
     const assignedChildCheckboxes = form.querySelectorAll('[name="assigned_child_ids"]:checked');
+    console.log('🔍 DEBUG: Checkboxes cochées trouvées:', assignedChildCheckboxes.length);
+    
     const assigned_child_ids = Array.from(assignedChildCheckboxes).map(checkbox => checkbox.value).filter(v => v);
     
     const validation_required = form.querySelector('[name="validation_required"]').checked;
