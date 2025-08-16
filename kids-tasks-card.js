@@ -2017,14 +2017,13 @@ class KidsTasksCard extends HTMLElement {
         .task-content { flex: 1; }
         .task-header {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          gap: 12px;
           margin-bottom: 4px;
         }
         .task-title {
           font-weight: bold;
           color: var(--primary-text-color, #212121);
-          flex: 1;
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
 
