@@ -482,14 +482,13 @@ class KidsTasksCard extends HTMLElement {
           z-index: 10001 !important;
         }
         
-        /* Corriger la hauteur des ha-select pour éviter l'overflow dans les modales */
         ha-select {
-          --mdc-menu-max-height: 200px;
+          --mdc-menu-max-height: 480px;
           --mdc-menu-min-width: 100%;
         }
         
         ha-select mwc-menu {
-          --mdc-menu-max-height: 200px;
+          --mdc-menu-max-height: 480px;
           --mdc-menu-item-height: 48px;
         }
         
