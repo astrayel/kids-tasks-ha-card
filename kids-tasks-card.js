@@ -337,13 +337,33 @@ class KidsTasksCard extends HTMLElement {
       });
     });
     
-    // Récupérer les enfants assignés (checkboxes) - Méthode corrigée pour ha-checkbox
-    const assigned_child_ids = Array.from(allChildCheckboxes)
-      .filter(checkbox => checkbox.checked)  // Utiliser la propriété checked directement
-      .map(checkbox => checkbox.value)
-      .filter(v => v);
+    // Récupérer les enfants assignés (checkboxes) - Debug approfondi
+    console.log('🔧 DEBUG: Test de différentes méthodes...');
     
-    console.log('🔍 DEBUG: IDs des enfants cochés récupérés:', assigned_child_ids);
+    // Méthode 1: Propriété checked
+    const method1 = Array.from(allChildCheckboxes)
+      .filter(checkbox => checkbox.checked)
+      .map(checkbox => checkbox.value);
+    console.log('🔧 DEBUG: Méthode 1 (checked property):', method1);
+    
+    // Méthode 2: Attribut checked
+    const method2 = Array.from(allChildCheckboxes)
+      .filter(checkbox => checkbox.hasAttribute('checked'))
+      .map(checkbox => checkbox.value);
+    console.log('🔧 DEBUG: Méthode 2 (checked attribute):', method2);
+    
+    // Méthode 3: getAttribute
+    const method3 = Array.from(allChildCheckboxes)
+      .filter(checkbox => checkbox.getAttribute('checked') !== null)
+      .map(checkbox => checkbox.value);
+    console.log('🔧 DEBUG: Méthode 3 (getAttribute):', method3);
+    
+    // Utiliser la méthode qui fonctionne
+    const assigned_child_ids = method1.length > 0 ? method1 : 
+                               method2.length > 0 ? method2 : 
+                               method3;
+    
+    console.log('🔍 DEBUG: IDs des enfants cochés récupérés (final):', assigned_child_ids);
     
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
