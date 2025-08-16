@@ -337,17 +337,21 @@ class KidsTasksCard extends HTMLElement {
       });
     });
     
-    // Récupérer les enfants assignés (checkboxes)
-    const assignedChildCheckboxes = form.querySelectorAll('[name="assigned_child_ids"]:checked');
-    console.log('🔍 DEBUG: Checkboxes cochées trouvées:', assignedChildCheckboxes.length);
+    // Récupérer les enfants assignés (checkboxes) - Méthode corrigée pour ha-checkbox
+    const assigned_child_ids = Array.from(allChildCheckboxes)
+      .filter(checkbox => checkbox.checked)  // Utiliser la propriété checked directement
+      .map(checkbox => checkbox.value)
+      .filter(v => v);
     
-    const assigned_child_ids = Array.from(assignedChildCheckboxes).map(checkbox => checkbox.value).filter(v => v);
+    console.log('🔍 DEBUG: IDs des enfants cochés récupérés:', assigned_child_ids);
     
     const validation_required = form.querySelector('[name="validation_required"]').checked;
     
-    // Récupérer les jours sélectionnés pour les tâches journalières
-    const weeklyDaysCheckboxes = form.querySelectorAll('[name="weekly_days"]:checked');
-    const weekly_days = Array.from(weeklyDaysCheckboxes).map(cb => cb.value);
+    // Récupérer les jours sélectionnés pour les tâches journalières - Méthode corrigée pour ha-checkbox
+    const allWeeklyDaysCheckboxes = form.querySelectorAll('[name="weekly_days"]');
+    const weekly_days = Array.from(allWeeklyDaysCheckboxes)
+      .filter(checkbox => checkbox.checked)
+      .map(checkbox => checkbox.value);
     
     const serviceData = {
       name,
