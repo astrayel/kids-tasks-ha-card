@@ -220,7 +220,23 @@ class KidsTasksCard extends HTMLElement {
         }
         break;
       case 'remove-reward':
-        if (confirm('Êtes-vous sûr de vouloir supprimer cette récompense ?')) {
+        const reward = this.getRewardById(id);
+        const rewardName = reward ? reward.name : 'cette récompense';
+        
+        const confirmRewardMessage = `Êtes-vous sûr de vouloir supprimer "${rewardName}" ?\n\n` +
+                                    `Informations sur la récompense :\n` +
+                                    `• Nom : ${rewardName}\n` +
+                                    `• Coût : ${reward ? reward.cost : 0} points\n` +
+                                    `• Catégorie : ${reward ? this.getCategoryLabel(reward.category) : 'Inconnue'}\n` +
+                                    `• Quantité limitée : ${reward && reward.limited_quantity ? `${reward.remaining_quantity}/${reward.limited_quantity}` : 'Non'}\n` +
+                                    `• Description : ${reward && reward.description ? reward.description : 'Aucune'}\n\n` +
+                                    `Cette action supprimera définitivement :\n` +
+                                    `• La récompense et sa configuration\n` +
+                                    `• Tout l'historique d'échange\n` +
+                                    `• Tous les capteurs associés\n\n` +
+                                    `Cette action est IRRÉVERSIBLE !`;
+        
+        if (confirm(confirmRewardMessage)) {
           this.callService('kids_tasks', 'remove_reward', { reward_id: id });
         }
         break;
@@ -1003,7 +1019,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.5');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.6');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
@@ -1762,6 +1778,9 @@ class KidsTasksCard extends HTMLElement {
   renderRewardCard(reward, showActions = false) {
     return `
       <div class="child-card">
+        ${showActions ? `
+          <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
+        ` : ''}
         <div class="child-avatar">🎁</div>
         <div class="child-info">
           <div class="child-name">${reward.name}</div>
@@ -1774,7 +1793,6 @@ class KidsTasksCard extends HTMLElement {
         <div class="task-actions">
           ${showActions ? `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
-            <button class="btn btn-danger btn-icon delete-btn" data-action="remove-reward" data-id="${reward.id}">Supprimer</button>
           ` : `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
           `}
