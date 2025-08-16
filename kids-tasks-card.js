@@ -1734,6 +1734,9 @@ class KidsTasksCard extends HTMLElement {
     
     return `
       <div class="task-item ${task.status}">
+        ${showManagement ? `
+          <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
+        ` : ''}
         <div class="task-content">
           <div class="task-title">${task.name}</div>
           <div class="task-meta">
@@ -1748,7 +1751,6 @@ class KidsTasksCard extends HTMLElement {
             <button class="btn btn-danger btn-icon reject-btn" data-action="reject-task" data-id="${task.id}">Rejeter</button>
           ` : showManagement ? `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
-            <button class="btn btn-danger btn-icon delete-btn" data-action="remove-task" data-id="${task.id}">Supprimer</button>
           ` : `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
           `}
@@ -1985,6 +1987,7 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 8px;
           border-left: 4px solid #ddd;
           transition: all 0.3s;
+          position: relative;
         }
         
         .task-item:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
