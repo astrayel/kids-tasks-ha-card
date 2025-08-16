@@ -2103,7 +2103,6 @@ class KidsTasksCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 10;
           transition: all 0.2s;
         }
         
