@@ -21,9 +21,11 @@ class KidsTasksCard extends HTMLElement {
     if (!this._initialized && hass) {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
+      this.setupDragAndDrop();
       this.render();
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
       this.render();
+      this.setupDragAndDrop();
     }
   }
 
@@ -193,7 +195,7 @@ class KidsTasksCard extends HTMLElement {
         if (confirm(confirmMessage)) {
           this.callService('kids_tasks', 'remove_child', { 
             child_id: id,
-            force_delete: true 
+            force_remove_entities: true 
           });
         }
         break;
@@ -241,6 +243,132 @@ class KidsTasksCard extends HTMLElement {
         }
         break;
     }
+  }
+
+  // === DRAG & DROP ===
+
+  setupDragAndDrop() {
+    // Attendre le prochain tick pour que le DOM soit mis à jour
+    setTimeout(() => {
+      this.attachDragEvents();
+    }, 0);
+  }
+
+  attachDragEvents() {
+    const childCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
+    
+    childCards.forEach(card => {
+      // Supprimer les anciens listeners pour éviter les doublons
+      card.removeEventListener('dragstart', this.handleDragStart);
+      card.removeEventListener('dragover', this.handleDragOver);
+      card.removeEventListener('drop', this.handleDrop);
+      card.removeEventListener('dragend', this.handleDragEnd);
+      
+      // Ajouter les nouveaux listeners
+      card.addEventListener('dragstart', this.handleDragStart.bind(this));
+      card.addEventListener('dragover', this.handleDragOver.bind(this));
+      card.addEventListener('drop', this.handleDrop.bind(this));
+      card.addEventListener('dragend', this.handleDragEnd.bind(this));
+    });
+  }
+
+  handleDragStart(event) {
+    const card = event.target.closest('.child-card');
+    if (!card) return;
+    
+    const childId = card.getAttribute('data-child-id');
+    event.dataTransfer.setData('text/plain', childId);
+    event.dataTransfer.effectAllowed = 'move';
+    
+    card.classList.add('dragging');
+    this.draggedElement = card;
+  }
+
+  handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    const card = event.target.closest('.child-card');
+    if (!card || card === this.draggedElement) return;
+    
+    // Ajouter une indication visuelle
+    const rect = card.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    
+    if (event.clientY < midY) {
+      card.classList.add('drop-before');
+      card.classList.remove('drop-after');
+    } else {
+      card.classList.add('drop-after');
+      card.classList.remove('drop-before');
+    }
+  }
+
+  handleDrop(event) {
+    event.preventDefault();
+    
+    const draggedChildId = event.dataTransfer.getData('text/plain');
+    const dropCard = event.target.closest('.child-card');
+    
+    if (!dropCard || !draggedChildId) return;
+    
+    const targetChildId = dropCard.getAttribute('data-child-id');
+    if (draggedChildId === targetChildId) return;
+    
+    // Déterminer la position (avant ou après)
+    const rect = dropCard.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const dropBefore = event.clientY < midY;
+    
+    this.reorderChildren(draggedChildId, targetChildId, dropBefore);
+    
+    // Nettoyer les classes CSS
+    this.cleanupDragStyles();
+  }
+
+  handleDragEnd(event) {
+    this.cleanupDragStyles();
+    this.draggedElement = null;
+  }
+
+  cleanupDragStyles() {
+    const cards = this.shadowRoot.querySelectorAll('.child-card');
+    cards.forEach(card => {
+      card.classList.remove('dragging', 'drop-before', 'drop-after');
+    });
+  }
+
+  reorderChildren(draggedId, targetId, dropBefore) {
+    const currentOrder = this.config.children_order || [];
+    const children = this.getChildren();
+    
+    // Créer un nouvel ordre basé sur l'ordre d'affichage actuel
+    const displayOrder = children.map(child => child.id);
+    
+    // Supprimer l'élément déplacé
+    const draggedIndex = displayOrder.indexOf(draggedId);
+    if (draggedIndex !== -1) {
+      displayOrder.splice(draggedIndex, 1);
+    }
+    
+    // Trouver la nouvelle position
+    const targetIndex = displayOrder.indexOf(targetId);
+    const insertIndex = dropBefore ? targetIndex : targetIndex + 1;
+    
+    // Insérer à la nouvelle position
+    displayOrder.splice(insertIndex, 0, draggedId);
+    
+    // Mettre à jour la configuration
+    this.config = { ...this.config, children_order: displayOrder };
+    
+    // Déclencher la mise à jour de la configuration
+    if (this.configChanged) {
+      this.configChanged(this.config);
+    }
+    
+    // Re-rendre immédiatement
+    this.render();
+    this.setupDragAndDrop();
   }
 
   // === SERVICE CALLS ET ACTIONS ===
@@ -1284,7 +1412,28 @@ class KidsTasksCard extends HTMLElement {
       }
     });
     
-    return children.sort((a, b) => a.name.localeCompare(b.name));
+    // Trier selon l'ordre personnalisé ou alphabétique par défaut
+    const childrenOrder = this.config.children_order || [];
+    
+    return children.sort((a, b) => {
+      const indexA = childrenOrder.indexOf(a.id);
+      const indexB = childrenOrder.indexOf(b.id);
+      
+      // Si les deux enfants ont un ordre défini
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      // Si seul A a un ordre défini, A vient en premier
+      if (indexA !== -1 && indexB === -1) {
+        return -1;
+      }
+      // Si seul B a un ordre défini, B vient en premier
+      if (indexA === -1 && indexB !== -1) {
+        return 1;
+      }
+      // Si aucun n'a d'ordre défini, tri alphabétique
+      return a.name.localeCompare(b.name);
+    });
   }
 
   getPersonEntities() {
@@ -1319,7 +1468,7 @@ class KidsTasksCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => { 
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
-        if (taskEntity && taskEntity.attributes) {
+        if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           
           const attrs = taskEntity.attributes;
           tasks.push({
@@ -1360,7 +1509,7 @@ class KidsTasksCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => {
       if (entityId.startsWith('sensor.kids_tasks_reward_')) {
         const rewardEntity = entities[entityId];
-        if (rewardEntity && rewardEntity.attributes) {
+        if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
           rewards.push({
@@ -1717,7 +1866,7 @@ class KidsTasksCard extends HTMLElement {
       const avatar = this.getEffectiveAvatar(child, 'large');
       
       return `
-        <div class="child-card">
+        <div class="child-card" ${showActions ? `draggable="true" data-child-id="${child.id || 'unknown'}"` : ''}>
           ${showActions ? `
             <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
           ` : ''}
@@ -1734,6 +1883,7 @@ class KidsTasksCard extends HTMLElement {
           </div>
           ${showActions ? `
             <div class="task-actions">
+              <div class="drag-handle" title="Glisser pour réorganiser">⋮⋮</div>
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
             </div>
           ` : ''}
@@ -1922,6 +2072,38 @@ class KidsTasksCard extends HTMLElement {
           position: relative;
           min-height: 160px;
           height: 160px;
+        }
+        
+        /* Drag & Drop styles */
+        .child-card[draggable="true"] {
+          cursor: move;
+        }
+        
+        .child-card.dragging {
+          opacity: 0.5;
+          transform: rotate(2deg);
+          z-index: 1000;
+        }
+        
+        .child-card.drop-before {
+          border-top: 3px solid var(--primary-color, #03a9f4);
+        }
+        
+        .child-card.drop-after {
+          border-bottom: 3px solid var(--primary-color, #03a9f4);
+        }
+        
+        .drag-handle {
+          color: var(--secondary-text-color, #757575);
+          font-size: 16px;
+          cursor: grab;
+          padding: 4px;
+          margin-right: 8px;
+          user-select: none;
+        }
+        
+        .drag-handle:active {
+          cursor: grabbing;
         }
         
         .child-card:hover { 
@@ -3127,7 +3309,7 @@ class KidsTasksChildCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => { 
       if (entityId.startsWith('sensor.kids_tasks_task_')) {
         const taskEntity = entities[entityId];
-        if (taskEntity && taskEntity.attributes) {
+        if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           const attrs = taskEntity.attributes;
           // Vérifier si l'enfant est assigné (nouveau format avec array ou ancien format)
           const isAssigned = attrs.assigned_child_ids 
@@ -3169,7 +3351,7 @@ class KidsTasksChildCard extends HTMLElement {
     Object.keys(entities).forEach(entityId => {
       if (entityId.startsWith('sensor.kids_tasks_reward_')) {
         const rewardEntity = entities[entityId];
-        if (rewardEntity && rewardEntity.attributes) {
+        if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
           rewards.push({
