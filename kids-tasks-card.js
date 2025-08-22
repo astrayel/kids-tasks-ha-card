@@ -263,6 +263,7 @@ class KidsTasksCard extends HTMLElement {
     
     // Nettoyer les anciens listeners
     if (container) {
+      container.removeEventListener('dragenter', this.handleDragEnter);
       container.removeEventListener('dragover', this.handleDragOver);
       container.removeEventListener('drop', this.handleDrop);
     }
@@ -271,10 +272,16 @@ class KidsTasksCard extends HTMLElement {
       // Supprimer les anciens listeners pour éviter les doublons
       card.removeEventListener('dragstart', this.handleDragStart);
       card.removeEventListener('dragend', this.handleDragEnd);
+      card.removeEventListener('dragenter', this.handleDragEnter);
+      card.removeEventListener('dragover', this.handleDragOver);
+      card.removeEventListener('drop', this.handleDrop);
       
       // Ajouter les nouveaux listeners
       card.addEventListener('dragstart', this.handleDragStart.bind(this));
       card.addEventListener('dragend', this.handleDragEnd.bind(this));
+      card.addEventListener('dragenter', this.handleDragEnter.bind(this));
+      card.addEventListener('dragover', this.handleDragOver.bind(this));
+      card.addEventListener('drop', this.handleDrop.bind(this));
       
       // Empêcher le drag depuis les boutons
       const buttons = card.querySelectorAll('button');
@@ -286,6 +293,7 @@ class KidsTasksCard extends HTMLElement {
     
     // Ajouter les événements dragover et drop au conteneur
     if (container) {
+      container.addEventListener('dragenter', this.handleDragEnter.bind(this));
       container.addEventListener('dragover', this.handleDragOver.bind(this));
       container.addEventListener('drop', this.handleDrop.bind(this));
       console.log('DEBUG: Events attached to container');
@@ -312,9 +320,16 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleDragOver(event) {
-    console.log('DEBUG: handleDragOver called');
+    console.log('DEBUG: handleDragOver called on:', event.target);
     event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.dropEffect = 'move';
+    
+    // Nettoyer toutes les indications visuelles existantes
+    const allCards = this.shadowRoot.querySelectorAll('.child-card');
+    allCards.forEach(c => {
+      c.classList.remove('drop-before', 'drop-after');
+    });
     
     const card = event.target.closest('.child-card');
     if (!card || card === this.draggedElement) {
@@ -338,23 +353,27 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleDrop(event) {
-    console.log('DEBUG: handleDrop called');
+    console.log('DEBUG: handleDrop called on:', event.target);
     event.preventDefault();
+    event.stopPropagation();
     
     const draggedChildId = event.dataTransfer.getData('text/plain');
     const dropCard = event.target.closest('.child-card');
     
     console.log('DEBUG: Drop - dragged ID:', draggedChildId);
     console.log('DEBUG: Drop - target card:', dropCard?.getAttribute('data-child-id'));
+    console.log('DEBUG: Drop - target element:', event.target);
     
     if (!dropCard || !draggedChildId) {
       console.warn('DEBUG: Drop failed - missing card or ID');
+      this.cleanupDragStyles();
       return;
     }
     
     const targetChildId = dropCard.getAttribute('data-child-id');
     if (draggedChildId === targetChildId) {
       console.log('DEBUG: Drop on same element, ignoring');
+      this.cleanupDragStyles();
       return;
     }
     
@@ -371,8 +390,15 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleDragEnd(event) {
+    console.log('DEBUG: handleDragEnd called');
     this.cleanupDragStyles();
     this.draggedElement = null;
+  }
+
+  handleDragEnter(event) {
+    console.log('DEBUG: handleDragEnter called on:', event.target);
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   cleanupDragStyles() {
