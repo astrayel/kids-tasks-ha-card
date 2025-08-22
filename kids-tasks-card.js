@@ -255,20 +255,29 @@ class KidsTasksCard extends HTMLElement {
 
   attachDragEvents() {
     const childCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
+    const container = this.shadowRoot.querySelector('.children-grid');
+    
+    // Nettoyer les anciens listeners
+    if (container) {
+      container.removeEventListener('dragover', this.handleDragOver);
+      container.removeEventListener('drop', this.handleDrop);
+    }
     
     childCards.forEach(card => {
       // Supprimer les anciens listeners pour éviter les doublons
       card.removeEventListener('dragstart', this.handleDragStart);
-      card.removeEventListener('dragover', this.handleDragOver);
-      card.removeEventListener('drop', this.handleDrop);
       card.removeEventListener('dragend', this.handleDragEnd);
       
       // Ajouter les nouveaux listeners
       card.addEventListener('dragstart', this.handleDragStart.bind(this));
-      card.addEventListener('dragover', this.handleDragOver.bind(this));
-      card.addEventListener('drop', this.handleDrop.bind(this));
       card.addEventListener('dragend', this.handleDragEnd.bind(this));
     });
+    
+    // Ajouter les événements dragover et drop au conteneur
+    if (container) {
+      container.addEventListener('dragover', this.handleDragOver.bind(this));
+      container.addEventListener('drop', this.handleDrop.bind(this));
+    }
   }
 
   handleDragStart(event) {
@@ -498,13 +507,19 @@ class KidsTasksCard extends HTMLElement {
       .filter(checkbox => checkbox.checked)
       .map(checkbox => checkbox.value);
     
+    // Récupérer l'heure limite et la pénalité
+    const deadline_time = form.querySelector('[name="deadline_time"]').value || null;
+    const penalty_points = parseInt(form.querySelector('[name="penalty_points"]').value) || 0;
+    
     const serviceData = {
       name,
       description,
       category,
       points,
       frequency,
-      validation_required
+      validation_required,
+      deadline_time,
+      penalty_points
     };
     
     // Ajouter l'assignation (toujours envoyer les deux champs pour compatibilité)
@@ -1130,6 +1145,27 @@ class KidsTasksCard extends HTMLElement {
           </ha-formfield>
         ` : ''}
         
+        <!-- Heure limite et pénalité -->
+        <div class="form-row">
+          <ha-textfield
+            label="Heure limite (optionnel)"
+            name="deadline_time"
+            type="time"
+            value="${isEdit ? task.deadline_time || '' : ''}"
+            placeholder="Ex: 18:00">
+          </ha-textfield>
+          
+          <ha-textfield
+            label="Points de pénalité"
+            name="penalty_points"
+            type="number"
+            value="${isEdit ? task.penalty_points || '0' : '0'}"
+            min="0"
+            max="50"
+            helper-text="Points retirés si l'heure limite est dépassée">
+          </ha-textfield>
+        </div>
+        
         <div class="dialog-actions">
           <ha-button 
             slot="secondaryAction" 
@@ -1747,7 +1783,7 @@ class KidsTasksCard extends HTMLElement {
       </div>
 
       ${children.length > 0 ? `
-        <div class="section">
+        <div class="section children-grid">
           <h2>Enfants</h2>
           ${children.map((child, index) => {
             try {
@@ -1927,6 +1963,9 @@ class KidsTasksCard extends HTMLElement {
             ${childName} • ${task.points} points
             ${task.description ? `<br>${task.description}` : ''}
             <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
+            ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
+            ${task.penalty_points > 0 ? ` • ⚠️ Pénalité: ${task.penalty_points} points` : ''}
+            ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: red;">⏰ Heure limite dépassée</span>` : ''}
           </div>
         </div>
         <div class="task-actions">
