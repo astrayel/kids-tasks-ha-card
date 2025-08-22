@@ -151,7 +151,10 @@ class KidsTasksCard extends HTMLElement {
       case 'switch-view':
         this.currentView = id;
         // Petit délai pour éviter les blocages lors du changement de vue
-        setTimeout(() => this.render(), 10);
+        setTimeout(() => {
+          this.render();
+          this.setupDragAndDrop();
+        }, 10);
         break;
       case 'add-child':
         this.showChildForm();
@@ -249,7 +252,10 @@ class KidsTasksCard extends HTMLElement {
   setupDragAndDrop() {
     // Attendre le prochain tick pour que le DOM soit mis à jour
     setTimeout(() => {
-      this.attachDragEvents();
+      // Seulement attacher les événements drag dans la vue "children" où il y a des cartes draggables
+      if (this.currentView === 'children') {
+        this.attachDragEvents();
+      }
     }, 0);
   }
 
@@ -257,9 +263,15 @@ class KidsTasksCard extends HTMLElement {
     const draggableCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
     const container = this.shadowRoot.querySelector('.children-grid');
     
-    console.log('DEBUG: attachDragEvents called');
+    console.log('DEBUG: attachDragEvents called for view:', this.currentView);
     console.log('DEBUG: Found draggable cards:', draggableCards.length);
     console.log('DEBUG: Found container:', !!container);
+    
+    // Si pas de cartes draggables, pas besoin de continuer
+    if (draggableCards.length === 0) {
+      console.log('DEBUG: No draggable cards found, skipping event attachment');
+      return;
+    }
     
     // Nettoyer les anciens listeners
     if (container) {
