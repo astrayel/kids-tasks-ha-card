@@ -2191,6 +2191,7 @@ class KidsTasksCard extends HTMLElement {
         
         .child-card {
           display: flex;
+          flex-direction: row;
           align-items: flex-start;
           padding: 8px;
           margin: 8px 0;
@@ -2229,12 +2230,12 @@ class KidsTasksCard extends HTMLElement {
         
         .drag-handle {
           position: absolute;
-          top: 8px;
+          top: 4px;
           left: 8px;
           color: var(--secondary-text-color, #757575);
-          font-size: 16px;
+          font-size: 20px;
           cursor: grab;
-          padding: 4px;
+          padding: 6px;
           user-select: none;
           z-index: 10;
         }
@@ -2801,6 +2802,38 @@ class KidsTasksCard extends HTMLElement {
           .child-card .task-actions .btn {
             min-width: 70px;
             padding: 8px 12px;
+          }
+        }
+        
+        /* Media queries pour mobile - Forcer la disposition horizontale */
+        @media screen and (max-width: 768px) {
+          .child-card {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            min-height: 120px;
+            height: auto;
+            padding: 6px;
+          }
+          
+          .child-avatar {
+            font-size: 2em !important;
+            margin-right: 12px !important;
+            flex-shrink: 0;
+          }
+          
+          .child-info {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          
+          .child-name {
+            font-size: 0.9em !important;
+          }
+          
+          .child-stats {
+            font-size: 0.8em !important;
           }
         }
       </style>
