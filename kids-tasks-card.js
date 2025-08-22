@@ -257,6 +257,10 @@ class KidsTasksCard extends HTMLElement {
     const childCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
     const container = this.shadowRoot.querySelector('.children-grid');
     
+    console.log('DEBUG: attachDragEvents called');
+    console.log('DEBUG: Found draggable cards:', childCards.length);
+    console.log('DEBUG: Found container:', !!container);
+    
     // Nettoyer les anciens listeners
     if (container) {
       container.removeEventListener('dragover', this.handleDragOver);
@@ -277,14 +281,22 @@ class KidsTasksCard extends HTMLElement {
     if (container) {
       container.addEventListener('dragover', this.handleDragOver.bind(this));
       container.addEventListener('drop', this.handleDrop.bind(this));
+      console.log('DEBUG: Events attached to container');
+    } else {
+      console.warn('DEBUG: No container found for drag events');
     }
   }
 
   handleDragStart(event) {
+    console.log('DEBUG: handleDragStart called');
     const card = event.target.closest('.child-card');
-    if (!card) return;
+    if (!card) {
+      console.warn('DEBUG: No card found in dragstart');
+      return;
+    }
     
     const childId = card.getAttribute('data-child-id');
+    console.log('DEBUG: Dragging child ID:', childId);
     event.dataTransfer.setData('text/plain', childId);
     event.dataTransfer.effectAllowed = 'move';
     
@@ -293,11 +305,17 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleDragOver(event) {
+    console.log('DEBUG: handleDragOver called');
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     
     const card = event.target.closest('.child-card');
-    if (!card || card === this.draggedElement) return;
+    if (!card || card === this.draggedElement) {
+      console.log('DEBUG: dragover - no valid card or same element');
+      return;
+    }
+    
+    console.log('DEBUG: dragover on card:', card.getAttribute('data-child-id'));
     
     // Ajouter une indication visuelle
     const rect = card.getBoundingClientRect();
@@ -313,21 +331,32 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleDrop(event) {
+    console.log('DEBUG: handleDrop called');
     event.preventDefault();
     
     const draggedChildId = event.dataTransfer.getData('text/plain');
     const dropCard = event.target.closest('.child-card');
     
-    if (!dropCard || !draggedChildId) return;
+    console.log('DEBUG: Drop - dragged ID:', draggedChildId);
+    console.log('DEBUG: Drop - target card:', dropCard?.getAttribute('data-child-id'));
+    
+    if (!dropCard || !draggedChildId) {
+      console.warn('DEBUG: Drop failed - missing card or ID');
+      return;
+    }
     
     const targetChildId = dropCard.getAttribute('data-child-id');
-    if (draggedChildId === targetChildId) return;
+    if (draggedChildId === targetChildId) {
+      console.log('DEBUG: Drop on same element, ignoring');
+      return;
+    }
     
     // Déterminer la position (avant ou après)
     const rect = dropCard.getBoundingClientRect();
     const midY = rect.top + rect.height / 2;
     const dropBefore = event.clientY < midY;
     
+    console.log('DEBUG: Reordering:', draggedChildId, 'to', targetChildId, dropBefore ? 'before' : 'after');
     this.reorderChildren(draggedChildId, targetChildId, dropBefore);
     
     // Nettoyer les classes CSS
@@ -1823,7 +1852,7 @@ class KidsTasksCard extends HTMLElement {
           <button class="btn btn-primary add-btn" data-action="add-child">Ajouter</button>
         </h2>
         ${children.length > 0 ? `
-          <div class="grid grid-2">
+          <div class="grid grid-2 children-grid">
             ${children.map((child, index) => {
               try {
                 console.log(`Rendu enfant gestion ${index}:`, child);
