@@ -48,8 +48,8 @@ class KidsTasksCard extends HTMLElement {
     }
     
     // Vérifier si les tâches ou récompenses ont changé
-    const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.KidTasks_task_'));
-    const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.KidTasks_task_'));
+    const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
+    const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
     
     if (oldTaskEntities.length !== newTaskEntities.length) return true;
     
@@ -64,8 +64,8 @@ class KidsTasksCard extends HTMLElement {
     }
     
     // Vérifier les récompenses
-    const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.KidTasks_reward_'));
-    const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.KidTasks_reward_'));
+    const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+    const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
     
     if (oldRewardEntities.length !== newRewardEntities.length) return true;
     
@@ -86,11 +86,11 @@ class KidsTasksCard extends HTMLElement {
     const entities = hass.states;
     
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.KidTasks_') && entityId.endsWith('_points')) {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
         const pointsEntity = entities[entityId];
         if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
           children.push({
-            id: pointsEntity.attributes.child_id || entityId.replace('sensor.KidTasks_', '').replace('_points', ''),
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
             state: pointsEntity.state,
             attributes: pointsEntity.attributes
           });
@@ -1378,8 +1378,8 @@ class KidsTasksCard extends HTMLElement {
     console.log('DEBUG getChildren: Nombre total d\'entités:', Object.keys(entities).length);
     
     Object.keys(entities).forEach(entityId => {
-      // Chercher UNIQUEMENT les entités avec le nouveau format KidTasks_
-      if (entityId.startsWith('sensor.KidTasks_') && entityId.endsWith('_points')) {
+      // Chercher UNIQUEMENT les entités avec le nouveau format kidtasks_
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
         const pointsEntity = entities[entityId];
         console.log('DEBUG getChildren: Entité trouvée:', entityId, 'State:', pointsEntity?.state, 'Attributes:', pointsEntity?.attributes);
         
@@ -1388,8 +1388,8 @@ class KidsTasksCard extends HTMLElement {
           const level = parseInt(pointsEntity.attributes.level) || 1;
           const progress = ((points % 100) / 100) * 100;
           
-          // Extraire l'ID et le nom depuis le nouveau format KidTasks_
-          const childId = pointsEntity.attributes.child_id || entityId.replace('sensor.KidTasks_', '').replace('_points', '');
+          // Extraire l'ID et le nom depuis le nouveau format kidtasks_
+          const childId = pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
           const childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
           
           console.log('DEBUG getChildren: Enfant ajouté:', {
@@ -1479,15 +1479,15 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
-    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs KidTasks_task_
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_task_
     Object.keys(entities).forEach(entityId => { 
-      if (entityId.startsWith('sensor.KidTasks_task_')) {
+      if (entityId.startsWith('sensor.kidtasks_task_')) {
         const taskEntity = entities[entityId];
         if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           
           const attrs = taskEntity.attributes;
           tasks.push({
-            id: attrs.task_id || entityId.replace('sensor.KidTasks_task_', ''),
+            id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
             name: attrs.task_name || attrs.friendly_name || 'Tâche',
             description: attrs.description || '',
             category: attrs.category || 'other',
@@ -1520,15 +1520,15 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
-    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs KidTasks_reward_
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_reward_
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.KidTasks_reward_')) {
+      if (entityId.startsWith('sensor.kidtasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
           rewards.push({
-            id: attrs.reward_id || entityId.replace('sensor.KidTasks_reward_', ''),
+            id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
             category: attrs.category || 'fun',
@@ -3320,9 +3320,9 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
-    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs KidTasks_task_
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_task_
     Object.keys(entities).forEach(entityId => { 
-      if (entityId.startsWith('sensor.KidTasks_task_')) {
+      if (entityId.startsWith('sensor.kidtasks_task_')) {
         const taskEntity = entities[entityId];
         if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           const attrs = taskEntity.attributes;
@@ -3333,7 +3333,7 @@ class KidsTasksChildCard extends HTMLElement {
             
           if (isAssigned) {
             tasks.push({
-              id: attrs.task_id || entityId.replace('sensor.KidTasks_task_', ''),
+              id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
               name: attrs.task_name || attrs.friendly_name || 'Tâche',
               description: attrs.description || '',
               category: attrs.category || 'other',
@@ -3362,15 +3362,15 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
-    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs KidTasks_reward_
+    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_reward_
     Object.keys(entities).forEach(entityId => {
-      if (entityId.startsWith('sensor.KidTasks_reward_')) {
+      if (entityId.startsWith('sensor.kidtasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
           rewards.push({
-            id: attrs.reward_id || entityId.replace('sensor.KidTasks_reward_', ''),
+            id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
             category: attrs.category || 'fun',
@@ -3466,8 +3466,8 @@ class KidsTasksChildCard extends HTMLElement {
     if (!oldHass) return true;
     
     // Vérifier si les données de l'enfant ont changé (entité points)
-    const oldChildEntity = oldHass.states[`sensor.KidTasks_${this.config.child_id}_points`];
-    const newChildEntity = newHass.states[`sensor.KidTasks_${this.config.child_id}_points`];
+    const oldChildEntity = oldHass.states[`sensor.kidtasks_${this.config.child_id}_points`];
+    const newChildEntity = newHass.states[`sensor.kidtasks_${this.config.child_id}_points`];
     
     if (!oldChildEntity !== !newChildEntity) return true;
     if (oldChildEntity && newChildEntity) {
@@ -3518,7 +3518,7 @@ class KidsTasksChildCard extends HTMLElement {
 
   getChildFromHass(hass) {
     if (!hass) return null;
-    const childEntity = hass.states[`sensor.KidTasks_${this.config.child_id}_points`];
+    const childEntity = hass.states[`sensor.kidtasks_${this.config.child_id}_points`];
     return childEntity ? childEntity.attributes : null;
   }
 
@@ -4043,11 +4043,11 @@ class KidsTasksChildCard extends HTMLElement {
     const children = [];
     
     Object.keys(this._hass.states).forEach(entityId => {
-      if (entityId.startsWith('sensor.KidTasks_') && entityId.endsWith('_points')) {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
         const entity = this._hass.states[entityId];
         if (entity && entity.attributes && entity.state !== 'unavailable') {
           children.push({
-            id: entity.attributes.child_id || entityId.replace('sensor.KidTasks_', '').replace('_points', ''),
+            id: entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
             name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
             points: parseInt(entity.state) || 0,
             level: entity.attributes.level || 1
