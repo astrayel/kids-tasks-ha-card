@@ -254,11 +254,11 @@ class KidsTasksCard extends HTMLElement {
   }
 
   attachDragEvents() {
-    const dragHandles = this.shadowRoot.querySelectorAll('.drag-handle[draggable="true"]');
+    const draggableCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
     const container = this.shadowRoot.querySelector('.children-grid');
     
     console.log('DEBUG: attachDragEvents called');
-    console.log('DEBUG: Found drag handles:', dragHandles.length);
+    console.log('DEBUG: Found draggable cards:', draggableCards.length);
     console.log('DEBUG: Found container:', !!container);
     
     // Nettoyer les anciens listeners
@@ -267,14 +267,21 @@ class KidsTasksCard extends HTMLElement {
       container.removeEventListener('drop', this.handleDrop);
     }
     
-    dragHandles.forEach(handle => {
+    draggableCards.forEach(card => {
       // Supprimer les anciens listeners pour éviter les doublons
-      handle.removeEventListener('dragstart', this.handleDragStart);
-      handle.removeEventListener('dragend', this.handleDragEnd);
+      card.removeEventListener('dragstart', this.handleDragStart);
+      card.removeEventListener('dragend', this.handleDragEnd);
       
       // Ajouter les nouveaux listeners
-      handle.addEventListener('dragstart', this.handleDragStart.bind(this));
-      handle.addEventListener('dragend', this.handleDragEnd.bind(this));
+      card.addEventListener('dragstart', this.handleDragStart.bind(this));
+      card.addEventListener('dragend', this.handleDragEnd.bind(this));
+      
+      // Empêcher le drag depuis les boutons
+      const buttons = card.querySelectorAll('button');
+      buttons.forEach(button => {
+        button.addEventListener('mousedown', (e) => e.stopPropagation());
+        button.addEventListener('dragstart', (e) => e.preventDefault());
+      });
     });
     
     // Ajouter les événements dragover et drop au conteneur
@@ -289,8 +296,7 @@ class KidsTasksCard extends HTMLElement {
 
   handleDragStart(event) {
     console.log('DEBUG: handleDragStart called');
-    const handle = event.target;
-    const card = handle.closest('.child-card');
+    const card = event.target.closest('.child-card');
     if (!card) {
       console.warn('DEBUG: No card found in dragstart');
       return;
@@ -1947,9 +1953,9 @@ class KidsTasksCard extends HTMLElement {
       const avatar = this.getEffectiveAvatar(child, 'large');
       
       return `
-        <div class="child-card" ${showActions ? `data-child-id="${child.id || 'unknown'}"` : ''}>
+        <div class="child-card" ${showActions ? `draggable="true" data-child-id="${child.id || 'unknown'}"` : ''}>
           ${showActions ? `
-            <div class="drag-handle" draggable="true" title="Glisser pour réorganiser">⋮⋮</div>
+            <div class="drag-handle" title="Glisser pour réorganiser">⋮⋮</div>
             <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
           ` : ''}
           <div class="child-avatar">${avatar}</div>
@@ -2163,10 +2169,15 @@ class KidsTasksCard extends HTMLElement {
           cursor: move;
         }
         
+        .child-card[draggable="true"]:hover .drag-handle {
+          color: var(--primary-color, #03a9f4);
+        }
+        
         .child-card.dragging {
-          opacity: 0.5;
-          transform: rotate(2deg);
+          opacity: 0.6;
+          transform: rotate(2deg) scale(1.05);
           z-index: 1000;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
         
         .child-card.drop-before {
@@ -2186,8 +2197,6 @@ class KidsTasksCard extends HTMLElement {
           cursor: grab;
           padding: 4px;
           user-select: none;
-          background: rgba(255, 255, 255, 0.8);
-          border-radius: 4px;
           z-index: 10;
         }
         
