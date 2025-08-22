@@ -21,11 +21,9 @@ class KidsTasksCard extends HTMLElement {
     if (!this._initialized && hass) {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
-      this.setupDragAndDrop();
       this.render();
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
       this.render();
-      this.setupDragAndDrop();
     }
   }
 
@@ -121,6 +119,9 @@ class KidsTasksCard extends HTMLElement {
           </div>
         </div>
       `;
+      
+      // Attacher les événements drag après le rendu
+      this.setupDragAndDrop();
     } catch (error) {
       console.error('Erreur lors du rendu de la carte:', error);
       this.shadowRoot.innerHTML = `
@@ -250,13 +251,13 @@ class KidsTasksCard extends HTMLElement {
   // === DRAG & DROP ===
 
   setupDragAndDrop() {
-    // Attendre le prochain tick pour que le DOM soit mis à jour
+    // Attendre que le DOM soit complètement mis à jour
     setTimeout(() => {
       // Seulement attacher les événements drag dans la vue "children" où il y a des cartes draggables
       if (this.currentView === 'children') {
         this.attachDragEvents();
       }
-    }, 0);
+    }, 100); // Délai plus long pour s'assurer que le DOM est rendu
   }
 
   attachDragEvents() {
