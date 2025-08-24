@@ -1605,7 +1605,10 @@ class KidsTasksCard extends HTMLElement {
             validation_required: attrs.validation_required !== false,
             active: attrs.active !== false,
             created_at: attrs.created_at,
-            last_completed_at: attrs.last_completed_at
+            last_completed_at: attrs.last_completed_at,
+            deadline_time: attrs.deadline_time,
+            penalty_points: attrs.penalty_points || 0,
+            deadline_passed: attrs.deadline_passed || false
           });
         }
       }
@@ -1856,30 +1859,38 @@ class KidsTasksCard extends HTMLElement {
         <h2>${this.title}</h2>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">👶</div>
             <div class="stat-info">
-              <div class="stat-number">${stats.totalChildren}</div>
+              <div class="stat-header">
+                <div class="stat-icon">👶</div>
+                <div class="stat-number">${stats.totalChildren}</div>
+              </div>
               <div class="stat-label">Enfant${stats.totalChildren > 1 ? 's' : ''}</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📝</div>
             <div class="stat-info">
-              <div class="stat-number">${stats.totalTasks}</div>
+              <div class="stat-header">
+                <div class="stat-icon">📝</div>
+                <div class="stat-number">${stats.totalTasks}</div>
+              </div>
               <div class="stat-label">Tâches créées</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">✅</div>
             <div class="stat-info">
-              <div class="stat-number">${stats.completedToday}</div>
+              <div class="stat-header">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number">${stats.completedToday}</div>
+              </div>
               <div class="stat-label">Terminées aujourd'hui</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">⏳</div>
             <div class="stat-info">
-              <div class="stat-number">${stats.pendingValidation}</div>
+              <div class="stat-header">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-number">${stats.pendingValidation}</div>
+              </div>
               <div class="stat-label">À valider</div>
             </div>
           </div>
@@ -2206,17 +2217,35 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 8px;
           border-left: 4px solid var(--custom-dashboard-secondary);
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          text-align: center;
         }
         
-        .stat-icon { font-size: 2em; margin-right: 16px; }
-        .stat-info { flex: 1; }
+        .stat-info { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 8px;
+        }
+        
+        .stat-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        
+        .stat-icon { font-size: 2em; }
         .stat-number {
-          font-size: 1.5em;
+          font-size: 1.8em;
           font-weight: bold;
           color: var(--primary-text-color, #212121);
         }
-        .stat-label { color: var(--secondary-text-color, #757575); font-size: 0.9em; }
+        .stat-label { 
+          color: var(--secondary-text-color, #757575); 
+          font-size: 0.9em;
+          line-height: 1.3;
+          word-wrap: break-word;
+        }
         
         .child-card {
           display: flex;
@@ -2273,11 +2302,6 @@ class KidsTasksCard extends HTMLElement {
           cursor: grabbing;
         }
         
-        .child-card:hover { 
-          box-shadow: 0 4px 16px rgba(0,0,0,0.15); 
-          transform: translateY(-2px);
-          border-left-color: var(--accent-color, #ff4081);
-        }
         .child-avatar { 
           font-size: 2.5em; 
           margin-right: 16px; 
@@ -2288,7 +2312,8 @@ class KidsTasksCard extends HTMLElement {
           min-height: 3em;
           flex-shrink: 0;
           padding-top: 8px;
-          height: 100%
+          height: 100%;
+          pointer-events: none;
         }
         .child-avatar img {
           width: 3em !important;
@@ -2533,13 +2558,14 @@ class KidsTasksCard extends HTMLElement {
         
         
         .task-status {
-          padding: 4px 12px;
-          border-radius: 12px;
+          padding: 4px 8px;
+          border-radius: 16px;
           font-size: 0.75em;
           font-weight: bold;
           text-transform: uppercase;
-          margin: 0 8px;
+          margin: 0 4px;
           white-space: nowrap;
+          display: inline-block;
         }
         
         .status-todo { background: #ff9800; color: white; }
@@ -2909,6 +2935,8 @@ class KidsTasksCardEditor extends HTMLElement {
       composed: true,
     });
     this.dispatchEvent(event);
+    // Force re-render pour appliquer les nouveaux styles
+    this.render();
   }
 
   render() {
@@ -3898,10 +3926,13 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .task-status {
-          font-size: 0.8em;
+          font-size: 0.75em;
           padding: 4px 8px;
-          border-radius: 12px;
+          border-radius: 16px;
           font-weight: bold;
+          display: inline-block;
+          white-space: nowrap;
+          text-transform: uppercase;
         }
         
         .task-status.todo {
