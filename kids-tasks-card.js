@@ -616,10 +616,8 @@ class KidsTasksCard extends HTMLElement {
       serviceData.assigned_child_ids = assigned_child_ids;
     }
     
-    // Ajouter weekly_days seulement si des jours sont sélectionnés
-    if (weekly_days.length > 0) {
-      serviceData.weekly_days = weekly_days;
-    }
+    // Toujours ajouter weekly_days (même si vide pour permettre la mise à jour)
+    serviceData.weekly_days = weekly_days;
 
     if (isEdit) {
       const taskIdInput = form.querySelector('[name="task_id"]');
@@ -1633,6 +1631,7 @@ class KidsTasksCard extends HTMLElement {
             active: attrs.active !== false,
             created_at: attrs.created_at,
             last_completed_at: attrs.last_completed_at,
+            weekly_days: attrs.weekly_days || [],
             deadline_time: attrs.deadline_time,
             penalty_points: attrs.penalty_points || 0,
             deadline_passed: attrs.deadline_passed || false
