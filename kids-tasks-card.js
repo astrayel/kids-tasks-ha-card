@@ -2234,6 +2234,7 @@ class KidsTasksCard extends HTMLElement {
           left: 2px;
           color: var(--secondary-text-color, #757575);
           font-size: 32px;
+          line-height: 32px;
           cursor: grab;
           user-select: none;
           z-index: 10;
@@ -2295,12 +2296,12 @@ class KidsTasksCard extends HTMLElement {
         .level-badge {
           background: var(--custom-points-badge-color);
           color: white;
-          padding: 4px 12px;
-          border-radius: 16px;
+          padding: 4px 6px;
+          border-radius: 10px;
           font-weight: bold;
-          font-size: 0.8em;
-          margin: 8px 8px;
-          height: 24px
+          font-size: 0.5em;
+          margin: 0px 0px 0px 4px;
+          height: 20px
         }
         
         .progress-bar {
@@ -2526,20 +2527,6 @@ class KidsTasksCard extends HTMLElement {
           user-select: none;
         }
         
-        @media (max-width: 768px) {
-          .selection-row {
-            flex-direction: column;
-            gap: 16px;
-          }
-          
-          
-          
-          
-          .dialog-actions {
-            flex-direction: column-reverse;
-            gap: 8px;
-          }
-        }
         
         .task-status {
           padding: 4px 12px;
@@ -2774,14 +2761,6 @@ class KidsTasksCard extends HTMLElement {
           .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-          .child-card { 
-            flex-direction: column; 
-            text-align: center; 
-            padding: 16px 12px;
-            padding-bottom: 50px;
-            position: relative;
-          }
-          .child-avatar { margin: 0 0 12px 0; }
           .task-item { flex-direction: column; align-items: flex-start; }
           .task-actions { margin-top: 12px; width: 100%; justify-content: center; }
           .modal-content { width: 95%; margin: 0 auto; }
@@ -2802,10 +2781,8 @@ class KidsTasksCard extends HTMLElement {
             min-width: 70px;
             padding: 8px 12px;
           }
-        }
-        
-        /* Media queries pour mobile - Forcer la disposition horizontale */
-        @media screen and (max-width: 768px) {
+          
+          /* Styles enfants - disposition horizontale forcée */
           .child-card {
             display: flex !important;
             flex-direction: row !important;
@@ -2833,6 +2810,27 @@ class KidsTasksCard extends HTMLElement {
           
           .child-stats {
             font-size: 0.8em !important;
+            text-align: left;
+          }
+          
+          /* Styles supplémentaires pour les cartes individuelles */
+          .header {
+            padding: 16px;
+          }
+          
+          .rewards-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .task-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .task-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
           }
         }
       </style>
@@ -4028,30 +4026,6 @@ class KidsTasksChildCard extends HTMLElement {
           color: var(--error-color, #f44336);
         }
         
-        @media (max-width: 768px) {
-          .header {
-            padding: 16px;
-          }
-          
-          .content {
-            padding: 16px;
-          }
-          
-          .rewards-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .task-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          
-          .task-meta {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-        }
       </style>
       
       <div class="child-card">
