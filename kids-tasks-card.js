@@ -592,10 +592,18 @@ class KidsTasksCard extends HTMLElement {
       category,
       points,
       frequency,
-      validation_required,
-      deadline_time,
-      penalty_points
+      validation_required
     };
+    
+    // Ajouter deadline_time seulement s'il est défini
+    if (deadline_time) {
+      serviceData.deadline_time = deadline_time;
+    }
+    
+    // Ajouter penalty_points seulement s'il est > 0
+    if (penalty_points > 0) {
+      serviceData.penalty_points = penalty_points;
+    }
     
     // Ajouter l'assignation
     if (assigned_child_ids.length > 0) {
