@@ -773,9 +773,7 @@ class KidsTasksCard extends HTMLElement {
         .child-checkbox {
           display: flex;
           align-items: center;
-          gap: 8px;
           cursor: pointer;
-          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
           user-select: none;
@@ -810,16 +808,13 @@ class KidsTasksCard extends HTMLElement {
         .weekly-days-section .days-selector {
           display: flex;
           flex-direction: column;
-          gap: 8px;
           margin-top: 8px;
         }
         
         .day-checkbox {
           display: flex;
           align-items: center;
-          gap: 8px;
           cursor: pointer;
-          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
           user-select: none;
@@ -2347,17 +2342,8 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color, #212121);
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
-
-        .task-actions { 
-          display: flex; 
-          gap: 8px; 
-          flex-wrap: nowrap; 
-          justify-content: center; 
-          align-items: center; 
-          margin-top: 8px;
-        }
         
-        .child-card .task-actions {
+        .task-actions {
           position: absolute;
           right: 8px;
           bottom: 8px;
@@ -2366,43 +2352,31 @@ class KidsTasksCard extends HTMLElement {
           gap: 8px;
         }
         
-        .task-item .task-actions {
-          margin-left: auto;
-          flex-direction: row;
-          position: absolute;
-          right: 8px;
-          bottom: 8px;
-          margin-top: 0;
-        }
-        
-        .child-card .task-actions .btn,
-        .task-item .task-actions .btn {
+        .task-actions .btn {
           padding: 6px 12px;
           font-size: 0.85em;
           min-width: 65px;
         }
         
-        .child-card .task-actions .edit-btn,
-        .task-item .task-actions .edit-btn {
+        .task-actions .edit-btn {
           background-color: #4caf50;
           color: white;
           border: 1px solid #4caf50;
           order: 2;
         }
         
-        .child-card .task-actions .edit-btn:hover,
-        .task-item .task-actions .edit-btn:hover {
+        .task-actions .edit-btn:hover {
           background-color: #45a049;
         }
         
-        .child-card .task-actions .delete-btn {
+        .task-actions .delete-btn {
           background-color: #f44336;
           color: white;
           border: 1px solid #f44336;
           order: 1;
         }
         
-        .child-card .task-actions .delete-btn:hover {
+        .task-actions .delete-btn:hover {
           background-color: #d32f2f;
         }
         
@@ -2433,9 +2407,7 @@ class KidsTasksCard extends HTMLElement {
         .child-checkbox {
           display: flex;
           align-items: center;
-          gap: 8px;
           cursor: pointer;
-          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
           user-select: none;
@@ -2504,9 +2476,7 @@ class KidsTasksCard extends HTMLElement {
         .day-checkbox {
           display: flex;
           align-items: center;
-          gap: 8px;
           cursor: pointer;
-          padding: 4px;
           border-radius: 4px;
           transition: background-color 0.2s;
           user-select: none;
@@ -2766,7 +2736,7 @@ class KidsTasksCard extends HTMLElement {
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: 16px; }
           
-          .child-card .task-actions {
+          .task-actions {
             position: absolute;
 /*            left: 8px;
             right: 8px;
@@ -2777,7 +2747,7 @@ class KidsTasksCard extends HTMLElement {
             min-width: auto;
           }
           
-          .child-card .task-actions .btn {
+          .task-actions .btn {
             min-width: 70px;
             padding: 8px 12px;
           }
