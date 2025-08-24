@@ -2230,12 +2230,11 @@ class KidsTasksCard extends HTMLElement {
         
         .drag-handle {
           position: absolute;
-          top: 4px;
-          left: 8px;
+          top: -2px;
+          left: 2px;
           color: var(--secondary-text-color, #757575);
-          font-size: 20px;
+          font-size: 32px;
           cursor: grab;
-          padding: 6px;
           user-select: none;
           z-index: 10;
         }
@@ -2790,11 +2789,11 @@ class KidsTasksCard extends HTMLElement {
           
           .child-card .task-actions {
             position: absolute;
-            left: 8px;
+/*            left: 8px;
             right: 8px;
-            bottom: 8px;
+            bottom: 8px;*/
             flex-direction: row;
-            justify-content: space-between;
+            justify-content: end;
             gap: 0;
             min-width: auto;
           }
