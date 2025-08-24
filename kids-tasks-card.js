@@ -1086,7 +1086,7 @@ class KidsTasksCard extends HTMLElement {
     const task = taskId ? tasks.find(t => t.id === taskId) : null;
     const isEdit = !!task;
 
-    const categories = ['bedroom', 'bathroom', 'kitchen', 'homework', 'outdoor', 'pets', 'other'];
+    const categories = ['bedroom', 'hygiene', 'kitchen', 'homework', 'outdoor', 'music', 'other'];
     const frequencies = ['daily', 'weekly', 'monthly', 'once'];
 
     const content = `
@@ -1108,6 +1108,23 @@ class KidsTasksCard extends HTMLElement {
           value="${isEdit ? task.description || '' : ''}">
         </ha-textarea>
         
+        <div class="form-row">
+          ${isEdit ? `
+          <ha-formfield label="Tâche active">
+            <ha-checkbox 
+              name="active"
+              ${task.active !== false ? 'checked' : ''}>
+            </ha-checkbox>
+          </ha-formfield>
+        ` : ''}
+          <ha-formfield label="Validation parentale">
+            <ha-checkbox 
+              name="validation_required"
+              ${isEdit ? (task.validation_required ? 'checked' : '') : 'checked'}>
+            </ha-checkbox>
+          </ha-formfield>
+        </div>
+
         <div class="form-row">
           <ha-select 
             label="Catégorie *"
@@ -1172,7 +1189,7 @@ class KidsTasksCard extends HTMLElement {
           <!-- Jours de la semaine -->
           <div class="form-group days-column">
             <div class="weekly-days-section" style="display: ${(!isEdit && 'daily' === 'daily') || (isEdit && task.frequency === 'daily') ? 'block' : 'none'};">
-              <label class="form-label">Jours de la semaine:<br><small>(optionnel)</small></label>
+              <label class="form-label">Jours de la semaine:<br><small>(optionnel, tous si aucun sélectionné)</small></label>
               <div class="days-selector">
                 ${['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
                   const labels = {
@@ -1195,25 +1212,6 @@ class KidsTasksCard extends HTMLElement {
             </div>
           </div>
         </div>
-        
-        <!-- Ancien champ pour compatibilité (masqué) -->
-        <input type="hidden" name="assigned_child_id" value="${isEdit ? task.assigned_child_id || '' : ''}" />
-        
-        <ha-formfield label="Validation parentale requise">
-          <ha-checkbox 
-            name="validation_required"
-            ${isEdit ? (task.validation_required ? 'checked' : '') : 'checked'}>
-          </ha-checkbox>
-        </ha-formfield>
-        
-        ${isEdit ? `
-          <ha-formfield label="Tâche active">
-            <ha-checkbox 
-              name="active"
-              ${task.active !== false ? 'checked' : ''}>
-            </ha-checkbox>
-          </ha-formfield>
-        ` : ''}
         
         <!-- Heure limite et pénalité -->
         <div class="form-row">
@@ -1754,11 +1752,11 @@ class KidsTasksCard extends HTMLElement {
   getCategoryLabel(category) {
     const labels = {
       'bedroom': '🛏️ Chambre',
-      'bathroom': '🛁 Salle de bain',
+      'hygiene': '🛁 Hygiène',
       'kitchen': '🍽️ Cuisine', 
       'homework': '📚 Devoirs',
+      'music': '🎵 Musique',
       'outdoor': '🌳 Extérieur',
-      'pets': '🐕 Animaux',
       'other': '📦 Autre',
       'fun': '🎉 Amusement',
       'screen_time': '📱 Écran',
@@ -3535,11 +3533,11 @@ class KidsTasksChildCard extends HTMLElement {
   getCategoryIcon(category) {
     const icons = {
       'bedroom': '🛏️',
-      'bathroom': '🛁',
+      'hygiene': '🛁',
       'kitchen': '🍽️',
       'homework': '📚',
+      'music': '🎵',
       'outdoor': '🌳',
-      'pets': '🐕',
       'other': '📋',
       'fun': '🎉',
       'screen_time': '📱',
