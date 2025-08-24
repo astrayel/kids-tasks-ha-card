@@ -2345,11 +2345,11 @@ class KidsTasksCard extends HTMLElement {
         
         .task-actions {
           position: absolute;
+          display: flex;
           right: 8px;
           bottom: 8px;
-          margin-top: 0;
           flex-direction: row;
-          gap: 8px;
+          justify-content: end;
         }
         
         .task-actions .btn {
@@ -2720,7 +2720,7 @@ class KidsTasksCard extends HTMLElement {
           }
           .child-card .task-actions {
             right: 8px;
-            bottom: 12px;
+            bottom: 8px;
           }
         }
         
@@ -2731,20 +2731,17 @@ class KidsTasksCard extends HTMLElement {
           .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-          .task-item { flex-direction: column; align-items: flex-start; }
-          .task-actions { margin-top: 12px; width: 100%; justify-content: center; }
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: 16px; }
           
           .task-actions {
             position: absolute;
-/*            left: 8px;
-            right: 8px;
-            bottom: 8px;*/
+            display: flex;
             flex-direction: row;
             justify-content: end;
-            gap: 0;
             min-width: auto;
+            right: 8px;
+            bottom: 8px;
           }
           
           .task-actions .btn {
