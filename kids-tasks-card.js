@@ -1106,8 +1106,57 @@ class KidsTasksCard extends HTMLElement {
           placeholder="Description détaillée de la tâche..."
           value="${isEdit ? task.description || '' : ''}">
         </ha-textarea>
-        
+
         <div class="form-row">
+          <ha-select 
+            label="Catégorie *"
+            name="category"
+            required>
+            ${categories.map(cat => `
+              <ha-list-item value="${cat}" ${(!isEdit && cat === 'other') || (isEdit && task.category === cat) ? 'selected' : ''}>
+                ${this.getCategoryLabel(cat)}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
+          <ha-select
+            label="Fréquence *"
+            name="frequency"
+            required>
+            ${frequencies.map(freq => `
+              <ha-list-item value="${freq}" ${(!isEdit && freq === 'daily') || (isEdit && task.frequency === freq) ? 'selected' : ''}>
+                ${this.getFrequencyLabel(freq)}
+              </ha-list-item>
+            `).join('')}
+          </ha-select>
+        </div>
+        <div class="form-row">
+          <ha-textfield
+            label="Points *"
+            name="points"
+            type="number"
+            required
+            value="${isEdit ? task.points : '10'}"
+            min="1"
+            max="100">
+          </ha-textfield>
+          <ha-textfield
+            label="Points de pénalité"
+            name="penalty_points"
+            type="number"
+            value="${isEdit ? task.penalty_points || '0' : '0'}"
+            min="0"
+            max="50"
+            helper-text="Points retirés si l'heure limite est dépassée">
+          </ha-textfield>
+        </div>
+        <div class="form-row">
+          <ha-textfield
+            label="Heure limite (optionnel)"
+            name="deadline_time"
+            type="time"
+            value="${isEdit ? task.deadline_time || '' : ''}"
+            placeholder="Ex: 18:00">
+          </ha-textfield>
           ${isEdit ? `
           <ha-formfield label="Tâche active">
             <ha-checkbox 
@@ -1124,40 +1173,6 @@ class KidsTasksCard extends HTMLElement {
           </ha-formfield>
         </div>
 
-        <div class="form-row">
-          <ha-select 
-            label="Catégorie *"
-            name="category"
-            required>
-            ${categories.map(cat => `
-              <ha-list-item value="${cat}" ${(!isEdit && cat === 'other') || (isEdit && task.category === cat) ? 'selected' : ''}>
-                ${this.getCategoryLabel(cat)}
-              </ha-list-item>
-            `).join('')}
-          </ha-select>
-          
-          <ha-textfield
-            label="Points *"
-            name="points"
-            type="number"
-            required
-            value="${isEdit ? task.points : '10'}"
-            min="1"
-            max="100">
-          </ha-textfield>
-        </div>
-        
-        <ha-select
-          label="Fréquence *"
-          name="frequency"
-          required>
-          ${frequencies.map(freq => `
-            <ha-list-item value="${freq}" ${(!isEdit && freq === 'daily') || (isEdit && task.frequency === freq) ? 'selected' : ''}>
-              ${this.getFrequencyLabel(freq)}
-            </ha-list-item>
-          `).join('')}
-        </ha-select>
-        
         <!-- Conteneur pour enfants et jours côte à côte -->
         <div class="form-row">
           <!-- Enfants assignés -->
@@ -1211,28 +1226,7 @@ class KidsTasksCard extends HTMLElement {
             </div>
           </div>
         </div>
-        
-        <!-- Heure limite et pénalité -->
-        <div class="form-row">
-          <ha-textfield
-            label="Heure limite (optionnel)"
-            name="deadline_time"
-            type="time"
-            value="${isEdit ? task.deadline_time || '' : ''}"
-            placeholder="Ex: 18:00">
-          </ha-textfield>
-          
-          <ha-textfield
-            label="Points de pénalité"
-            name="penalty_points"
-            type="number"
-            value="${isEdit ? task.penalty_points || '0' : '0'}"
-            min="0"
-            max="50"
-            helper-text="Points retirés si l'heure limite est dépassée">
-          </ha-textfield>
-        </div>
-        
+               
         <div class="dialog-actions">
           <ha-button 
             slot="secondaryAction" 
