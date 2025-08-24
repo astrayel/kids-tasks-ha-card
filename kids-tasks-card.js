@@ -562,6 +562,7 @@ class KidsTasksCard extends HTMLElement {
     // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
     const description = form.querySelector('[name="description"]').value || '';
+    const icon = form.querySelector('[name="icon"]').value || null;
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'other';
     const points = parseInt(form.querySelector('[name="points"]').value);
@@ -594,6 +595,11 @@ class KidsTasksCard extends HTMLElement {
       frequency,
       validation_required
     };
+    
+    // Ajouter icon seulement s'il est défini
+    if (icon) {
+      serviceData.icon = icon;
+    }
     
     // Ajouter deadline_time seulement s'il est défini
     if (deadline_time) {
@@ -638,6 +644,7 @@ class KidsTasksCard extends HTMLElement {
     // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
     const description = form.querySelector('[name="description"]').value || '';
+    const icon = form.querySelector('[name="icon"]').value || null;
     const cost = parseInt(form.querySelector('[name="cost"]').value);
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'fun';
@@ -651,6 +658,11 @@ class KidsTasksCard extends HTMLElement {
       category,
       limited_quantity
     };
+    
+    // Ajouter icon seulement s'il est défini
+    if (icon) {
+      serviceData.icon = icon;
+    }
 
     if (isEdit) {
       const rewardIdInput = form.querySelector('[name="reward_id"]');
@@ -1114,6 +1126,13 @@ class KidsTasksCard extends HTMLElement {
           placeholder="Description détaillée de la tâche..."
           value="${isEdit ? task.description || '' : ''}">
         </ha-textarea>
+        
+        <ha-textfield
+          label="Icône personnalisée (optionnel)"
+          name="icon"
+          value="${isEdit ? task.icon || '' : ''}"
+          placeholder="Ex: 🧹, 📚, 🍽️...">
+        </ha-textfield>
 
         <div class="form-row">
           <ha-select 
@@ -1334,6 +1353,13 @@ class KidsTasksCard extends HTMLElement {
           placeholder="Description de la récompense..."
           value="${isEdit ? reward.description || '' : ''}">
         </ha-textarea>
+        
+        <ha-textfield
+          label="Icône personnalisée (optionnel)"
+          name="icon"
+          value="${isEdit ? reward.icon || '' : ''}"
+          placeholder="Ex: 🎮, 📱, 🍭...">
+        </ha-textfield>
         
         <div class="form-row">
           <ha-textfield
@@ -1596,6 +1622,7 @@ class KidsTasksCard extends HTMLElement {
             name: attrs.task_name || attrs.friendly_name || 'Tâche',
             description: attrs.description || '',
             category: attrs.category || 'other',
+            icon: attrs.icon,
             points: parseInt(attrs.points) || 10,
             frequency: attrs.frequency || 'daily',
             status: taskEntity.state || 'todo',
@@ -1640,6 +1667,7 @@ class KidsTasksCard extends HTMLElement {
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
             category: attrs.category || 'fun',
+            icon: attrs.icon,
             description: attrs.description || '',
             active: attrs.active !== false,
             remaining_quantity: attrs.remaining_quantity,
@@ -3555,6 +3583,7 @@ class KidsTasksChildCard extends HTMLElement {
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
             category: attrs.category || 'fun',
+            icon: attrs.icon,
             description: attrs.description || '',
             active: attrs.active !== false,
             remaining_quantity: attrs.remaining_quantity,
@@ -3594,7 +3623,17 @@ class KidsTasksChildCard extends HTMLElement {
     }, 4000);
   }
 
-  getCategoryIcon(category) {
+  getCategoryIcon(categoryOrItem) {
+    // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
+    if (typeof categoryOrItem === 'object' && categoryOrItem !== null) {
+      if (categoryOrItem.icon) {
+        return categoryOrItem.icon;
+      }
+      categoryOrItem = categoryOrItem.category;
+    }
+    
+    const category = categoryOrItem;
+    
     // Récupérer les icônes depuis l'intégration
     const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
     if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
@@ -4095,7 +4134,7 @@ class KidsTasksChildCard extends HTMLElement {
                     <div class="task-header">
                       <div class="task-info">
                         <div class="task-name">
-                          ${this.getCategoryIcon(task.category)} ${task.name}
+                          ${this.getCategoryIcon(task)} ${task.name}
                         </div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">
@@ -4130,7 +4169,7 @@ class KidsTasksChildCard extends HTMLElement {
               <div class="rewards-grid">
                 ${rewards.map(reward => `
                   <div class="reward-card ${reward.cost <= child.points ? 'affordable' : ''}">
-                    <div class="reward-icon">${this.getCategoryIcon(reward.category)}</div>
+                    <div class="reward-icon">${this.getCategoryIcon(reward)}</div>
                     <div class="reward-name">${reward.name}</div>
                     <div class="reward-cost">${reward.cost} points</div>
                     ${reward.description ? `<div style="font-size: 0.9em; color: var(--secondary-text-color); margin-bottom: 8px;">${reward.description}</div>` : ''}
