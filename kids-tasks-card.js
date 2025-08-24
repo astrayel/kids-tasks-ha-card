@@ -597,10 +597,9 @@ class KidsTasksCard extends HTMLElement {
       penalty_points
     };
     
-    // Ajouter l'assignation (toujours envoyer les deux champs pour compatibilité)
+    // Ajouter l'assignation
     if (assigned_child_ids.length > 0) {
       serviceData.assigned_child_ids = assigned_child_ids;
-      serviceData.assigned_child_id = assigned_child_ids[0]; // Premier enfant pour compatibilité
     }
     
     // Ajouter weekly_days seulement si des jours sont sélectionnés
@@ -1086,8 +1085,8 @@ class KidsTasksCard extends HTMLElement {
     const task = taskId ? tasks.find(t => t.id === taskId) : null;
     const isEdit = !!task;
 
-    const categories = ['bedroom', 'hygiene', 'kitchen', 'homework', 'outdoor', 'music', 'other'];
-    const frequencies = ['daily', 'weekly', 'monthly', 'once'];
+    const categories = this.getAvailableCategories();
+    const frequencies = this.getAvailableFrequencies();
 
     const content = `
       <form>
@@ -1168,8 +1167,8 @@ class KidsTasksCard extends HTMLElement {
               ${children.map(child => {
                 let isChecked = false;
                 if (isEdit) {
-                  // Vérifier dans assigned_child_ids ou fallback assigned_child_id
-                  const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+                  // Vérifier dans assigned_child_ids
+                  const assignedIds = task.assigned_child_ids || [];
                   isChecked = assignedIds.includes(child.id);
                 }
                 return `
@@ -1313,7 +1312,7 @@ class KidsTasksCard extends HTMLElement {
     const reward = rewardId ? rewards.find(r => r.id === rewardId) : null;
     const isEdit = !!reward;
 
-    const categories = ['fun', 'screen_time', 'outing', 'treat', 'privilege', 'toy', 'other'];
+    const categories = this.getAvailableRewardCategories();
 
     const content = `
       <form>
@@ -1677,6 +1676,39 @@ class KidsTasksCard extends HTMLElement {
     return this.getRewards().find(reward => reward.id === rewardId);
   }
 
+  getAvailableCategories() {
+    // Récupérer les catégories depuis l'entité sensor.kidtasks_pending_validations
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.available_categories) {
+      return pendingValidationsEntity.attributes.available_categories;
+    }
+    
+    // Fallback sur les catégories par défaut si l'entité n'est pas disponible
+    return ['bedroom', 'bathroom', 'kitchen', 'homework', 'outdoor', 'pets', 'other'];
+  }
+
+  getAvailableFrequencies() {
+    // Récupérer les fréquences depuis l'entité sensor.kidtasks_pending_validations
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.available_frequencies) {
+      return pendingValidationsEntity.attributes.available_frequencies;
+    }
+    
+    // Fallback sur les fréquences par défaut si l'entité n'est pas disponible
+    return ['daily', 'weekly', 'monthly', 'once'];
+  }
+
+  getAvailableRewardCategories() {
+    // Récupérer les catégories de récompenses depuis l'entité sensor.kidtasks_pending_validations
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.available_reward_categories) {
+      return pendingValidationsEntity.attributes.available_reward_categories;
+    }
+    
+    // Fallback sur les catégories par défaut si l'entité n'est pas disponible
+    return ['fun', 'screen_time', 'outing', 'privilege', 'toy', 'treat'];
+  }
+
   getChildTasksToday(childId, tasks = null) {
     if (!tasks) tasks = this.getTasks();
     return tasks.filter(task => {
@@ -1750,22 +1782,24 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getCategoryLabel(category) {
-    const labels = {
-      'bedroom': '🛏️ Chambre',
-      'hygiene': '🛁 Hygiène',
-      'kitchen': '🍽️ Cuisine', 
-      'homework': '📚 Devoirs',
-      'music': '🎵 Musique',
-      'outdoor': '🌳 Extérieur',
-      'other': '📦 Autre',
-      'fun': '🎉 Amusement',
-      'screen_time': '📱 Écran',
-      'outing': '🚗 Sortie',
-      'privilege': '👑 Privilège',
-      'toy': '🧸 Jouet',
-      'treat': '🍭 Friandise'
-    };
-    return labels[category] || category;
+    // Récupérer les labels depuis l'intégration
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_labels) {
+      const dynamicLabels = pendingValidationsEntity.attributes.category_labels;
+      if (dynamicLabels[category]) {
+        return dynamicLabels[category];
+      }
+    }
+    
+    // Récupérer les labels de récompenses depuis l'intégration
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_labels) {
+      const rewardLabels = pendingValidationsEntity.attributes.reward_category_labels;
+      if (rewardLabels[category]) {
+        return rewardLabels[category];
+      }
+    }
+    
+    return category;
   }
 
   getFrequencyLabel(frequency) {
@@ -3531,22 +3565,25 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   getCategoryIcon(category) {
-    const icons = {
-      'bedroom': '🛏️',
-      'hygiene': '🛁',
-      'kitchen': '🍽️',
-      'homework': '📚',
-      'music': '🎵',
-      'outdoor': '🌳',
-      'other': '📋',
-      'fun': '🎉',
-      'screen_time': '📱',
-      'outing': '🚗',
-      'privilege': '👑',
-      'toy': '🧸',
-      'treat': '🍭'
-    };
-    return icons[category] || '📋';
+    // Récupérer les icônes depuis l'intégration
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
+      const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
+      if (dynamicIcons[category]) {
+        return dynamicIcons[category];
+      }
+    }
+    
+    // Récupérer les icônes de récompenses depuis l'intégration
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
+      const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
+      if (rewardIcons[category]) {
+        return rewardIcons[category];
+      }
+    }
+    
+    // Fallback par défaut
+    return '📋';
   }
 
   getStatusLabel(status) {
