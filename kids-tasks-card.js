@@ -1431,7 +1431,7 @@ class KidsTasksCard extends HTMLElement {
 
     const content = `
       <div class="reward-info" style="text-align: center; margin-bottom: 24px; padding: 16px; background: var(--secondary-background-color); border-radius: 8px;">
-        <h3 style="margin: 0 0 8px 0; color: var(--primary-text-color);">🎁 ${reward.name}</h3>
+        <h3 style="margin: 0 0 8px 0; color: var(--primary-text-color);">${this.safeGetCategoryIcon(reward, '🎁')} ${reward.name}</h3>
         <p style="margin: 4px 0;"><strong>Coût:</strong> ${reward.cost} points</p>
         <p style="margin: 4px 0;"><strong>Catégorie:</strong> ${this.getCategoryLabel(reward.category)}</p>
         ${reward.description ? `<p style="margin: 8px 0 0 0;">${reward.description}</p>` : ''}
@@ -2091,12 +2091,14 @@ class KidsTasksCard extends HTMLElement {
   renderTaskItem(task, children, showValidation = false, showManagement = false) {
     const childName = this.formatAssignedChildren(task);
     
+    const taskIcon = this.safeGetCategoryIcon(task, '📋');
+    
     return `
       <div class="task-item ${task.status}">
         ${showManagement ? `
           <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
         ` : ''}
-        <div class="task-icon">${this.getCategoryIcon(task)}</div>
+        <div class="task-icon">${taskIcon}</div>
         <div class="task-content">
           <div class="task-header">
             <div class="task-title">${task.name}</div>
@@ -2131,7 +2133,7 @@ class KidsTasksCard extends HTMLElement {
         ${showActions ? `
           <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
         ` : ''}
-        <div class="child-avatar">${this.getCategoryIcon(reward)}</div>
+        <div class="child-avatar">${this.safeGetCategoryIcon(reward, '🎁')}</div>
         <div class="child-info">
           <div class="child-name">${reward.name}</div>
           <div class="child-stats">
@@ -2951,6 +2953,23 @@ class KidsTasksCard extends HTMLElement {
             height: 2em !important;
           }
           
+          .reward-icon {
+            font-size: 1.5em !important;
+            margin-right: 12px !important;
+            min-width: 2em !important;
+            min-height: 2em !important;
+          }
+          
+          .reward-icon img {
+            width: 2em !important;
+            height: 2em !important;
+          }
+          
+          .reward-icon ha-icon {
+            width: 2em !important;
+            height: 2em !important;
+          }
+          
           .child-info {
             flex: 1 !important;
             display: flex !important;
@@ -3727,6 +3746,17 @@ class KidsTasksChildCard extends HTMLElement {
     }, 4000);
   }
 
+  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
+    try {
+      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
+        return this.getCategoryIcon(categoryOrItem);
+      }
+    } catch (error) {
+      console.warn('Error in getCategoryIcon:', error);
+    }
+    return fallback;
+  }
+
   renderIcon(iconData) {
     if (!iconData) return '📋';
     
@@ -3741,7 +3771,7 @@ class KidsTasksChildCard extends HTMLElement {
     }
     
     // Si c'est du base64 sans préfixe (pour compatibilité)
-    if (typeof iconData === 'string' && this.isBase64(iconData)) {
+    if (typeof iconData === 'string' && this.isBase64 && this.isBase64(iconData)) {
       return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
     }
     
@@ -4167,9 +4197,10 @@ class KidsTasksChildCard extends HTMLElement {
           background: var(--secondary-background-color, #f5f5f5);
           border-radius: 8px;
           padding: 16px;
-          text-align: center;
           transition: all 0.3s;
           border: 2px solid transparent;
+          display: flex;
+          align-items: flex-start;
         }
         
         .reward-card.affordable {
@@ -4184,7 +4215,44 @@ class KidsTasksChildCard extends HTMLElement {
         
         .reward-icon {
           font-size: 2em;
-          margin-bottom: 8px;
+          margin-right: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 2.5em;
+          min-height: 2.5em;
+          flex-shrink: 0;
+        }
+        
+        .reward-icon img {
+          width: 2.5em !important;
+          height: 2.5em !important;
+          border-radius: 8px !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255,255,255,0.1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
+        }
+        
+        .reward-icon ha-icon {
+          width: 2.5em !important;
+          height: 2.5em !important;
+          color: var(--primary-color, #3f51b5);
+        }
+        
+        .reward-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .reward-header {
+          flex: 1;
+          margin-bottom: 12px;
+        }
+        
+        .reward-info {
+          flex: 1;
         }
         
         .reward-name {
@@ -4196,6 +4264,12 @@ class KidsTasksChildCard extends HTMLElement {
         .reward-cost {
           color: var(--accent-color, #ff4081);
           font-weight: bold;
+          margin-bottom: 4px;
+        }
+        
+        .reward-description {
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
           margin-bottom: 8px;
         }
         
@@ -4273,7 +4347,7 @@ class KidsTasksChildCard extends HTMLElement {
               <div class="task-list">
                 ${tasks.map(task => `
                   <div class="task-item ${task.status}">
-                    <div class="task-icon">${this.getCategoryIcon(task)}</div>
+                    <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
                     <div class="task-header">
                       <div class="task-info">
                         <div class="task-name">
@@ -4312,16 +4386,22 @@ class KidsTasksChildCard extends HTMLElement {
               <div class="rewards-grid">
                 ${rewards.map(reward => `
                   <div class="reward-card ${reward.cost <= child.points ? 'affordable' : ''}">
-                    <div class="reward-icon">${this.getCategoryIcon(reward)}</div>
-                    <div class="reward-name">${reward.name}</div>
-                    <div class="reward-cost">${reward.cost} points</div>
-                    ${reward.description ? `<div style="font-size: 0.9em; color: var(--secondary-text-color); margin-bottom: 8px;">${reward.description}</div>` : ''}
-                    <button class="claim-btn" 
-                            data-action="claim_reward" 
-                            data-id="${reward.id}"
-                            ${reward.cost > child.points ? 'disabled' : ''}>
-                      ${reward.cost <= child.points ? '🎁 Échanger' : `Besoin de ${reward.cost - child.points} points`}
-                    </button>
+                    <div class="reward-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+                    <div class="reward-content">
+                      <div class="reward-header">
+                        <div class="reward-info">
+                          <div class="reward-name">${reward.name}</div>
+                          <div class="reward-cost">${reward.cost} points</div>
+                          ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
+                        </div>
+                      </div>
+                      <button class="claim-btn" 
+                              data-action="claim_reward" 
+                              data-id="${reward.id}"
+                              ${reward.cost > child.points ? 'disabled' : ''}>
+                        ${reward.cost <= child.points ? '🎁 Échanger' : `Besoin de ${reward.cost - child.points} points`}
+                      </button>
+                    </div>
                   </div>
                 `).join('')}
               </div>
