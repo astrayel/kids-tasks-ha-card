@@ -3047,6 +3047,84 @@ class KidsTasksCard extends HTMLElement {
     }
     return child.avatar || '👶';
   }
+
+  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
+    try {
+      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
+        return this.getCategoryIcon(categoryOrItem);
+      }
+    } catch (error) {
+      console.warn('Error in getCategoryIcon:', error);
+    }
+    return fallback;
+  }
+
+  renderIcon(iconData) {
+    if (!iconData) return '📋';
+    
+    // Si c'est une URL (commence par http:// ou https://)
+    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
+      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est une image inline base64 (commence par data:image/)
+    if (typeof iconData === 'string' && iconData.startsWith('data:image/')) {
+      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est du base64 sans préfixe (pour compatibilité)
+    if (typeof iconData === 'string' && this.isBase64 && this.isBase64(iconData)) {
+      return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est une icône MDI (commence par mdi:)
+    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
+      const iconName = iconData.replace('mdi:', '');
+      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
+    }
+    
+    // Sinon, traiter comme un emoji ou texte simple
+    return iconData.toString();
+  }
+
+  isBase64(str) {
+    if (!str || typeof str !== 'string') return false;
+    // Vérifier que c'est une chaîne base64 valide (caractères base64 + longueur raisonnable pour une image)
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    return str.length > 100 && str.length % 4 === 0 && base64Regex.test(str);
+  }
+
+  getCategoryIcon(categoryOrItem) {
+    // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
+    if (typeof categoryOrItem === 'object' && categoryOrItem !== null) {
+      if (categoryOrItem.icon) {
+        return this.renderIcon(categoryOrItem.icon);
+      }
+      categoryOrItem = categoryOrItem.category;
+    }
+    
+    const category = categoryOrItem;
+    
+    // Récupérer les icônes depuis l'intégration
+    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
+      const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
+      if (dynamicIcons[category]) {
+        return this.renderIcon(dynamicIcons[category]);
+      }
+    }
+    
+    // Récupérer les icônes de récompenses depuis l'intégration
+    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
+      const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
+      if (rewardIcons[category]) {
+        return this.renderIcon(rewardIcons[category]);
+      }
+    }
+    
+    // Fallback par défaut
+    return this.renderIcon('📋');
+  }
 }
 
 customElements.define('kids-tasks-card', KidsTasksCard);
@@ -3746,83 +3824,6 @@ class KidsTasksChildCard extends HTMLElement {
     }, 4000);
   }
 
-  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
-    try {
-      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
-        return this.getCategoryIcon(categoryOrItem);
-      }
-    } catch (error) {
-      console.warn('Error in getCategoryIcon:', error);
-    }
-    return fallback;
-  }
-
-  renderIcon(iconData) {
-    if (!iconData) return '📋';
-    
-    // Si c'est une URL (commence par http:// ou https://)
-    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une image inline base64 (commence par data:image/)
-    if (typeof iconData === 'string' && iconData.startsWith('data:image/')) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est du base64 sans préfixe (pour compatibilité)
-    if (typeof iconData === 'string' && this.isBase64 && this.isBase64(iconData)) {
-      return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une icône MDI (commence par mdi:)
-    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
-      const iconName = iconData.replace('mdi:', '');
-      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
-    }
-    
-    // Sinon, traiter comme un emoji ou texte simple
-    return iconData.toString();
-  }
-
-  isBase64(str) {
-    if (!str || typeof str !== 'string') return false;
-    // Vérifier que c'est une chaîne base64 valide (caractères base64 + longueur raisonnable pour une image)
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    return str.length > 100 && str.length % 4 === 0 && base64Regex.test(str);
-  }
-
-  getCategoryIcon(categoryOrItem) {
-    // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
-    if (typeof categoryOrItem === 'object' && categoryOrItem !== null) {
-      if (categoryOrItem.icon) {
-        return this.renderIcon(categoryOrItem.icon);
-      }
-      categoryOrItem = categoryOrItem.category;
-    }
-    
-    const category = categoryOrItem;
-    
-    // Récupérer les icônes depuis l'intégration
-    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
-    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
-      const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
-      if (dynamicIcons[category]) {
-        return this.renderIcon(dynamicIcons[category]);
-      }
-    }
-    
-    // Récupérer les icônes de récompenses depuis l'intégration
-    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
-      const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
-      if (rewardIcons[category]) {
-        return this.renderIcon(rewardIcons[category]);
-      }
-    }
-    
-    // Fallback par défaut
-    return this.renderIcon('📋');
-  }
 
   getStatusLabel(status) {
     const labels = {
