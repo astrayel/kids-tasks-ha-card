@@ -591,15 +591,11 @@ class KidsTasksCard extends HTMLElement {
       name,
       description,
       category,
+      icon,
       points,
       frequency,
       validation_required
     };
-    
-    // Ajouter icon seulement s'il est défini
-    if (icon) {
-      serviceData.icon = icon;
-    }
     
     // Ajouter deadline_time seulement s'il est défini
     if (deadline_time) {
@@ -652,15 +648,11 @@ class KidsTasksCard extends HTMLElement {
     const serviceData = {
       name,
       description,
+      icon,
       cost,
       category,
       limited_quantity
     };
-    
-    // Ajouter icon seulement s'il est défini
-    if (icon) {
-      serviceData.icon = icon;
-    }
 
     if (isEdit) {
       const rewardIdInput = form.querySelector('[name="reward_id"]');
@@ -1129,7 +1121,7 @@ class KidsTasksCard extends HTMLElement {
           label="Icône personnalisée (optionnel)"
           name="icon"
           value="${isEdit ? task.icon || '' : ''}"
-          placeholder="Ex: 🧹, 📚, 🍽️...">
+          placeholder="Ex: 🧹, mdi:broom, https://example.com/icon.png, data:image/png;base64,iVBOR...">
         </ha-textfield>
 
         <div class="form-row">
@@ -1356,7 +1348,7 @@ class KidsTasksCard extends HTMLElement {
           label="Icône personnalisée (optionnel)"
           name="icon"
           value="${isEdit ? reward.icon || '' : ''}"
-          placeholder="Ex: 🎮, 📱, 🍭...">
+          placeholder="Ex: 🎮, mdi:gamepad, https://example.com/icon.png, data:image/png;base64,iVBOR...">
         </ha-textfield>
         
         <div class="form-row">
@@ -2467,6 +2459,21 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color, #212121);
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
+        
+        /* Styles pour les icônes personnalisées */
+        .icon-image {
+          width: 1.2em;
+          height: 1.2em;
+          object-fit: cover;
+          border-radius: 3px;
+          vertical-align: middle;
+        }
+        
+        ha-icon {
+          width: 1.2em;
+          height: 1.2em;
+          vertical-align: middle;
+        }
         
         .task-actions {
           position: absolute;
@@ -3661,11 +3668,46 @@ class KidsTasksChildCard extends HTMLElement {
     }, 4000);
   }
 
+  renderIcon(iconData) {
+    if (!iconData) return '📋';
+    
+    // Si c'est une URL (commence par http:// ou https://)
+    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
+      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est une image inline base64 (commence par data:image/)
+    if (typeof iconData === 'string' && iconData.startsWith('data:image/')) {
+      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est du base64 sans préfixe (pour compatibilité)
+    if (typeof iconData === 'string' && this.isBase64(iconData)) {
+      return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est une icône MDI (commence par mdi:)
+    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
+      const iconName = iconData.replace('mdi:', '');
+      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
+    }
+    
+    // Sinon, traiter comme un emoji ou texte simple
+    return iconData.toString();
+  }
+
+  isBase64(str) {
+    if (!str || typeof str !== 'string') return false;
+    // Vérifier que c'est une chaîne base64 valide (caractères base64 + longueur raisonnable pour une image)
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    return str.length > 100 && str.length % 4 === 0 && base64Regex.test(str);
+  }
+
   getCategoryIcon(categoryOrItem) {
     // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
     if (typeof categoryOrItem === 'object' && categoryOrItem !== null) {
       if (categoryOrItem.icon) {
-        return categoryOrItem.icon;
+        return this.renderIcon(categoryOrItem.icon);
       }
       categoryOrItem = categoryOrItem.category;
     }
@@ -3677,7 +3719,7 @@ class KidsTasksChildCard extends HTMLElement {
     if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
       const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
       if (dynamicIcons[category]) {
-        return dynamicIcons[category];
+        return this.renderIcon(dynamicIcons[category]);
       }
     }
     
@@ -3685,12 +3727,12 @@ class KidsTasksChildCard extends HTMLElement {
     if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
       const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
       if (rewardIcons[category]) {
-        return rewardIcons[category];
+        return this.renderIcon(rewardIcons[category]);
       }
     }
     
     // Fallback par défaut
-    return '📋';
+    return this.renderIcon('📋');
   }
 
   getStatusLabel(status) {
