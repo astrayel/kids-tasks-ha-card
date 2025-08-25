@@ -170,7 +170,15 @@ class KidsTasksCard extends HTMLElement {
         this.showTaskForm(id);
         break;
       case 'complete-task':
-        this.callService('kids_tasks', 'complete_task', { task_id: id });
+        const completeChildId = event.target.dataset.childId;
+        if (!completeChildId) {
+          this.showNotification('Erreur: ID enfant manquant', 'error');
+          return;
+        }
+        this.callService('kids_tasks', 'complete_task', { 
+          task_id: id, 
+          child_id: completeChildId 
+        });
         break;
       case 'validate-task':
         this.callService('kids_tasks', 'validate_task', { task_id: id });
@@ -2088,6 +2096,7 @@ class KidsTasksCard extends HTMLElement {
         ${showManagement ? `
           <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
         ` : ''}
+        <div class="task-icon">${this.getCategoryIcon(task)}</div>
         <div class="task-content">
           <div class="task-header">
             <div class="task-title">${task.name}</div>
@@ -2122,7 +2131,7 @@ class KidsTasksCard extends HTMLElement {
         ${showActions ? `
           <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
         ` : ''}
-        <div class="child-avatar">🎁</div>
+        <div class="child-avatar">${this.getCategoryIcon(reward)}</div>
         <div class="child-info">
           <div class="child-name">${reward.name}</div>
           <div class="child-stats">
@@ -2381,6 +2390,33 @@ class KidsTasksCard extends HTMLElement {
           border: 2px solid rgba(255,255,255,0.2);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           flex-shrink: 0;
+        }
+        
+        .task-icon {
+          font-size: 2em;
+          margin-right: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 2.5em;
+          min-height: 2.5em;
+          flex-shrink: 0;
+        }
+        
+        .task-icon img {
+          width: 2.5em !important;
+          height: 2.5em !important;
+          border-radius: 8px !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255,255,255,0.1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
+        }
+        
+        .task-icon ha-icon {
+          width: 2.5em !important;
+          height: 2.5em !important;
+          color: var(--primary-color, #3f51b5);
         }
         .child-info { 
           flex: 1; 
@@ -2896,6 +2932,23 @@ class KidsTasksCard extends HTMLElement {
             font-size: 2em !important;
             margin-right: 12px !important;
             flex-shrink: 0;
+          }
+          
+          .task-icon {
+            font-size: 1.5em !important;
+            margin-right: 12px !important;
+            min-width: 2em !important;
+            min-height: 2em !important;
+          }
+          
+          .task-icon img {
+            width: 2em !important;
+            height: 2em !important;
+          }
+          
+          .task-icon ha-icon {
+            width: 2em !important;
+            height: 2em !important;
           }
           
           .child-info {
@@ -3483,8 +3536,14 @@ class KidsTasksChildCard extends HTMLElement {
     try {
       switch (action) {
         case 'complete_task':
+          const childId = event.target.dataset.childId;
+          if (!childId) {
+            this.showNotification('Erreur: ID enfant manquant', 'error');
+            return;
+          }
           this._hass.callService('kids_tasks', 'complete_task', {
             task_id: id,
+            child_id: childId,
           });
           this.showNotification('Tâche marquée comme terminée ! 🎉', 'success');
           break;
@@ -3975,6 +4034,8 @@ class KidsTasksChildCard extends HTMLElement {
           padding: 16px;
           border-left: 4px solid #ddd;
           transition: all 0.3s;
+          display: flex;
+          align-items: flex-start;
         }
         
         .task-item:hover {
@@ -4006,6 +4067,7 @@ class KidsTasksChildCard extends HTMLElement {
           justify-content: space-between;
           align-items: flex-start;
           margin-bottom: 8px;
+          flex: 1;
         }
         
         .task-info {
@@ -4211,10 +4273,11 @@ class KidsTasksChildCard extends HTMLElement {
               <div class="task-list">
                 ${tasks.map(task => `
                   <div class="task-item ${task.status}">
+                    <div class="task-icon">${this.getCategoryIcon(task)}</div>
                     <div class="task-header">
                       <div class="task-info">
                         <div class="task-name">
-                          ${this.getCategoryIcon(task)} ${task.name}
+                          ${task.name}
                         </div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         <div class="task-meta">
@@ -4226,7 +4289,7 @@ class KidsTasksChildCard extends HTMLElement {
                     </div>
                     
                     ${task.status === 'todo' ? `
-                      <button class="complete-btn" data-action="complete_task" data-id="${task.id}">
+                      <button class="complete-btn" data-action="complete_task" data-id="${task.id}" data-child-id="${child.id}">
                         ✅ Marquer comme terminé
                       </button>
                     ` : ''}
