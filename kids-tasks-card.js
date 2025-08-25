@@ -2306,11 +2306,50 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .child-card.drop-before {
-          border-top: 3px solid var(--primary-color, #03a9f4);
+          position: relative;
+        }
+        
+        .child-card.drop-before::before {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: -8px;
+          right: -8px;
+          height: 16px;
+          background: linear-gradient(90deg, 
+            var(--primary-color, #03a9f4) 0%, 
+            rgba(3, 169, 244, 0.3) 50%, 
+            var(--primary-color, #03a9f4) 100%);
+          border-radius: 8px;
+          z-index: 100;
+          opacity: 0.8;
+          animation: pulse-insert 1s infinite alternate;
         }
         
         .child-card.drop-after {
-          border-bottom: 3px solid var(--primary-color, #03a9f4);
+          position: relative;
+        }
+        
+        .child-card.drop-after::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: -8px;
+          right: -8px;
+          height: 16px;
+          background: linear-gradient(90deg, 
+            var(--primary-color, #03a9f4) 0%, 
+            rgba(3, 169, 244, 0.3) 50%, 
+            var(--primary-color, #03a9f4) 100%);
+          border-radius: 8px;
+          z-index: 100;
+          opacity: 0.8;
+          animation: pulse-insert 1s infinite alternate;
+        }
+        
+        @keyframes pulse-insert {
+          0% { opacity: 0.6; transform: scaleY(0.8); }
+          100% { opacity: 1; transform: scaleY(1); }
         }
         
         .drag-handle {
@@ -2759,7 +2798,7 @@ class KidsTasksCard extends HTMLElement {
         .empty-state-icon { font-size: 4em; margin-bottom: 16px; opacity: 0.5; }
         .empty-state p { margin: 0 0 20px 0; font-size: 1.1em; }
         
-        .grid { display: grid; gap: 16px; }
+        .grid { display: grid; gap: 24px; }
         .grid-2 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
         .grid-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         
