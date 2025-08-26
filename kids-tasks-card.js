@@ -4252,12 +4252,22 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Générer les styles CSS pour le nouveau design
   getStyles() {
+    // Récupérer les variables CSS personnalisées du style parent
+    const computedStyle = getComputedStyle(this);
+    const customDashboardPrimary = computedStyle.getPropertyValue('--custom-dashboard-primary').trim() || '#6b73ff';
+    const customDashboardSecondary = computedStyle.getPropertyValue('--custom-dashboard-secondary').trim() || '#9c27b0';
+    const customHeaderColor = computedStyle.getPropertyValue('--custom-header-color').trim() || customDashboardPrimary;
+    const customTabColor = computedStyle.getPropertyValue('--custom-tab-color').trim() || customDashboardPrimary;
+    
     return `
       <style>
         :host {
           display: block;
           font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-          --primary-color: #6b73ff;
+          --primary-color: ${customDashboardPrimary};
+          --secondary-color: ${customDashboardSecondary};
+          --header-color: ${customHeaderColor};
+          --tab-color: ${customTabColor};
           --success-color: #4caf50;
           --warning-color: #ff9800;
           --error-color: #f44336;
@@ -4274,7 +4284,7 @@ class KidsTasksChildCard extends HTMLElement {
         
         /* Header avec avatar et jauges */
         .header {
-          background: linear-gradient(135deg, var(--primary-color) 0%, #9c27b0 100%);
+          background: linear-gradient(135deg, var(--header-color) 0%, var(--secondary-color) 100%);
           color: white;
           padding: 20px;
           position: relative;
@@ -4418,9 +4428,22 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .tab.active {
-          color: var(--primary-color);
-          border-bottom-color: var(--primary-color);
+          color: var(--tab-color);
+          border-bottom-color: var(--tab-color);
           background: rgba(107, 115, 255, 0.05);
+          position: relative;
+        }
+        
+        .tab.active::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: var(--primary-color);
+          opacity: 0.05;
+          z-index: -1;
         }
         
         /* Contenu */
