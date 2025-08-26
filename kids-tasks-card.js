@@ -3980,6 +3980,7 @@ class KidsTasksChildCard extends HTMLElement {
           <div class="header-content">
             <div class="avatar-section">
               <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
+              <div class="child-name-header">${child.name}</div>
               <div class="level-badge">Niveau ${stats.level}</div>
             </div>
             
@@ -4015,8 +4016,6 @@ class KidsTasksChildCard extends HTMLElement {
               </div>
             </div>
           </div>
-          
-          <div class="child-name">${child.name}</div>
         </div>
 
         <!-- Navigation par onglets -->
@@ -4309,6 +4308,15 @@ class KidsTasksChildCard extends HTMLElement {
           border-radius: 50% !important;
         }
         
+        .child-name-header {
+          font-size: 1em;
+          font-weight: 600;
+          text-align: center;
+          margin: 4px 0;
+          color: white;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
         .level-badge {
           background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px);
@@ -4379,12 +4387,6 @@ class KidsTasksChildCard extends HTMLElement {
           opacity: 0.9;
         }
         
-        .child-name {
-          text-align: center;
-          font-size: 1.4em;
-          font-weight: bold;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
         
         /* Navigation par onglets */
         .tabs {
