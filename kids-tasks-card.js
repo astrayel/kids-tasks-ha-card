@@ -3599,6 +3599,9 @@ class KidsTasksChildCard extends HTMLElement {
       show_rewards: config.show_rewards !== false,
       ...config
     };
+    
+    // État pour les onglets
+    this.currentTab = 'tasks';
   }
 
   set hass(hass) {
@@ -3631,6 +3634,11 @@ class KidsTasksChildCard extends HTMLElement {
 
     try {
       switch (action) {
+        case 'switch_tab':
+          this.currentTab = id;
+          this.render();
+          break;
+          
         case 'complete_task':
           const childId = this.config.child_id;
           if (!childId) {
@@ -3642,6 +3650,13 @@ class KidsTasksChildCard extends HTMLElement {
             child_id: childId,
           });
           this.showNotification('Tâche marquée comme terminée ! 🎉', 'success');
+          break;
+          
+        case 'validate_task':
+          this._hass.callService('kids_tasks', 'validate_task', {
+            task_id: id,
+          });
+          this.showNotification('Tâche validée ! ✅', 'success');
           break;
           
         case 'claim_reward':
@@ -3953,495 +3968,69 @@ class KidsTasksChildCard extends HTMLElement {
 
     const tasks = this.getTasks();
     const rewards = this.config.show_rewards ? this.getRewards() : [];
-    const availableRewards = rewards.filter(r => r.cost <= child.points);
+    const stats = this.getChildStats(child, tasks);
+    const taskCategories = this.getTasksByCategory(tasks);
 
     this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-        }
-        
-        .child-card {
-          background: var(--card-background-color, #fff);
-          border-radius: 12px;
-          box-shadow: var(--ha-card-box-shadow, 0 2px 8px rgba(0,0,0,0.1));
-          overflow: hidden;
-          margin: 8px 0;
-        }
-        
-        .header {
-          background: linear-gradient(135deg, ${child.card_gradient_start || this.config?.gradient_start || 'var(--custom-child-gradient-start, #4CAF50)'} 0%, ${child.card_gradient_end || this.config?.gradient_end || 'var(--custom-child-gradient-end, #8BC34A)'} 100%);
-          color: ${this.config?.text_color || 'white'};
-          padding: 24px;
-          text-align: center;
-          position: relative;
-          border: 2px solid ${this.config?.border_color || 'var(--custom-child-border-color, #2E7D32)'};
-        }
-        
-        .avatar {
-          font-size: 3em;
-          margin-bottom: 8px;
-          display: block;
-        }
-        
-        .child-name {
-          font-size: 1.5em;
-          font-weight: bold;
-          margin-bottom: 8px;
-        }
-        
-        .level-badge {
-          background: rgba(255, 255, 255, 0.2);
-          padding: 4px 12px;
-          border-radius: 16px;
-          font-size: 0.9em;
-          font-weight: bold;
-          display: inline-block;
-          margin-bottom: 12px;
-        }
-        
-        .points-section {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 16px;
-          border-radius: 8px;
-          margin-top: 16px;
-        }
-        
-        .points-display {
-          font-size: 2em;
-          font-weight: bold;
-          margin-bottom: 8px;
-        }
-        
-        .progress-bar {
-          background: rgba(255, 255, 255, 0.2);
-          height: 8px;
-          border-radius: 4px;
-          overflow: hidden;
-          margin: 8px 0;
-        }
-        
-        .progress-fill {
-          background: white;
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-        
-        .progress-text {
-          font-size: 0.9em;
-          opacity: 0.9;
-        }
-        
-        .content {
-          padding: 20px;
-        }
-        
-        .section {
-          margin-bottom: 24px;
-        }
-        
-        .section-title {
-          font-size: 1.2em;
-          font-weight: bold;
-          color: var(--primary-text-color, #212121);
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .task-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        
-        .task-item {
-          background: var(--secondary-background-color, #f5f5f5);
-          border-radius: 8px;
-          padding: 16px;
-          border-left: 4px solid #ddd;
-          transition: all 0.3s;
-          display: flex;
-          align-items: flex-start;
-        }
-        
-        .task-item:hover {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          transform: translateY(-1px);
-        }
-        
-        .task-item.todo {
-          border-left-color: var(--info-color, #2196F3);
-        }
-        
-        .task-item.pending_validation {
-          border-left-color: var(--warning-color, #FF9800);
-          background: #fff3e0;
-        }
-        
-        .task-item.completed {
-          border-left-color: var(--success-color, #4CAF50);
-          opacity: 0.8;
-        }
-        
-        .task-item.validated {
-          border-left-color: var(--success-color, #4CAF50);
-          background: #e8f5e8;
-        }
-        
-        .task-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 8px;
-          flex: 1;
-        }
-        
-        .task-info {
-          flex: 1;
-        }
-        
-        .task-name {
-          font-weight: bold;
-          color: var(--primary-text-color, #212121);
-          margin-bottom: 4px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .task-description {
-          color: var(--secondary-text-color, #757575);
-          font-size: 0.9em;
-          margin-bottom: 8px;
-        }
-        
-        .task-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        
-        .task-assigned {
-          font-size: 0.8em;
-          color: var(--secondary-text-color, #757575);
-          background: var(--secondary-background-color, #f0f0f0);
-          padding: 2px 6px;
-          border-radius: 8px;
-          white-space: nowrap;
-        }
-        
-        .task-status {
-          font-size: 0.75em;
-          padding: 4px 8px;
-          border-radius: 16px;
-          font-weight: bold;
-          display: inline-block;
-          white-space: nowrap;
-          text-transform: uppercase;
-        }
-        
-        .task-status.todo {
-          background: var(--info-color, #2196F3);
-          color: white;
-        }
-        
-        .task-status.pending_validation {
-          background: var(--warning-color, #FF9800);
-          color: white;
-        }
-        
-        .task-status.validated {
-          background: var(--success-color, #4CAF50);
-          color: white;
-        }
-        
-        .task-points {
-          background: var(--custom-dashboard-secondary);
-          color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.8em;
-          font-weight: bold;
-        }
-        
-        .complete-btn {
-          background: var(--success-color, #4CAF50);
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 20px;
-          cursor: pointer;
-          font-weight: bold;
-          transition: all 0.3s;
-          margin-top: 8px;
-        }
-        
-        .complete-btn:hover {
-          background: var(--success-color, #45a049);
-          transform: scale(1.05);
-        }
-        
-        .rewards-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 12px;
-        }
-        
-        .reward-card {
-          background: var(--secondary-background-color, #f5f5f5);
-          border-radius: 8px;
-          padding: 16px;
-          transition: all 0.3s;
-          border: 2px solid transparent;
-          display: flex;
-          align-items: flex-start;
-        }
-        
-        .reward-card.affordable {
-          border-color: var(--success-color, #4CAF50);
-          background: #e8f5e8;
-        }
-        
-        .reward-card:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          transform: translateY(-2px);
-        }
-        
-        .reward-icon {
-          font-size: 2em;
-          margin-right: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 2.5em;
-          min-height: 2.5em;
-          flex-shrink: 0;
-        }
-        
-        .reward-icon img {
-          width: 2.5em !important;
-          height: 2.5em !important;
-          border-radius: 8px !important;
-          object-fit: cover !important;
-          border: 2px solid rgba(255,255,255,0.1);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          flex-shrink: 0;
-        }
-        
-        .reward-icon ha-icon {
-          width: 2.5em !important;
-          height: 2.5em !important;
-          color: var(--primary-color, #3f51b5);
-        }
-        
-        .reward-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        
-        .reward-header {
-          flex: 1;
-          margin-bottom: 12px;
-        }
-        
-        .reward-info {
-          flex: 1;
-        }
-        
-        .reward-name {
-          font-weight: bold;
-          margin-bottom: 4px;
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .reward-cost {
-          color: var(--accent-color, #ff4081);
-          font-weight: bold;
-          margin-bottom: 4px;
-        }
-        
-        .reward-description {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          margin-bottom: 8px;
-        }
-        
-        .claim-btn {
-          background: var(--custom-dashboard-secondary);
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 20px;
-          cursor: pointer;
-          font-weight: bold;
-          transition: all 0.3s;
-        }
-        
-        .claim-btn:hover {
-          background: var(--accent-color, #e91e63);
-          transform: scale(1.05);
-        }
-        
-        .claim-btn:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-          transform: none;
-        }
-        
-        .empty-state {
-          text-align: center;
-          padding: 40px 20px;
-          color: var(--secondary-text-color, #757575);
-        }
-        
-        .empty-icon {
-          font-size: 3em;
-          margin-bottom: 16px;
-          opacity: 0.5;
-        }
-        
-        .loading, .error {
-          text-align: center;
-          padding: 40px;
-        }
-        
-        .error {
-          color: var(--error-color, #f44336);
-        }
-        
-      </style>
+      ${this.getStyles()}
       
-      <div class="child-card">
+      <div class="habitica-card">
+        <!-- Header avec avatar et jauges -->
         <div class="header">
-          ${this.config.show_avatar ? `<span class="avatar">${this.getEffectiveAvatar(child)}</span>` : ''}
-          <div class="child-name">${child.name}</div>
-          <div class="level-badge">Niveau ${child.level}</div>
-          
-          ${this.config.show_progress ? `
-            <div class="points-section">
-              <div class="points-display">${child.points} points</div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${child.progress}%"></div>
-              </div>
-              <div class="progress-text">
-                ${child.pointsToNext} points pour le niveau suivant
-              </div>
-            </div>
-          ` : ''}
-        </div>
-        
-        <div class="content">
-          <div class="section">
-            <div class="section-title">
-              📝 Mes Tâches ${tasks.length > 0 ? `(${tasks.length})` : ''}
+          <div class="header-content">
+            <div class="avatar-section">
+              <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
+              <div class="level-badge">Niveau ${stats.level}</div>
             </div>
             
-            ${tasks.length > 0 ? `
-              <div class="task-list">
-                ${tasks.map(task => `
-                  <div class="task-item ${task.status}">
-                    <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-                    <div class="task-header">
-                      <div class="task-info">
-                        <div class="task-name">
-                          ${task.name}
-                        </div>
-                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-                        <div class="task-meta">
-                          <div class="task-status ${task.status}">${this.getStatusLabel(task.status)}</div>
-                          <div class="task-points">+${task.points} points</div>
-                          <div class="task-assigned">👥 ${this.formatAssignedChildren(task)}</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    ${task.status === 'todo' ? `
-                      <button class="complete-btn" data-action="complete_task" data-id="${task.id}" data-child-id="${child.id}">
-                        ✅ Marquer comme terminé
-                      </button>
-                    ` : ''}
-                  </div>
-                `).join('')}
+            <div class="gauges-section">
+              <div class="gauge">
+                <div class="gauge-label">Points totaux</div>
+                <div class="gauge-bar">
+                  <div class="gauge-fill total-points" style="width: ${Math.min((stats.totalPoints / 500) * 100, 100)}%"></div>
+                </div>
+                <div class="gauge-text">${stats.totalPoints}</div>
               </div>
-            ` : `
-              <div class="empty-state">
-                <div class="empty-icon">🎯</div>
-                <p>Aucune tâche assignée pour le moment</p>
+              
+              <div class="gauge">
+                <div class="gauge-label">Niveau</div>
+                <div class="gauge-bar circular">
+                  <div class="gauge-fill level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
+                </div>
+                <div class="gauge-text">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
               </div>
-            `}
-          </div>
-          
-          ${this.config.show_rewards && rewards.length > 0 ? `
-            <div class="section">
-              <div class="section-title">
-                🎁 Récompenses Disponibles
-              </div>
-              <div class="rewards-grid">
-                ${rewards.map(reward => `
-                  <div class="reward-card ${reward.cost <= child.points ? 'affordable' : ''}">
-                    <div class="reward-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
-                    <div class="reward-content">
-                      <div class="reward-header">
-                        <div class="reward-info">
-                          <div class="reward-name">${reward.name}</div>
-                          <div class="reward-cost">${reward.cost} points</div>
-                          ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
-                        </div>
-                      </div>
-                      <button class="claim-btn" 
-                              data-action="claim_reward" 
-                              data-id="${reward.id}"
-                              ${reward.cost > child.points ? 'disabled' : ''}>
-                        ${reward.cost <= child.points ? '🎁 Échanger' : `Besoin de ${reward.cost - child.points} points`}
-                      </button>
-                    </div>
-                  </div>
-                `).join('')}
+              
+              <div class="gauge">
+                <div class="gauge-label">Tâches</div>
+                <div class="gauge-bar">
+                  <div class="gauge-fill tasks-progress" style="width: ${stats.totalTasksToday > 0 ? (stats.completedTasks / stats.totalTasksToday) * 100 : 0}%"></div>
+                </div>
+                <div class="gauge-text">${stats.completedTasks}/${stats.totalTasksToday}</div>
               </div>
             </div>
-          ` : ''}
+          </div>
+          
+          <div class="child-name">${child.name}</div>
+        </div>
+
+        <!-- Navigation par onglets -->
+        <div class="tabs">
+          <button class="tab ${this.currentTab === 'tasks' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="tasks">Tâches</button>
+          <button class="tab ${this.currentTab === 'past' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="past">Passées</button>
+          <button class="tab ${this.currentTab === 'bonus' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="bonus">Bonus</button>
+          <button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="rewards">Récompenses</button>
+        </div>
+
+        <!-- Contenu des onglets -->
+        <div class="content">
+          ${this.renderTabContent(taskCategories, rewards, stats, child)}
         </div>
       </div>
     `;
-    
-    // Ajouter gestionnaire pour détecter les ratios d'images après le rendu
-    setTimeout(() => this.handleImageAspectRatios(), 10);
-  }
-  
-  handleImageAspectRatios() {
-    const avatarImages = this.shadowRoot.querySelectorAll('.avatar img');
-    avatarImages.forEach(img => {
-      if (img.complete && img.naturalWidth && img.naturalHeight) {
-        this.checkImageRatio(img);
-      } else {
-        img.addEventListener('load', () => this.checkImageRatio(img), { once: true });
-      }
-    });
-  }
-  
-  checkImageRatio(img) {
-    if (img.naturalWidth && img.naturalHeight) {
-      const ratio = img.naturalWidth / img.naturalHeight;
-      if (Math.abs(ratio - 2) < Math.abs(ratio - 1)) {
-        // L'image est plus proche d'un ratio 2:1 que 1:1 - mode bannière
-        img.setAttribute('data-wide', 'true');
-        img.style.borderRadius = '16px';
-        img.style.width = '100%';
-        img.style.height = '4em';
-        img.style.maxWidth = '100%';
-        img.style.objectFit = 'cover';
-        img.style.objectPosition = 'center';
-        // Conserver la transparence pour les PNG
-        img.style.backgroundColor = 'transparent';
-      }
-    }
   }
   
   getAssignedChildrenNames(task) {
@@ -4577,6 +4166,764 @@ class KidsTasksChildCard extends HTMLElement {
     
     // Fallback par défaut
     return this.renderIcon('📋');
+  }
+
+  // Calculer les statistiques de l'enfant
+  getChildStats(child, tasks) {
+    const totalPoints = child.points || 0;
+    const level = child.level || 1;
+    const pointsToNextLevel = level * 100;
+    const pointsInCurrentLevel = totalPoints % 100;
+    
+    // Calculer les tâches de la période actuelle
+    const activeTasks = tasks.filter(task => 
+      task.status === 'todo' && 
+      this.isTaskActiveToday(task)
+    );
+    
+    const completedTasks = tasks.filter(task => 
+      (task.status === 'validated' || task.status === 'completed') &&
+      this.isTaskActiveToday(task)
+    );
+    
+    const pendingTasks = tasks.filter(task => 
+      task.status === 'pending_validation'
+    );
+    
+    return {
+      totalPoints,
+      level,
+      pointsInCurrentLevel,
+      pointsToNextLevel,
+      activeTasks: activeTasks.length,
+      completedTasks: completedTasks.length,
+      pendingTasks: pendingTasks.length,
+      totalTasksToday: activeTasks.length + completedTasks.length + pendingTasks.length
+    };
+  }
+
+  // Vérifier si une tâche est active aujourd'hui
+  isTaskActiveToday(task) {
+    if (!task.active) return false;
+    
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = dimanche
+    const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const todayName = dayNames[dayOfWeek];
+    
+    if (task.frequency === 'daily' && task.weekly_days) {
+      return task.weekly_days.includes(todayName);
+    }
+    
+    return task.frequency === 'daily' || 
+           (task.frequency === 'weekly' && dayOfWeek === 1) ||
+           (task.frequency === 'monthly' && today.getDate() === 1);
+  }
+
+  // Obtenir les tâches par catégorie
+  getTasksByCategory(tasks) {
+    const categories = {
+      todo: tasks.filter(t => t.status === 'todo' && this.isTaskActiveToday(t)),
+      pending: tasks.filter(t => t.status === 'pending_validation'),
+      completed: tasks.filter(t => (t.status === 'validated' || t.status === 'completed') && this.isTaskActiveToday(t)),
+      past: tasks.filter(t => this.isTaskFromPast(t))
+    };
+    
+    return categories;
+  }
+
+  // Vérifier si une tâche est du passé
+  isTaskFromPast(task) {
+    if (!task.last_completed_at) return false;
+    const taskDate = new Date(task.last_completed_at);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return taskDate < today && (task.status === 'validated' || task.status === 'completed');
+  }
+
+  // Générer les styles CSS pour le nouveau design
+  getStyles() {
+    return `
+      <style>
+        :host {
+          display: block;
+          font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+          --primary-color: #6b73ff;
+          --success-color: #4caf50;
+          --warning-color: #ff9800;
+          --error-color: #f44336;
+          --info-color: #2196f3;
+        }
+        
+        .habitica-card {
+          background: var(--card-background-color, #fff);
+          border-radius: 16px;
+          box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0,0,0,0.1));
+          overflow: hidden;
+          max-width: 100%;
+        }
+        
+        /* Header avec avatar et jauges */
+        .header {
+          background: linear-gradient(135deg, var(--primary-color) 0%, #9c27b0 100%);
+          color: white;
+          padding: 20px;
+          position: relative;
+        }
+        
+        .header-content {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 12px;
+        }
+        
+        .avatar-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 80px;
+        }
+        
+        .avatar {
+          font-size: 3em;
+          margin-bottom: 8px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.1);
+          width: 80px;
+          height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid rgba(255,255,255,0.2);
+        }
+        
+        .avatar img {
+          width: 80px !important;
+          height: 80px !important;
+          border-radius: 50% !important;
+        }
+        
+        .level-badge {
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: bold;
+          text-align: center;
+          min-width: 60px;
+        }
+        
+        .gauges-section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          min-height: 80px;
+          justify-content: space-between;
+        }
+        
+        .gauge {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        
+        .gauge-label {
+          font-size: 0.75em;
+          opacity: 0.9;
+          font-weight: 500;
+        }
+        
+        .gauge-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+          position: relative;
+        }
+        
+        .gauge-fill {
+          height: 100%;
+          border-radius: 4px;
+          transition: width 0.6s ease;
+        }
+        
+        .total-points {
+          background: linear-gradient(90deg, #ffd700, #ffed4a);
+        }
+        
+        .level-progress {
+          background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        
+        .tasks-progress {
+          background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+        
+        .gauge-text {
+          font-size: 0.7em;
+          font-weight: bold;
+          opacity: 0.9;
+        }
+        
+        .child-name {
+          text-align: center;
+          font-size: 1.4em;
+          font-weight: bold;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* Navigation par onglets */
+        .tabs {
+          display: flex;
+          background: var(--card-background-color, #fff);
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .tab {
+          flex: 1;
+          padding: 16px 12px;
+          border: none;
+          background: transparent;
+          color: var(--secondary-text-color, #757575);
+          font-weight: 600;
+          font-size: 0.9em;
+          cursor: pointer;
+          transition: all 0.3s;
+          border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+          background: rgba(0,0,0,0.05);
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .tab.active {
+          color: var(--primary-color);
+          border-bottom-color: var(--primary-color);
+          background: rgba(107, 115, 255, 0.05);
+        }
+        
+        /* Contenu */
+        .content {
+          padding: 20px;
+          min-height: 400px;
+        }
+        
+        /* Tâches */
+        .task-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .task-item {
+          background: var(--secondary-background-color, #f8f9fa);
+          border-radius: 12px;
+          padding: 16px;
+          border-left: 4px solid #ddd;
+          transition: all 0.3s;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .task-item.todo {
+          border-left-color: var(--info-color);
+          background: #e3f2fd;
+        }
+        
+        .task-item.pending_validation {
+          border-left-color: var(--warning-color);
+          background: #fff3e0;
+        }
+        
+        .task-item.validated,
+        .task-item.completed {
+          border-left-color: var(--success-color);
+          background: #e8f5e8;
+          opacity: 0.8;
+        }
+        
+        .task-icon {
+          font-size: 1.5em;
+          min-width: 40px;
+          text-align: center;
+        }
+        
+        .task-info {
+          flex: 1;
+        }
+        
+        .task-name {
+          font-weight: bold;
+          color: var(--primary-text-color, #212121);
+          margin-bottom: 4px;
+        }
+        
+        .task-meta {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          font-size: 0.85em;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .task-points {
+          font-weight: bold;
+          color: var(--primary-color);
+        }
+        
+        .task-deadline {
+          color: var(--warning-color);
+        }
+        
+        .task-actions {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .btn-task {
+          padding: 10px 16px;
+          border: none;
+          border-radius: 20px;
+          font-size: 0.85em;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-complete {
+          background: var(--success-color);
+          color: white;
+        }
+        
+        .btn-complete:hover {
+          background: #45a049;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-validate {
+          background: var(--warning-color);
+          color: white;
+        }
+        
+        .btn-validate:hover {
+          background: #e68900;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* Récompenses en grille */
+        .rewards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 16px;
+          margin-top: 16px;
+        }
+        
+        .reward-square {
+          aspect-ratio: 1;
+          background: var(--secondary-background-color, #f8f9fa);
+          border-radius: 16px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s;
+          border: 2px solid transparent;
+          text-align: center;
+        }
+        
+        .reward-square.affordable {
+          border-color: var(--success-color);
+          background: #e8f5e8;
+        }
+        
+        .reward-square:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .reward-icon-large {
+          font-size: 2.5em;
+          margin-bottom: 8px;
+        }
+        
+        .reward-name {
+          font-weight: bold;
+          font-size: 0.9em;
+          margin-bottom: 4px;
+          color: var(--primary-text-color);
+        }
+        
+        .reward-price {
+          font-size: 0.8em;
+          color: var(--primary-color);
+          font-weight: bold;
+        }
+        
+        /* États vides */
+        .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .empty-icon {
+          font-size: 4em;
+          opacity: 0.3;
+          margin-bottom: 16px;
+        }
+        
+        .empty-text {
+          font-size: 1.1em;
+          margin-bottom: 8px;
+        }
+        
+        .empty-subtext {
+          font-size: 0.9em;
+          opacity: 0.7;
+        }
+        
+        /* Responsive mobile */
+        @media (max-width: 600px) {
+          .header {
+            padding: 16px;
+          }
+          
+          .header-content {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+          }
+          
+          .gauges-section {
+            width: 100%;
+            max-width: 280px;
+          }
+          
+          .avatar-section {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+          }
+          
+          .avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 2.2em;
+          }
+          
+          .content {
+            padding: 16px;
+          }
+          
+          .task-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          
+          .task-actions {
+            align-self: flex-end;
+          }
+          
+          .rewards-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
+        }
+        
+        @media (max-width: 400px) {
+          .rewards-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        /* Styles pour l'onglet historique */
+        .past-tasks-container {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        
+        .past-section {
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 12px;
+          padding: 16px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .section-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .section-header.success {
+          color: var(--success-color, #4CAF50);
+        }
+        
+        .section-header.penalty {
+          color: var(--error-color, #f44336);
+        }
+        
+        .section-icon {
+          font-size: 1.2em;
+          margin-right: 8px;
+        }
+        
+        .section-title {
+          font-weight: bold;
+          font-size: 1.1em;
+        }
+        
+        .completed-task {
+          border-left: 4px solid var(--success-color, #4CAF50);
+          background: rgba(76, 175, 80, 0.05);
+        }
+        
+        .missed-task {
+          border-left: 4px solid var(--error-color, #f44336);
+          background: rgba(244, 67, 54, 0.05);
+        }
+        
+        .task-result {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          font-size: 1.2em;
+          flex-shrink: 0;
+        }
+        
+        .task-result.success {
+          background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .task-result.penalty {
+          background: rgba(244, 67, 54, 0.1);
+        }
+        
+        .task-points.earned {
+          color: var(--success-color, #4CAF50);
+          font-weight: bold;
+        }
+        
+        .task-points.penalty {
+          color: var(--error-color, #f44336);
+          font-weight: bold;
+        }
+        
+        .completion-date, .validation-date, .penalty-date {
+          font-size: 0.8em;
+          color: var(--secondary-text-color, #757575);
+          font-style: italic;
+        }
+        
+        .completion-date::before {
+          content: "📅 ";
+        }
+        
+        .validation-date::before {
+          content: "✅ ";
+        }
+        
+        .penalty-date::before {
+          content: "⏰ ";
+        }
+      </style>
+    `;
+  }
+
+  // Rendu du contenu des onglets
+  renderTabContent(taskCategories, rewards, stats, child) {
+    switch (this.currentTab) {
+      case 'tasks':
+        return this.renderTasksTab(taskCategories.todo.concat(taskCategories.pending));
+      case 'past':
+        return this.renderPastTab(taskCategories.completed.concat(taskCategories.past));
+      case 'bonus':
+        return this.renderBonusTab();
+      case 'rewards':
+        return this.renderRewardsTab(rewards, child.points);
+      default:
+        return this.renderTasksTab(taskCategories.todo.concat(taskCategories.pending));
+    }
+  }
+
+  // Onglet des tâches actives
+  renderTasksTab(tasks) {
+    if (tasks.length === 0) {
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">🎉</div>
+          <div class="empty-text">Toutes les tâches sont terminées !</div>
+          <div class="empty-subtext">Bravo ! Tu as tout fini.</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="task-list">
+        ${tasks.map(task => `
+          <div class="task-item ${task.status}">
+            <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+            <div class="task-info">
+              <div class="task-name">${task.name}</div>
+              <div class="task-meta">
+                <span class="task-points">+${task.points} points</span>
+                ${task.deadline_time ? `<span class="task-deadline">⏰ ${task.deadline_time}</span>` : ''}
+              </div>
+            </div>
+            <div class="task-actions">
+              ${task.status === 'todo' ? `
+                <button class="btn-task btn-complete" 
+                        data-action="complete_task" 
+                        data-id="${task.id}">Terminé</button>
+              ` : `
+                <button class="btn-task btn-validate" 
+                        data-action="validate_task" 
+                        data-id="${task.id}">Validation</button>
+              `}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Onglet des tâches passées
+  renderPastTab(tasks) {
+    if (tasks.length === 0) {
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">📚</div>
+          <div class="empty-text">Aucune tâche passée</div>
+          <div class="empty-subtext">Tes tâches terminées apparaîtront ici.</div>
+        </div>
+      `;
+    }
+
+    // Séparer les tâches réussies des tâches manquées
+    const completedTasks = tasks.filter(task => task.status === 'validated' || task.status === 'completed');
+    const missedTasks = tasks.filter(task => task.status === 'missed' || task.penalty_applied);
+
+    return `
+      <div class="past-tasks-container">
+        ${completedTasks.length > 0 ? `
+          <div class="past-section">
+            <div class="section-header success">
+              <span class="section-icon">✅</span>
+              <span class="section-title">Tâches réussies (${completedTasks.length})</span>
+            </div>
+            <div class="task-list">
+              ${completedTasks.map(task => `
+                <div class="task-item completed-task">
+                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-info">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                      <span class="task-points earned">+${task.points} points</span>
+                      ${task.last_completed_at ? `<span class="completion-date">Terminée le ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</span>` : ''}
+                      ${task.last_validated_at ? `<span class="validation-date">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="task-result success">
+                    <span>🎉</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${missedTasks.length > 0 ? `
+          <div class="past-section">
+            <div class="section-header penalty">
+              <span class="section-icon">❌</span>
+              <span class="section-title">Tâches manquées (${missedTasks.length})</span>
+            </div>
+            <div class="task-list">
+              ${missedTasks.map(task => `
+                <div class="task-item missed-task">
+                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-info">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                      <span class="task-points penalty">${task.penalty_points ? `-${task.penalty_points}` : `-${Math.floor(task.points / 2)}`} points</span>
+                      ${task.penalty_applied_at ? `<span class="penalty-date">Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="task-result penalty">
+                    <span>😞</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // Onglet bonus (vide pour l'instant)
+  renderBonusTab() {
+    return `
+      <div class="empty-state">
+        <div class="empty-icon">⭐</div>
+        <div class="empty-text">Section Bonus</div>
+        <div class="empty-subtext">Fonctionnalités à venir...</div>
+      </div>
+    `;
+  }
+
+  // Onglet des récompenses
+  renderRewardsTab(rewards, childPoints) {
+    if (rewards.length === 0) {
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">🎁</div>
+          <div class="empty-text">Aucune récompense</div>
+          <div class="empty-subtext">Les récompenses apparaîtront ici.</div>
+        </div>
+      `;
+    }
+
+    const affordableRewards = rewards.filter(r => r.cost <= childPoints);
+    const expensiveRewards = rewards.filter(r => r.cost > childPoints);
+
+    return `
+      <div class="rewards-grid">
+        ${affordableRewards.map(reward => `
+          <div class="reward-square affordable" 
+               data-action="claim_reward" 
+               data-id="${reward.id}">
+            <div class="reward-icon-large">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+            <div class="reward-name">${reward.name}</div>
+            <div class="reward-price">${reward.cost} points</div>
+          </div>
+        `).join('')}
+        ${expensiveRewards.map(reward => `
+          <div class="reward-square">
+            <div class="reward-icon-large" style="opacity: 0.5">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+            <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
+            <div class="reward-price" style="opacity: 0.5">${reward.cost} points</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
   }
 }
 
