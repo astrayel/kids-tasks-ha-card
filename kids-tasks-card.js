@@ -4280,7 +4280,9 @@ class KidsTasksChildCard extends HTMLElement {
           box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0,0,0,0.1));
           overflow: hidden;
           max-width: 100%;
+          position: relative;
         }
+        
         
         /* Header avec avatar et jauges */
         .header {
@@ -4970,7 +4972,7 @@ class KidsTasksChildCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 1000;
+          z-index: 10000;
           backdrop-filter: blur(5px);
         }
         
@@ -5273,6 +5275,117 @@ class KidsTasksChildCard extends HTMLElement {
 
     const modal = document.createElement('div');
     modal.className = 'reward-modal';
+    
+    // Copier les styles CSS nécessaires depuis le shadow DOM
+    const style = document.createElement('style');
+    style.textContent = `
+      .reward-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(5px);
+        font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+      }
+      .reward-modal-content {
+        background: var(--card-background-color, #fff);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      }
+      .reward-modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 1.5em;
+        cursor: pointer;
+        color: #757575;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+      .reward-modal-close:hover {
+        background: #f5f5f5;
+        color: #212121;
+      }
+      .reward-modal-icon {
+        font-size: 4em;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      .reward-modal-name {
+        font-size: 1.5em;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 8px;
+        color: #212121;
+      }
+      .reward-modal-price {
+        font-size: 1.2em;
+        color: ${this.computedStyle?.getPropertyValue('--custom-dashboard-primary')?.trim() || '#6b73ff'};
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      .reward-modal-description {
+        color: #757575;
+        line-height: 1.5;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .reward-modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+      .btn-modal {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1em;
+      }
+      .btn-modal-purchase {
+        background: #4CAF50;
+        color: white;
+      }
+      .btn-modal-purchase:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+      }
+      .btn-modal-purchase:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-modal-cancel {
+        background: #f5f5f5;
+        color: #212121;
+      }
+      .btn-modal-cancel:hover {
+        background: #e0e0e0;
+      }
+    `;
+    
     modal.innerHTML = `
       <div class="reward-modal-content">
         <button class="reward-modal-close" data-action="close_modal">×</button>
@@ -5291,6 +5404,9 @@ class KidsTasksChildCard extends HTMLElement {
         </div>
       </div>
     `;
+    
+    // Ajouter les styles au modal
+    modal.appendChild(style);
 
     // Ajouter des gestionnaires d'événements au modal
     modal.addEventListener('click', (e) => {
