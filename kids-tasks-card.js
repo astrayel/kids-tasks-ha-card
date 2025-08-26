@@ -3632,7 +3632,7 @@ class KidsTasksChildCard extends HTMLElement {
     try {
       switch (action) {
         case 'complete_task':
-          const childId = event.target.dataset.childId;
+          const childId = this.config.child_id;
           if (!childId) {
             this.showNotification('Erreur: ID enfant manquant', 'error');
             return;
