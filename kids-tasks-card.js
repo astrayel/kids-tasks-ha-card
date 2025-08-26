@@ -4598,21 +4598,15 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .header-content {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 12px;
-          }
-          
-          .gauges-section {
-            width: 100%;
-            max-width: 280px;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 16px;
           }
           
           .avatar-section {
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
+            min-width: 60px;
           }
           
           .avatar {
@@ -4743,6 +4737,137 @@ class KidsTasksChildCard extends HTMLElement {
         .penalty-date::before {
           content: "⏰ ";
         }
+        
+        /* Styles pour les tâches compactes */
+        .task-list-compact {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .task-compact {
+          display: flex;
+          align-items: center;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 8px;
+          padding: 8px 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          min-height: 48px;
+          gap: 12px;
+        }
+        
+        .task-icon-compact {
+          font-size: 1.5em;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        
+        .task-icon-compact img {
+          width: 32px !important;
+          height: 32px !important;
+          object-fit: cover;
+          border-radius: 4px;
+        }
+        
+        .task-icon-compact ha-icon {
+          width: 32px !important;
+          height: 32px !important;
+        }
+        
+        .task-main-compact {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .task-name-compact {
+          font-weight: 500;
+          color: var(--primary-text-color, #212121);
+          font-size: 1em;
+          line-height: 1.2;
+          margin-bottom: 2px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .task-points-compact {
+          font-size: 0.85em;
+          color: var(--success-color, #4CAF50);
+          font-weight: 500;
+        }
+        
+        .task-action-compact {
+          flex-shrink: 0;
+        }
+        
+        .btn-compact {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 0.8em;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+          min-width: 70px;
+        }
+        
+        .btn-compact.btn-complete {
+          background: var(--success-color, #4CAF50);
+        }
+        
+        .btn-compact.btn-validate {
+          background: var(--warning-color, #FF9800);
+        }
+        
+        .btn-compact:hover {
+          transform: scale(1.05);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .btn-compact:active {
+          transform: scale(0.95);
+        }
+        
+        /* Responsive pour tâches compactes */
+        @media (max-width: 400px) {
+          .task-compact {
+            padding: 6px 8px;
+            gap: 8px;
+            min-height: 44px;
+          }
+          
+          .task-icon-compact {
+            width: 28px;
+            height: 28px;
+            font-size: 1.3em;
+          }
+          
+          .task-icon-compact img {
+            width: 28px !important;
+            height: 28px !important;
+          }
+          
+          .task-icon-compact ha-icon {
+            width: 28px !important;
+            height: 28px !important;
+          }
+          
+          .task-name-compact {
+            font-size: 0.9em;
+          }
+          
+          .btn-compact {
+            padding: 4px 8px;
+            font-size: 0.75em;
+            min-width: 60px;
+          }
+        }
       </style>
     `;
   }
@@ -4776,25 +4901,24 @@ class KidsTasksChildCard extends HTMLElement {
     }
 
     return `
-      <div class="task-list">
+      <div class="task-list-compact">
         ${tasks.map(task => `
-          <div class="task-item ${task.status}">
-            <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-            <div class="task-info">
-              <div class="task-name">${task.name}</div>
-              <div class="task-meta">
-                <span class="task-points">+${task.points} points</span>
-                ${task.deadline_time ? `<span class="task-deadline">⏰ ${task.deadline_time}</span>` : ''}
+          <div class="task-compact ${task.status}">
+            <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
+            <div class="task-main-compact">
+              <div class="task-name-compact">${task.name}</div>
+              <div class="task-points-compact">
+                ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
               </div>
             </div>
-            <div class="task-actions">
+            <div class="task-action-compact">
               ${task.status === 'todo' ? `
-                <button class="btn-task btn-complete" 
+                <button class="btn-compact btn-complete" 
                         data-action="complete_task" 
                         data-id="${task.id}">Terminé</button>
               ` : `
-                <button class="btn-task btn-validate" 
-                        data-action="validate_task" 
+                <button class="btn-compact btn-validate" 
+                        data-action="validate_task"
                         data-id="${task.id}">Validation</button>
               `}
             </div>
