@@ -3659,6 +3659,10 @@ class KidsTasksChildCard extends HTMLElement {
           this.showNotification('Tâche validée ! ✅', 'success');
           break;
           
+        case 'show_reward_detail':
+          this.showRewardDetail(id);
+          break;
+          
         case 'claim_reward':
           this._hass.callService('kids_tasks', 'claim_reward', {
             reward_id: id,
@@ -4534,16 +4538,16 @@ class KidsTasksChildCard extends HTMLElement {
         /* Récompenses en grille */
         .rewards-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+          gap: 8px;
           margin-top: 16px;
         }
         
         .reward-square {
           aspect-ratio: 1;
           background: var(--secondary-background-color, #f8f9fa);
-          border-radius: 16px;
-          padding: 16px;
+          border-radius: 8px;
+          padding: 8px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -4560,24 +4564,29 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .reward-square:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .reward-icon-large {
-          font-size: 2.5em;
-          margin-bottom: 8px;
+          font-size: 1.2em;
+          margin-bottom: 4px;
         }
         
         .reward-name {
           font-weight: bold;
-          font-size: 0.9em;
-          margin-bottom: 4px;
+          font-size: 0.7em;
+          margin-bottom: 2px;
           color: var(--primary-text-color);
+          line-height: 1.1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 100%;
         }
         
         .reward-price {
-          font-size: 0.8em;
+          font-size: 0.6em;
           color: var(--primary-color);
           font-weight: bold;
         }
@@ -4644,14 +4653,15 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .rewards-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
           }
         }
         
         @media (max-width: 400px) {
           .rewards-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
           }
         }
         
@@ -4882,6 +4892,126 @@ class KidsTasksChildCard extends HTMLElement {
             min-width: 60px;
           }
         }
+        
+        /* Modal de détail des récompenses */
+        .reward-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          backdrop-filter: blur(5px);
+        }
+        
+        .reward-modal-content {
+          background: var(--card-background-color, #fff);
+          border-radius: 16px;
+          padding: 24px;
+          max-width: 400px;
+          width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+          position: relative;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .reward-modal-close {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          background: none;
+          border: none;
+          font-size: 1.5em;
+          cursor: pointer;
+          color: var(--secondary-text-color, #757575);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        
+        .reward-modal-close:hover {
+          background: var(--secondary-background-color, #f5f5f5);
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .reward-modal-icon {
+          font-size: 4em;
+          text-align: center;
+          margin-bottom: 16px;
+        }
+        
+        .reward-modal-name {
+          font-size: 1.5em;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 8px;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .reward-modal-price {
+          font-size: 1.2em;
+          color: var(--primary-color);
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 16px;
+        }
+        
+        .reward-modal-description {
+          color: var(--secondary-text-color, #757575);
+          line-height: 1.5;
+          margin-bottom: 24px;
+          text-align: center;
+        }
+        
+        .reward-modal-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+        
+        .btn-modal {
+          padding: 12px 24px;
+          border: none;
+          border-radius: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-size: 1em;
+        }
+        
+        .btn-modal-purchase {
+          background: var(--success-color, #4CAF50);
+          color: white;
+        }
+        
+        .btn-modal-purchase:hover {
+          background: #45a049;
+          transform: translateY(-1px);
+        }
+        
+        .btn-modal-purchase:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+          transform: none;
+        }
+        
+        .btn-modal-cancel {
+          background: var(--secondary-background-color, #f5f5f5);
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .btn-modal-cancel:hover {
+          background: var(--divider-color, #e0e0e0);
+        }
       </style>
     `;
   }
@@ -5046,22 +5176,82 @@ class KidsTasksChildCard extends HTMLElement {
       <div class="rewards-grid">
         ${affordableRewards.map(reward => `
           <div class="reward-square affordable" 
-               data-action="claim_reward" 
+               data-action="show_reward_detail" 
                data-id="${reward.id}">
             <div class="reward-icon-large">${this.safeGetCategoryIcon(reward, '🎁')}</div>
             <div class="reward-name">${reward.name}</div>
-            <div class="reward-price">${reward.cost} points</div>
+            <div class="reward-price">${reward.cost}</div>
           </div>
         `).join('')}
         ${expensiveRewards.map(reward => `
-          <div class="reward-square">
+          <div class="reward-square" 
+               data-action="show_reward_detail" 
+               data-id="${reward.id}">
             <div class="reward-icon-large" style="opacity: 0.5">${this.safeGetCategoryIcon(reward, '🎁')}</div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
-            <div class="reward-price" style="opacity: 0.5">${reward.cost} points</div>
+            <div class="reward-price" style="opacity: 0.5">${reward.cost}</div>
           </div>
         `).join('')}
       </div>
     `;
+  }
+
+  // Méthodes pour le modal des récompenses
+  showRewardDetail(rewardId) {
+    const rewards = this.getRewards();
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) return;
+
+    const child = this.getChild();
+    const canAfford = reward.cost <= child.points;
+
+    const modal = document.createElement('div');
+    modal.className = 'reward-modal';
+    modal.innerHTML = `
+      <div class="reward-modal-content">
+        <button class="reward-modal-close" data-action="close_modal">×</button>
+        <div class="reward-modal-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+        <div class="reward-modal-name">${reward.name}</div>
+        <div class="reward-modal-price">${reward.cost} points</div>
+        ${reward.description ? `<div class="reward-modal-description">${reward.description}</div>` : ''}
+        <div class="reward-modal-actions">
+          <button class="btn-modal btn-modal-cancel" data-action="close_modal">Annuler</button>
+          <button class="btn-modal btn-modal-purchase" 
+                  data-action="claim_reward" 
+                  data-id="${reward.id}"
+                  ${!canAfford ? 'disabled' : ''}>
+            ${canAfford ? `Acheter (${reward.cost} points)` : `Pas assez de points (${reward.cost - child.points} manquants)`}
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Ajouter des gestionnaires d'événements au modal
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        this.closeModal();
+      }
+    });
+
+    modal.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (action === 'close_modal') {
+        this.closeModal();
+      } else if (action === 'claim_reward') {
+        this.closeModal();
+        this.handleAction(action, e.target.dataset.id);
+      }
+    });
+
+    document.body.appendChild(modal);
+    this.currentModal = modal;
+  }
+
+  closeModal() {
+    if (this.currentModal) {
+      document.body.removeChild(this.currentModal);
+      this.currentModal = null;
+    }
   }
 }
 
