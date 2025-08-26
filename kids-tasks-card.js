@@ -3985,27 +3985,33 @@ class KidsTasksChildCard extends HTMLElement {
             
             <div class="gauges-section">
               <div class="gauge">
-                <div class="gauge-label">Points totaux</div>
+                <div class="gauge-header">
+                  <div class="gauge-label">Points totaux</div>
+                  <div class="gauge-text">${stats.totalPoints}</div>
+                </div>
                 <div class="gauge-bar">
                   <div class="gauge-fill total-points" style="width: ${Math.min((stats.totalPoints / 500) * 100, 100)}%"></div>
                 </div>
-                <div class="gauge-text">${stats.totalPoints}</div>
               </div>
               
               <div class="gauge">
-                <div class="gauge-label">Niveau</div>
+                <div class="gauge-header">
+                  <div class="gauge-label">Niveau</div>
+                  <div class="gauge-text">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
+                </div>
                 <div class="gauge-bar circular">
                   <div class="gauge-fill level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
                 </div>
-                <div class="gauge-text">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
               </div>
               
               <div class="gauge">
-                <div class="gauge-label">Tâches</div>
+                <div class="gauge-header">
+                  <div class="gauge-label">Tâches</div>
+                  <div class="gauge-text">${stats.completedTasks}/${stats.totalTasksToday}</div>
+                </div>
                 <div class="gauge-bar">
                   <div class="gauge-fill tasks-progress" style="width: ${stats.totalTasksToday > 0 ? (stats.completedTasks / stats.totalTasksToday) * 100 : 0}%"></div>
                 </div>
-                <div class="gauge-text">${stats.completedTasks}/${stats.totalTasksToday}</div>
               </div>
             </div>
           </div>
@@ -4327,6 +4333,12 @@ class KidsTasksChildCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           gap: 4px;
+        }
+        
+        .gauge-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
         
         .gauge-label {
