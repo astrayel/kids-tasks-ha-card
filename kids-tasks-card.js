@@ -4538,23 +4538,23 @@ class KidsTasksChildCard extends HTMLElement {
         /* Récompenses en grille */
         .rewards-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-          gap: 8px;
+          grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+          gap: 6px;
           margin-top: 16px;
         }
         
         .reward-square {
           aspect-ratio: 1;
           background: var(--secondary-background-color, #f8f9fa);
-          border-radius: 8px;
-          padding: 8px;
+          border-radius: 6px;
+          padding: 6px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.3s;
-          border: 2px solid transparent;
+          border: 1px solid transparent;
           text-align: center;
         }
         
@@ -4564,19 +4564,19 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .reward-square:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
         .reward-icon-large {
-          font-size: 1.2em;
-          margin-bottom: 4px;
+          font-size: 1em;
+          margin-bottom: 2px;
         }
         
         .reward-name {
           font-weight: bold;
-          font-size: 0.7em;
-          margin-bottom: 2px;
+          font-size: 0.65em;
+          margin-bottom: 1px;
           color: var(--primary-text-color);
           line-height: 1.1;
           overflow: hidden;
@@ -4586,7 +4586,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .reward-price {
-          font-size: 0.6em;
+          font-size: 0.55em;
           color: var(--primary-color);
           font-weight: bold;
         }
@@ -4653,15 +4653,58 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .rewards-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
           }
         }
         
         @media (max-width: 400px) {
           .rewards-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3px;
+          }
+          
+          .reward-square {
+            padding: 4px;
+            border-radius: 4px;
+          }
+          
+          .reward-icon-large {
+            font-size: 0.9em;
+            margin-bottom: 1px;
+          }
+          
+          .reward-name {
+            font-size: 0.6em;
+            margin-bottom: 0px;
+          }
+          
+          .reward-price {
+            font-size: 0.5em;
+          }
+        }
+        
+        @media (max-width: 320px) {
+          .rewards-grid {
             grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
+            gap: 2px;
+          }
+          
+          .reward-square {
+            padding: 3px;
+            border-radius: 3px;
+          }
+          
+          .reward-icon-large {
+            font-size: 0.8em;
+          }
+          
+          .reward-name {
+            font-size: 0.55em;
+          }
+          
+          .reward-price {
+            font-size: 0.45em;
           }
         }
         
