@@ -3766,10 +3766,18 @@ class KidsTasksChildCard extends HTMLElement {
               description: attrs.description || '',
               category: attrs.category || 'other',
               points: parseInt(attrs.points) || 10,
+              penalty_points: parseInt(attrs.penalty_points) || 0,
               status: taskEntity.state || 'todo',
+              frequency: attrs.frequency || 'daily',
               validation_required: attrs.validation_required !== false,
               assigned_child_id: attrs.assigned_child_id,
-              assigned_child_ids: attrs.assigned_child_ids || []
+              assigned_child_ids: attrs.assigned_child_ids || [],
+              last_completed_at: attrs.last_completed_at,
+              last_validated_at: attrs.last_validated_at,
+              penalty_applied_at: attrs.penalty_applied_at,
+              penalty_applied: attrs.penalty_applied || false,
+              weekly_days: attrs.weekly_days,
+              icon: attrs.icon
             });
           }
         }
