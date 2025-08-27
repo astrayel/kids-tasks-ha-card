@@ -1615,6 +1615,27 @@ class KidsTasksCard extends HTMLElement {
         if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           
           const attrs = taskEntity.attributes;
+          
+          // Construire la liste des enfants avec leurs statuts individuels
+          let childStatusesSummary = {};
+          let pendingValidationChildNames = [];
+          
+          if (attrs.child_statuses) {
+            // Nouveau système avec statuts individuels
+            for (const [childId, childStatus] of Object.entries(attrs.child_statuses)) {
+              childStatusesSummary[childId] = childStatus.status;
+              if (childStatus.status === 'pending_validation') {
+                pendingValidationChildNames.push(childStatus.child_name || 'Enfant inconnu');
+              }
+            }
+          }
+          
+          // Déterminer le nom des enfants en attente pour l'affichage
+          let assignedChildName = attrs.assigned_child_name || 'Non assigné';
+          if (pendingValidationChildNames.length > 0) {
+            assignedChildName = pendingValidationChildNames.join(', ');
+          }
+          
           tasks.push({
             id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
             name: attrs.task_name || attrs.friendly_name || 'Tâche',
@@ -1626,7 +1647,7 @@ class KidsTasksCard extends HTMLElement {
             status: taskEntity.state || 'todo',
             assigned_child_id: attrs.assigned_child_id,
             assigned_child_ids: attrs.assigned_child_ids || [],
-            assigned_child_name: attrs.assigned_child_name || 'Non assigné',
+            assigned_child_name: assignedChildName,
             validation_required: attrs.validation_required !== false,
             active: attrs.active !== false,
             created_at: attrs.created_at,
@@ -1634,7 +1655,9 @@ class KidsTasksCard extends HTMLElement {
             weekly_days: attrs.weekly_days || [],
             deadline_time: attrs.deadline_time,
             penalty_points: attrs.penalty_points || 0,
-            deadline_passed: attrs.deadline_passed || false
+            deadline_passed: attrs.deadline_passed || false,
+            child_statuses: attrs.child_statuses || {},
+            pending_validation_children: pendingValidationChildNames
           });
         }
       }
@@ -3792,6 +3815,29 @@ class KidsTasksChildCard extends HTMLElement {
             
             
           if (isAssigned) {
+            // Utiliser le statut individuel de l'enfant si disponible
+            let childStatus = 'todo';
+            let childCompletedAt = null;
+            let childValidatedAt = null;
+            let childPenaltyAppliedAt = null;
+            let childPenaltyApplied = false;
+            
+            if (attrs.child_statuses && attrs.child_statuses[this.config.child_id]) {
+              const individualStatus = attrs.child_statuses[this.config.child_id];
+              childStatus = individualStatus.status || 'todo';
+              childCompletedAt = individualStatus.completed_at;
+              childValidatedAt = individualStatus.validated_at;
+              childPenaltyAppliedAt = individualStatus.penalty_applied_at;
+              childPenaltyApplied = individualStatus.penalty_applied || false;
+            } else {
+              // Fallback vers l'ancien système
+              childStatus = taskEntity.state || 'todo';
+              childCompletedAt = attrs.last_completed_at;
+              childValidatedAt = attrs.last_validated_at;
+              childPenaltyAppliedAt = attrs.penalty_applied_at;
+              childPenaltyApplied = attrs.penalty_applied || false;
+            }
+            
             tasks.push({
               id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
               name: attrs.task_name || attrs.friendly_name || 'Tâche',
@@ -3799,16 +3845,16 @@ class KidsTasksChildCard extends HTMLElement {
               category: attrs.category || 'other',
               points: parseInt(attrs.points) || 10,
               penalty_points: parseInt(attrs.penalty_points) || 0,
-              status: taskEntity.state || 'todo',
+              status: childStatus,
               frequency: attrs.frequency || 'daily',
               validation_required: attrs.validation_required !== false,
               active: attrs.active !== false,
               assigned_child_id: attrs.assigned_child_id,
               assigned_child_ids: attrs.assigned_child_ids || [],
-              last_completed_at: attrs.last_completed_at,
-              last_validated_at: attrs.last_validated_at,
-              penalty_applied_at: attrs.penalty_applied_at,
-              penalty_applied: attrs.penalty_applied || false,
+              last_completed_at: childCompletedAt,
+              last_validated_at: childValidatedAt,
+              penalty_applied_at: childPenaltyAppliedAt,
+              penalty_applied: childPenaltyApplied,
               weekly_days: attrs.weekly_days,
               icon: attrs.icon
             });

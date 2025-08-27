@@ -3,7 +3,8 @@
     "allow": [
       "Bash(grep:*)",
       "Bash(node:*)",
-      "WebSearch"
+      "WebSearch",
+      "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)"
     ],
     "deny": [],
     "ask": []
