@@ -1636,14 +1636,27 @@ class KidsTasksCard extends HTMLElement {
           
           console.log('DEBUG FRONTEND: Original assigned_child_name:', assignedChildName);
           console.log('DEBUG FRONTEND: pendingValidationChildNames:', pendingValidationChildNames);
+          console.log('DEBUG FRONTEND: Task status:', taskEntity.state);
           
-          // Utiliser uniquement les statuts individuels
-          if (pendingValidationChildNames.length > 0) {
-            assignedChildName = pendingValidationChildNames.join(', ');
-            console.log('DEBUG FRONTEND: Using pending names:', assignedChildName);
+          // Pour les tâches en attente de validation, afficher SEULEMENT les enfants concernés
+          if (taskEntity.state === 'pending_validation') {
+            if (pendingValidationChildNames.length > 0) {
+              assignedChildName = pendingValidationChildNames.join(', ');
+              console.log('DEBUG FRONTEND: Using pending names for validation:', assignedChildName);
+            } else {
+              // Si aucun enfant n'est en pending_validation, ne pas afficher la tâche
+              console.log('DEBUG FRONTEND: No pending validation children, skipping task');
+              // Ne pas ajouter cette tâche à la liste
+              assignedChildName = null;
+            }
           }
           
           console.log('DEBUG FRONTEND: Final assignedChildName:', assignedChildName);
+          
+          // Ne pas ajouter la tâche si assignedChildName est null
+          if (assignedChildName === null) {
+            return;
+          }
           
           tasks.push({
             id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
@@ -5313,20 +5326,20 @@ class KidsTasksChildCard extends HTMLElement {
               <span class="section-icon">✅</span>
               <span class="section-title">Tâches réussies (${completedTasks.length})</span>
             </div>
-            <div class="task-list">
+            <div class="task-list-compact">
               ${completedTasks.map(task => `
-                <div class="task-item completed">
-                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-info">
-                    <div class="task-name">${task.name}</div>
-                    <div class="task-meta">
-                      <span class="task-points earned">+${task.points} points</span>
-                      ${task.last_completed_at ? `<span class="completion-date">Terminée le ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</span>` : ''}
-                      ${task.last_validated_at ? `<span class="validation-date">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</span>` : ''}
+                <div class="task-compact completed">
+                  <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-main-compact">
+                    <div class="task-name-compact">${task.name}</div>
+                    <div class="task-points-compact">
+                      +${task.points} points
+                      ${task.last_completed_at ? ` • ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}` : ''}
+                      ${task.last_validated_at ? ` • Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
                   </div>
-                  <div class="task-result success">
-                    <span>🎉</span>
+                  <div class="task-action-compact">
+                    <span class="task-result-compact success">🎉</span>
                   </div>
                 </div>
               `).join('')}
@@ -5340,19 +5353,19 @@ class KidsTasksChildCard extends HTMLElement {
               <span class="section-icon">❌</span>
               <span class="section-title">Tâches manquées (${missedTasks.length})</span>
             </div>
-            <div class="task-list">
+            <div class="task-list-compact">
               ${missedTasks.map(task => `
-                <div class="task-item completed">
-                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-info">
-                    <div class="task-name">${task.name}</div>
-                    <div class="task-meta">
-                      <span class="task-points penalty">${task.penalty_points ? `-${task.penalty_points}` : `-${Math.floor(task.points / 2)}`} points</span>
-                      ${task.penalty_applied_at ? `<span class="penalty-date">Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}</span>` : ''}
+                <div class="task-compact missed">
+                  <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-main-compact">
+                    <div class="task-name-compact">${task.name}</div>
+                    <div class="task-points-compact">
+                      ${task.penalty_points ? `-${task.penalty_points}` : `-${Math.floor(task.points / 2)}`} points
+                      ${task.penalty_applied_at ? ` • Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
                   </div>
-                  <div class="task-result penalty">
-                    <span>😞</span>
+                  <div class="task-action-compact">
+                    <span class="task-result-compact penalty">😞</span>
                   </div>
                 </div>
               `).join('')}
