@@ -4318,6 +4318,16 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Vérifier si une tâche est active aujourd'hui
   isTaskActiveToday(task) {
+    if (task.name.includes("Khan Academy")) {
+      console.log('DEBUG isTaskActiveToday Khan Academy:', {
+        name: task.name,
+        active: task.active,
+        frequency: task.frequency,
+        weekly_days: task.weekly_days,
+        today: new Date().getDay()
+      });
+    }
+    
     if (!task.active) return false;
     
     const today = new Date();
@@ -4325,13 +4335,23 @@ class KidsTasksChildCard extends HTMLElement {
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const todayName = dayNames[dayOfWeek];
     
-    if (task.frequency === 'daily' && task.weekly_days) {
-      return task.weekly_days.includes(todayName);
+    if (task.frequency === 'daily' && task.weekly_days && task.weekly_days.length > 0) {
+      const result = task.weekly_days.includes(todayName);
+      if (task.name.includes("Khan Academy")) {
+        console.log('DEBUG Khan Academy daily with weekly_days:', todayName, task.weekly_days, 'result:', result);
+      }
+      return result;
     }
     
-    return task.frequency === 'daily' || 
+    const result = task.frequency === 'daily' || 
            (task.frequency === 'weekly' && dayOfWeek === 1) ||
            (task.frequency === 'monthly' && today.getDate() === 1);
+    
+    if (task.name.includes("Khan Academy")) {
+      console.log('DEBUG Khan Academy frequency check:', result, 'frequency:', task.frequency, 'dayOfWeek:', dayOfWeek);
+    }
+    
+    return result;
   }
 
   // Obtenir les tâches par catégorie
