@@ -4026,13 +4026,20 @@ class KidsTasksChildCard extends HTMLElement {
         <!-- Header avec avatar et jauges -->
         <div class="header">
           <div class="header-content">
+            ${this.config.show_avatar ? `
             <div class="avatar-section">
               <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
               <div class="child-name-header">${child.name}</div>
               <div class="level-badge">Niveau ${stats.level}</div>
             </div>
+            ` : `
+            <div class="no-avatar-section">
+              <div class="child-name-header">${child.name}</div>
+              <div class="level-badge">Niveau ${stats.level}</div>
+            </div>
+            `}
             
-            <div class="gauges-section">
+            ${this.config.show_progress ? `<div class="gauges-section">` : ''}
               <div class="gauge">
                 <div class="gauge-header">
                   <div class="gauge-label">Points totaux</div>
@@ -4062,7 +4069,7 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="gauge-fill tasks-progress" style="width: ${stats.totalTasksToday > 0 ? (stats.completedTasks / stats.totalTasksToday) * 100 : 0}%"></div>
                 </div>
               </div>
-            </div>
+            ${this.config.show_progress ? '</div>' : ''}
           </div>
         </div>
 
@@ -4074,8 +4081,8 @@ class KidsTasksChildCard extends HTMLElement {
                   data-action="switch_tab" data-id="past">Passées</button>
           <button class="tab ${this.currentTab === 'bonus' ? 'active' : ''}" 
                   data-action="switch_tab" data-id="bonus">Bonus</button>
-          <button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
-                  data-action="switch_tab" data-id="rewards">Récompenses</button>
+          ${this.config.show_rewards ? `<button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="rewards">Récompenses</button>` : ''}
         </div>
 
         <!-- Contenu des onglets -->
@@ -4313,16 +4320,12 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Générer les styles CSS pour le nouveau design
   getStyles() {
-    // Debug pour vérifier les couleurs de configuration
-    console.log('DEBUG getStyles: this.config =', this.config);
-    
     // Utiliser les couleurs de configuration ou les valeurs par défaut
-    const gradientStart = this.config?.child_gradient_start || '#4CAF50';
-    const gradientEnd = this.config?.child_gradient_end || '#8BC34A';
-    const borderColor = this.config?.child_border_color || '#2E7D32';
-    const textColor = this.config?.child_text_color || '#ffffff';
-    
-    console.log('DEBUG getStyles: couleurs =', { gradientStart, gradientEnd, borderColor, textColor });
+    // Essayer d'abord avec le préfixe child_, puis sans préfixe
+    const gradientStart = this.config?.child_gradient_start || this.config?.gradient_start || '#4CAF50';
+    const gradientEnd = this.config?.child_gradient_end || this.config?.gradient_end || '#8BC34A';
+    const borderColor = this.config?.child_border_color || this.config?.border_color || '#2E7D32';
+    const textColor = this.config?.child_text_color || this.config?.text_color || '#ffffff';
     
     // Récupérer les variables CSS personnalisées du style parent pour les couleurs secondaires
     const computedStyle = getComputedStyle(this);
@@ -4376,6 +4379,13 @@ class KidsTasksChildCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
+          min-width: 80px;
+        }
+        
+        .no-avatar-section {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
           min-width: 80px;
         }
         
