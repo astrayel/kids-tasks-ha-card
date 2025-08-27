@@ -3784,6 +3784,7 @@ class KidsTasksChildCard extends HTMLElement {
               status: taskEntity.state || 'todo',
               frequency: attrs.frequency || 'daily',
               validation_required: attrs.validation_required !== false,
+              active: attrs.active !== false,
               assigned_child_id: attrs.assigned_child_id,
               assigned_child_ids: attrs.assigned_child_ids || [],
               last_completed_at: attrs.last_completed_at,
