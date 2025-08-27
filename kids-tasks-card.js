@@ -3825,6 +3825,8 @@ class KidsTasksChildCard extends HTMLElement {
             
             
           if (isAssigned) {
+            console.log('DEBUG CHILD: Task is assigned to this child:', attrs.task_name);
+            
             // Utiliser uniquement le statut individuel de l'enfant
             let childStatus = 'todo';
             let childCompletedAt = null;
@@ -3839,6 +3841,9 @@ class KidsTasksChildCard extends HTMLElement {
               childValidatedAt = individualStatus.validated_at;
               childPenaltyAppliedAt = individualStatus.penalty_applied_at;
               childPenaltyApplied = individualStatus.penalty_applied || false;
+              console.log('DEBUG CHILD: Using individual status for', attrs.task_name, ':', childStatus);
+            } else {
+              console.log('DEBUG CHILD: No individual status found for', attrs.task_name, 'child_id:', this.config.child_id);
             }
             
             tasks.push({
@@ -4335,6 +4340,7 @@ class KidsTasksChildCard extends HTMLElement {
     const todoTasks = tasks.filter(t => {
       const isTodo = t.status === 'todo';
       const isActive = this.isTaskActiveToday(t);
+      console.log('DEBUG FILTER TODO:', t.name, 'isTodo:', isTodo, 'isActive:', isActive, 'active:', t.active);
       return isTodo && isActive;
     });
     
