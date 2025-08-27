@@ -181,6 +181,7 @@ class KidsTasksCard extends HTMLElement {
         });
         break;
       case 'validate-task':
+        console.log('DEBUG VALIDATION: Parent validating task', id);
         this.callService('kids_tasks', 'validate_task', { task_id: id });
         break;
       case 'reject-task':
@@ -1503,7 +1504,6 @@ class KidsTasksCard extends HTMLElement {
     const children = [];
     const entities = this._hass.states;
     
-    console.log('DEBUG getChildren: Début de la recherche d\'enfants');
     console.log('DEBUG getChildren: Nombre total d\'entités:', Object.keys(entities).length);
     
     Object.keys(entities).forEach(entityId => {
@@ -1548,8 +1548,6 @@ class KidsTasksCard extends HTMLElement {
       }
     });
     
-    console.log('DEBUG getChildren: Nombre d\'enfants trouvés AVANT tri:', children.length);
-    console.log('DEBUG getChildren: Enfants trouvés:', children.map(c => `${c.name} (${c.id})`));
     
     // Trier selon l'ordre personnalisé ou alphabétique par défaut
     const childrenOrder = this.config.children_order || [];
@@ -1574,7 +1572,6 @@ class KidsTasksCard extends HTMLElement {
       return a.name.localeCompare(b.name);
     });
     
-    console.log('DEBUG getChildren: Nombre d\'enfants APRÈS tri:', sortedChildren.length);
     console.log('DEBUG getChildren: Enfants triés:', sortedChildren.map(c => `${c.name} (${c.id})`));
     
     return sortedChildren;
@@ -1632,8 +1629,19 @@ class KidsTasksCard extends HTMLElement {
           
           // Déterminer le nom des enfants en attente pour l'affichage
           let assignedChildName = attrs.assigned_child_name || 'Non assigné';
-          if (pendingValidationChildNames.length > 0) {
-            assignedChildName = pendingValidationChildNames.join(', ');
+          
+          if (attrs.child_statuses && Object.keys(attrs.child_statuses).length > 0) {
+            // Nouveau système : afficher seulement les enfants qui ont vraiment validé
+            if (pendingValidationChildNames.length > 0) {
+              assignedChildName = pendingValidationChildNames.join(', ');
+            }
+          } else if (taskEntity.state === 'pending_validation' && attrs.completed_by_child_id) {
+            // Ancien système : utiliser completed_by_child_id si disponible
+            const children = this.getChildren();
+            const completingChild = children.find(child => child.id === attrs.completed_by_child_id);
+            if (completingChild) {
+              assignedChildName = completingChild.name;
+            }
           }
           
           tasks.push({
@@ -3699,6 +3707,7 @@ class KidsTasksChildCard extends HTMLElement {
           break;
           
         case 'validate_task':
+          console.log('DEBUG VALIDATION: Child card validating task', id);
           this._hass.callService('kids_tasks', 'validate_task', {
             task_id: id,
           });
