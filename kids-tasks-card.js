@@ -3620,6 +3620,11 @@ class KidsTasksChildCard extends HTMLElement {
     
     // État pour les onglets
     this.currentTab = 'tasks';
+    
+    // Re-rendre la carte si elle est déjà initialisée avec les nouvelles couleurs
+    if (this._initialized && this._hass) {
+      this.render();
+    }
   }
 
   set hass(hass) {
