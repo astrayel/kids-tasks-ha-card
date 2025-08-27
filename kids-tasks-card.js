@@ -15,8 +15,7 @@ class KidsTasksCard extends HTMLElement {
     this.showNavigation = config.show_navigation !== false;
   }
 
-  set hass(hass) {Fv0
-
+  set hass(hass) {
     const oldHass = this._hass;
     this._hass = hass;
     if (!this._initialized && hass) {
