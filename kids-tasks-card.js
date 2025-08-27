@@ -3584,6 +3584,24 @@ class KidsTasksChildCard extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this._initialized = false;
+    this._refreshInterval = null;
+  }
+
+  connectedCallback() {
+    // Démarrer le rafraîchissement automatique toutes les 5 secondes
+    this._refreshInterval = setInterval(() => {
+      if (this._hass && this._initialized) {
+        this.render();
+      }
+    }, 5000);
+  }
+
+  disconnectedCallback() {
+    // Nettoyer l'intervalle quand l'élément est supprimé
+    if (this._refreshInterval) {
+      clearInterval(this._refreshInterval);
+      this._refreshInterval = null;
+    }
   }
 
   setConfig(config) {
@@ -3748,21 +3766,17 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
-    console.log('DEBUG getTasks: child_id =', this.config.child_id);
-    console.log('DEBUG getTasks: nombre total d\'entités =', Object.keys(entities).length);
     
     // Chercher toutes les entités de tâches possibles
     const taskEntities = Object.keys(entities).filter(entityId => 
       entityId.includes('task') || entityId.startsWith('sensor.kidtasks_')
     );
     
-    console.log('DEBUG getTasks: entités de tâches trouvées =', taskEntities);
     
     // Essayer différents formats d'entités de tâches
     Object.keys(entities).forEach(entityId => { 
       if (entityId.startsWith('sensor.kidtasks_task_') || entityId.startsWith('sensor.kids_tasks_task_') || entityId.includes('_task_')) {
         const taskEntity = entities[entityId];
-        console.log('DEBUG getTasks: entité trouvée =', entityId, taskEntity?.state, taskEntity?.attributes);
         
         if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           const attrs = taskEntity.attributes;
@@ -3771,7 +3785,6 @@ class KidsTasksChildCard extends HTMLElement {
             ? attrs.assigned_child_ids.includes(this.config.child_id)
             : attrs.assigned_child_id === this.config.child_id;
             
-          console.log('DEBUG getTasks: isAssigned =', isAssigned, 'assigned_child_ids =', attrs.assigned_child_ids, 'assigned_child_id =', attrs.assigned_child_id);
             
           if (isAssigned) {
             tasks.push({
@@ -3805,7 +3818,6 @@ class KidsTasksChildCard extends HTMLElement {
       return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
     });
     
-    console.log('DEBUG getTasks: tâches finales =', sortedTasks);
     return sortedTasks;
   }
 
@@ -4001,9 +4013,6 @@ class KidsTasksChildCard extends HTMLElement {
     const stats = this.getChildStats(child, tasks);
     const taskCategories = this.getTasksByCategory(tasks);
     
-    console.log('DEBUG render: tasks =', tasks);
-    console.log('DEBUG render: taskCategories =', taskCategories);
-    console.log('DEBUG render: stats =', stats);
 
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
@@ -4243,42 +4252,28 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Vérifier si une tâche est active aujourd'hui
   isTaskActiveToday(task) {
-    console.log('DEBUG isTaskActiveToday:', task.name, 'active:', task.active, 'frequency:', task.frequency, 'weekly_days:', task.weekly_days);
-    
-    if (!task.active) {
-      console.log('DEBUG isTaskActiveToday: task not active:', task.name);
-      return false;
-    }
+    if (!task.active) return false;
     
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = dimanche
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const todayName = dayNames[dayOfWeek];
     
-    console.log('DEBUG isTaskActiveToday: today =', todayName, 'dayOfWeek =', dayOfWeek);
-    
     if (task.frequency === 'daily' && task.weekly_days) {
-      const result = task.weekly_days.includes(todayName);
-      console.log('DEBUG isTaskActiveToday: daily with weekly_days, result =', result);
-      return result;
+      return task.weekly_days.includes(todayName);
     }
     
-    const result = task.frequency === 'daily' || 
+    return task.frequency === 'daily' || 
            (task.frequency === 'weekly' && dayOfWeek === 1) ||
            (task.frequency === 'monthly' && today.getDate() === 1);
-    
-    console.log('DEBUG isTaskActiveToday: frequency check result =', result);
-    return result;
   }
 
   // Obtenir les tâches par catégorie
   getTasksByCategory(tasks) {
-    console.log('DEBUG getTasksByCategory: tasks input =', tasks.map(t => ({ id: t.id, name: t.name, status: t.status, frequency: t.frequency })));
     
     const todoTasks = tasks.filter(t => {
       const isTodo = t.status === 'todo';
       const isActive = this.isTaskActiveToday(t);
-      console.log('DEBUG todo filter:', t.name, 'status:', t.status, 'isTodo:', isTodo, 'isActive:', isActive);
       return isTodo && isActive;
     });
     
@@ -4287,7 +4282,6 @@ class KidsTasksChildCard extends HTMLElement {
     const completedTasks = tasks.filter(t => {
       const isCompleted = (t.status === 'validated' || t.status === 'completed');
       const isActive = this.isTaskActiveToday(t);
-      console.log('DEBUG completed filter:', t.name, 'status:', t.status, 'isCompleted:', isCompleted, 'isActive:', isActive);
       return isCompleted && isActive;
     });
     
@@ -4300,7 +4294,6 @@ class KidsTasksChildCard extends HTMLElement {
       past: pastTasks
     };
     
-    console.log('DEBUG getTasksByCategory: categories result =', categories);
     return categories;
   }
 
@@ -4315,12 +4308,18 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Générer les styles CSS pour le nouveau design
   getStyles() {
-    // Récupérer les variables CSS personnalisées du style parent
+    // Utiliser les couleurs de configuration ou les valeurs par défaut
+    const gradientStart = this.config?.child_gradient_start || '#4CAF50';
+    const gradientEnd = this.config?.child_gradient_end || '#8BC34A';
+    const borderColor = this.config?.child_border_color || '#2E7D32';
+    const textColor = this.config?.child_text_color || '#ffffff';
+    
+    // Récupérer les variables CSS personnalisées du style parent pour les couleurs secondaires
     const computedStyle = getComputedStyle(this);
-    const customDashboardPrimary = computedStyle.getPropertyValue('--custom-dashboard-primary').trim() || '#6b73ff';
-    const customDashboardSecondary = computedStyle.getPropertyValue('--custom-dashboard-secondary').trim() || '#9c27b0';
-    const customHeaderColor = computedStyle.getPropertyValue('--custom-header-color').trim() || customDashboardPrimary;
-    const customTabColor = computedStyle.getPropertyValue('--custom-tab-color').trim() || customDashboardPrimary;
+    const customDashboardPrimary = computedStyle.getPropertyValue('--custom-dashboard-primary').trim() || gradientStart;
+    const customDashboardSecondary = computedStyle.getPropertyValue('--custom-dashboard-secondary').trim() || gradientEnd;
+    const customHeaderColor = computedStyle.getPropertyValue('--custom-header-color').trim() || gradientStart;
+    const customTabColor = computedStyle.getPropertyValue('--custom-tab-color').trim() || gradientStart;
     
     return `
       <style>
@@ -4331,6 +4330,8 @@ class KidsTasksChildCard extends HTMLElement {
           --secondary-color: ${customDashboardSecondary};
           --header-color: ${customHeaderColor};
           --tab-color: ${customTabColor};
+          --border-color: ${borderColor};
+          --header-text-color: ${textColor};
           --success-color: #4caf50;
           --warning-color: #ff9800;
           --error-color: #f44336;
@@ -4350,7 +4351,7 @@ class KidsTasksChildCard extends HTMLElement {
         /* Header avec avatar et jauges */
         .header {
           background: linear-gradient(135deg, var(--header-color) 0%, var(--secondary-color) 100%);
-          color: white;
+          color: var(--header-text-color);
           padding: 20px;
           position: relative;
         }
@@ -4392,7 +4393,7 @@ class KidsTasksChildCard extends HTMLElement {
           font-weight: 600;
           text-align: center;
           margin: 4px 0;
-          color: white;
+          color: var(--header-text-color);
           text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
@@ -4548,8 +4549,7 @@ class KidsTasksChildCard extends HTMLElement {
         .task-item.validated,
         .task-item.completed {
           border-left-color: var(--success-color);
-          background: #e8f5e8;
-          opacity: 0.8;
+          background: var(--secondary-background-color, #f8f9fa);
         }
         
         .task-icon {
@@ -4836,15 +4836,6 @@ class KidsTasksChildCard extends HTMLElement {
           font-size: 1.1em;
         }
         
-        .completed-task {
-          border-left: 4px solid var(--success-color, #4CAF50);
-          background: rgba(76, 175, 80, 0.05);
-        }
-        
-        .missed-task {
-          border-left: 4px solid var(--error-color, #f44336);
-          background: rgba(244, 67, 54, 0.05);
-        }
         
         .task-result {
           display: flex;
@@ -5229,7 +5220,7 @@ class KidsTasksChildCard extends HTMLElement {
             </div>
             <div class="task-list">
               ${completedTasks.map(task => `
-                <div class="task-item completed-task">
+                <div class="task-item completed">
                   <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-info">
                     <div class="task-name">${task.name}</div>
@@ -5256,7 +5247,7 @@ class KidsTasksChildCard extends HTMLElement {
             </div>
             <div class="task-list">
               ${missedTasks.map(task => `
-                <div class="task-item missed-task">
+                <div class="task-item completed">
                   <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-info">
                     <div class="task-name">${task.name}</div>
