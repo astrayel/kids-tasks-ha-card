@@ -15,7 +15,8 @@ class KidsTasksCard extends HTMLElement {
     this.showNavigation = config.show_navigation !== false;
   }
 
-  set hass(hass) {
+  set hass(hass) {Fv0
+
     const oldHass = this._hass;
     this._hass = hass;
     if (!this._initialized && hass) {
@@ -1268,7 +1269,7 @@ class KidsTasksCard extends HTMLElement {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.13');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.14');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
