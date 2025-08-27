@@ -1637,22 +1637,10 @@ class KidsTasksCard extends HTMLElement {
           console.log('DEBUG FRONTEND: Original assigned_child_name:', assignedChildName);
           console.log('DEBUG FRONTEND: pendingValidationChildNames:', pendingValidationChildNames);
           
-          if (attrs.child_statuses && Object.keys(attrs.child_statuses).length > 0) {
-            // Nouveau système : afficher seulement les enfants qui ont vraiment validé
-            if (pendingValidationChildNames.length > 0) {
-              assignedChildName = pendingValidationChildNames.join(', ');
-              console.log('DEBUG FRONTEND: NEW SYSTEM - Using pending names:', assignedChildName);
-            } else {
-              console.log('DEBUG FRONTEND: NEW SYSTEM - No pending validation children');
-            }
-          } else if (taskEntity.state === 'pending_validation' && attrs.completed_by_child_id) {
-            // Ancien système : utiliser completed_by_child_id si disponible
-            const children = this.getChildren();
-            const completingChild = children.find(child => child.id === attrs.completed_by_child_id);
-            if (completingChild) {
-              assignedChildName = completingChild.name;
-              console.log('DEBUG FRONTEND: OLD SYSTEM - Using completing child:', assignedChildName);
-            }
+          // Utiliser uniquement les statuts individuels
+          if (pendingValidationChildNames.length > 0) {
+            assignedChildName = pendingValidationChildNames.join(', ');
+            console.log('DEBUG FRONTEND: Using pending names:', assignedChildName);
           }
           
           console.log('DEBUG FRONTEND: Final assignedChildName:', assignedChildName);
@@ -3837,7 +3825,7 @@ class KidsTasksChildCard extends HTMLElement {
             
             
           if (isAssigned) {
-            // Utiliser le statut individuel de l'enfant si disponible
+            // Utiliser uniquement le statut individuel de l'enfant
             let childStatus = 'todo';
             let childCompletedAt = null;
             let childValidatedAt = null;
@@ -3851,13 +3839,6 @@ class KidsTasksChildCard extends HTMLElement {
               childValidatedAt = individualStatus.validated_at;
               childPenaltyAppliedAt = individualStatus.penalty_applied_at;
               childPenaltyApplied = individualStatus.penalty_applied || false;
-            } else {
-              // Fallback vers l'ancien système
-              childStatus = taskEntity.state || 'todo';
-              childCompletedAt = attrs.last_completed_at;
-              childValidatedAt = attrs.last_validated_at;
-              childPenaltyAppliedAt = attrs.penalty_applied_at;
-              childPenaltyApplied = attrs.penalty_applied || false;
             }
             
             tasks.push({
