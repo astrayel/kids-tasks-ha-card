@@ -3748,16 +3748,30 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const tasks = [];
     
-    // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_task_
+    console.log('DEBUG getTasks: child_id =', this.config.child_id);
+    console.log('DEBUG getTasks: nombre total d\'entités =', Object.keys(entities).length);
+    
+    // Chercher toutes les entités de tâches possibles
+    const taskEntities = Object.keys(entities).filter(entityId => 
+      entityId.includes('task') || entityId.startsWith('sensor.kidtasks_')
+    );
+    
+    console.log('DEBUG getTasks: entités de tâches trouvées =', taskEntities);
+    
+    // Essayer différents formats d'entités de tâches
     Object.keys(entities).forEach(entityId => { 
-      if (entityId.startsWith('sensor.kidtasks_task_')) {
+      if (entityId.startsWith('sensor.kidtasks_task_') || entityId.startsWith('sensor.kids_tasks_task_') || entityId.includes('_task_')) {
         const taskEntity = entities[entityId];
+        console.log('DEBUG getTasks: entité trouvée =', entityId, taskEntity?.state, taskEntity?.attributes);
+        
         if (taskEntity && taskEntity.attributes && taskEntity.state !== 'unavailable') {
           const attrs = taskEntity.attributes;
           // Vérifier si l'enfant est assigné (nouveau format avec array ou ancien format)
           const isAssigned = attrs.assigned_child_ids 
             ? attrs.assigned_child_ids.includes(this.config.child_id)
             : attrs.assigned_child_id === this.config.child_id;
+            
+          console.log('DEBUG getTasks: isAssigned =', isAssigned, 'assigned_child_ids =', attrs.assigned_child_ids, 'assigned_child_id =', attrs.assigned_child_id);
             
           if (isAssigned) {
             tasks.push({
@@ -3785,10 +3799,13 @@ class KidsTasksChildCard extends HTMLElement {
     });
     
     // Trier par statut (en attente en premier, puis à faire)
-    return tasks.sort((a, b) => {
+    const sortedTasks = tasks.sort((a, b) => {
       const statusOrder = { 'pending_validation': 0, 'todo': 1, 'completed': 2, 'validated': 3 };
       return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
     });
+    
+    console.log('DEBUG getTasks: tâches finales =', sortedTasks);
+    return sortedTasks;
   }
 
   // Récupérer les récompenses disponibles
@@ -3982,6 +3999,10 @@ class KidsTasksChildCard extends HTMLElement {
     const rewards = this.config.show_rewards ? this.getRewards() : [];
     const stats = this.getChildStats(child, tasks);
     const taskCategories = this.getTasksByCategory(tasks);
+    
+    console.log('DEBUG render: tasks =', tasks);
+    console.log('DEBUG render: taskCategories =', taskCategories);
+    console.log('DEBUG render: stats =', stats);
 
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
