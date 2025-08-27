@@ -4313,11 +4313,16 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Générer les styles CSS pour le nouveau design
   getStyles() {
+    // Debug pour vérifier les couleurs de configuration
+    console.log('DEBUG getStyles: this.config =', this.config);
+    
     // Utiliser les couleurs de configuration ou les valeurs par défaut
     const gradientStart = this.config?.child_gradient_start || '#4CAF50';
     const gradientEnd = this.config?.child_gradient_end || '#8BC34A';
     const borderColor = this.config?.child_border_color || '#2E7D32';
     const textColor = this.config?.child_text_color || '#ffffff';
+    
+    console.log('DEBUG getStyles: couleurs =', { gradientStart, gradientEnd, borderColor, textColor });
     
     // Récupérer les variables CSS personnalisées du style parent pour les couleurs secondaires
     const computedStyle = getComputedStyle(this);
