@@ -1617,12 +1617,16 @@ class KidsTasksCard extends HTMLElement {
           let childStatusesSummary = {};
           let pendingValidationChildNames = [];
           
+          console.log('DEBUG FRONTEND: Task', attrs.task_name, 'has child_statuses:', attrs.child_statuses);
+          
           if (attrs.child_statuses) {
             // Nouveau système avec statuts individuels
             for (const [childId, childStatus] of Object.entries(attrs.child_statuses)) {
               childStatusesSummary[childId] = childStatus.status;
+              console.log('DEBUG FRONTEND: Child', childStatus.child_name, 'has status:', childStatus.status);
               if (childStatus.status === 'pending_validation') {
                 pendingValidationChildNames.push(childStatus.child_name || 'Enfant inconnu');
+                console.log('DEBUG FRONTEND: Added to pending list:', childStatus.child_name);
               }
             }
           }
@@ -1630,10 +1634,16 @@ class KidsTasksCard extends HTMLElement {
           // Déterminer le nom des enfants en attente pour l'affichage
           let assignedChildName = attrs.assigned_child_name || 'Non assigné';
           
+          console.log('DEBUG FRONTEND: Original assigned_child_name:', assignedChildName);
+          console.log('DEBUG FRONTEND: pendingValidationChildNames:', pendingValidationChildNames);
+          
           if (attrs.child_statuses && Object.keys(attrs.child_statuses).length > 0) {
             // Nouveau système : afficher seulement les enfants qui ont vraiment validé
             if (pendingValidationChildNames.length > 0) {
               assignedChildName = pendingValidationChildNames.join(', ');
+              console.log('DEBUG FRONTEND: NEW SYSTEM - Using pending names:', assignedChildName);
+            } else {
+              console.log('DEBUG FRONTEND: NEW SYSTEM - No pending validation children');
             }
           } else if (taskEntity.state === 'pending_validation' && attrs.completed_by_child_id) {
             // Ancien système : utiliser completed_by_child_id si disponible
@@ -1641,8 +1651,11 @@ class KidsTasksCard extends HTMLElement {
             const completingChild = children.find(child => child.id === attrs.completed_by_child_id);
             if (completingChild) {
               assignedChildName = completingChild.name;
+              console.log('DEBUG FRONTEND: OLD SYSTEM - Using completing child:', assignedChildName);
             }
           }
+          
+          console.log('DEBUG FRONTEND: Final assignedChildName:', assignedChildName);
           
           tasks.push({
             id: attrs.task_id || entityId.replace('sensor.kidtasks_task_', ''),
