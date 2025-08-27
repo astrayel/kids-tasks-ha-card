@@ -4242,31 +4242,64 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Vérifier si une tâche est active aujourd'hui
   isTaskActiveToday(task) {
-    if (!task.active) return false;
+    console.log('DEBUG isTaskActiveToday:', task.name, 'active:', task.active, 'frequency:', task.frequency, 'weekly_days:', task.weekly_days);
+    
+    if (!task.active) {
+      console.log('DEBUG isTaskActiveToday: task not active:', task.name);
+      return false;
+    }
     
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = dimanche
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const todayName = dayNames[dayOfWeek];
     
+    console.log('DEBUG isTaskActiveToday: today =', todayName, 'dayOfWeek =', dayOfWeek);
+    
     if (task.frequency === 'daily' && task.weekly_days) {
-      return task.weekly_days.includes(todayName);
+      const result = task.weekly_days.includes(todayName);
+      console.log('DEBUG isTaskActiveToday: daily with weekly_days, result =', result);
+      return result;
     }
     
-    return task.frequency === 'daily' || 
+    const result = task.frequency === 'daily' || 
            (task.frequency === 'weekly' && dayOfWeek === 1) ||
            (task.frequency === 'monthly' && today.getDate() === 1);
+    
+    console.log('DEBUG isTaskActiveToday: frequency check result =', result);
+    return result;
   }
 
   // Obtenir les tâches par catégorie
   getTasksByCategory(tasks) {
+    console.log('DEBUG getTasksByCategory: tasks input =', tasks.map(t => ({ id: t.id, name: t.name, status: t.status, frequency: t.frequency })));
+    
+    const todoTasks = tasks.filter(t => {
+      const isTodo = t.status === 'todo';
+      const isActive = this.isTaskActiveToday(t);
+      console.log('DEBUG todo filter:', t.name, 'status:', t.status, 'isTodo:', isTodo, 'isActive:', isActive);
+      return isTodo && isActive;
+    });
+    
+    const pendingTasks = tasks.filter(t => t.status === 'pending_validation');
+    
+    const completedTasks = tasks.filter(t => {
+      const isCompleted = (t.status === 'validated' || t.status === 'completed');
+      const isActive = this.isTaskActiveToday(t);
+      console.log('DEBUG completed filter:', t.name, 'status:', t.status, 'isCompleted:', isCompleted, 'isActive:', isActive);
+      return isCompleted && isActive;
+    });
+    
+    const pastTasks = tasks.filter(t => this.isTaskFromPast(t));
+    
     const categories = {
-      todo: tasks.filter(t => t.status === 'todo' && this.isTaskActiveToday(t)),
-      pending: tasks.filter(t => t.status === 'pending_validation'),
-      completed: tasks.filter(t => (t.status === 'validated' || t.status === 'completed') && this.isTaskActiveToday(t)),
-      past: tasks.filter(t => this.isTaskFromPast(t))
+      todo: todoTasks,
+      pending: pendingTasks,
+      completed: completedTasks,
+      past: pastTasks
     };
     
+    console.log('DEBUG getTasksByCategory: categories result =', categories);
     return categories;
   }
 
