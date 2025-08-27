@@ -5008,6 +5008,20 @@ class KidsTasksChildCard extends HTMLElement {
           border: 1px solid var(--divider-color, #e0e0e0);
           min-height: 48px;
           gap: 12px;
+          position: relative;
+        }
+        
+        /* Liserets colorés selon le statut de retard */
+        .task-compact.on-time {
+          border-left: 4px solid #4caf50; /* Vert pour à l'heure */
+        }
+        
+        .task-compact.pending {
+          border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
+        }
+        
+        .task-compact.delayed {
+          border-left: 4px solid #f44336; /* Rouge pour en retard */
         }
         
         .task-icon-compact {
@@ -5276,28 +5290,40 @@ class KidsTasksChildCard extends HTMLElement {
 
     return `
       <div class="task-list-compact">
-        ${tasks.map(task => `
-          <div class="task-compact ${task.status}">
-            <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
-            <div class="task-main-compact">
-              <div class="task-name-compact">${task.name}</div>
-              <div class="task-points-compact">
-                ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+        ${tasks.map(task => {
+          // Déterminer la classe de retard
+          let delayClass = '';
+          if (task.deadline_passed && task.status === 'todo') {
+            delayClass = 'delayed';
+          } else if (task.status === 'pending_validation') {
+            delayClass = 'pending';
+          } else {
+            delayClass = 'on-time';
+          }
+          
+          return `
+            <div class="task-compact ${task.status} ${delayClass}">
+              <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
+              <div class="task-main-compact">
+                <div class="task-name-compact">${task.name}</div>
+                <div class="task-points-compact">
+                  ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+                </div>
+              </div>
+              <div class="task-action-compact">
+                ${task.status === 'todo' ? `
+                  <button class="btn-compact btn-complete" 
+                          data-action="complete_task" 
+                          data-id="${task.id}">Terminé</button>
+                ` : `
+                  <button class="btn-compact btn-validate" 
+                          data-action="validate_task"
+                          data-id="${task.id}">Validation</button>
+                `}
               </div>
             </div>
-            <div class="task-action-compact">
-              ${task.status === 'todo' ? `
-                <button class="btn-compact btn-complete" 
-                        data-action="complete_task" 
-                        data-id="${task.id}">Terminé</button>
-              ` : `
-                <button class="btn-compact btn-validate" 
-                        data-action="validate_task"
-                        data-id="${task.id}">Validation</button>
-              `}
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
   }
