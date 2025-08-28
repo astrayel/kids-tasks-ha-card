@@ -14,7 +14,8 @@
       "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
       "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
       "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

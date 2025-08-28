@@ -1275,23 +1275,41 @@ class KidsTasksCard extends HTMLElement {
     setTimeout(() => {
       const frequencySelect = dialog.querySelector('[name="frequency"]');
       const weeklyDaysSection = dialog.querySelector('.weekly-days-section');
+      const penaltyPointsField = dialog.querySelector('[name="penalty_points"]').parentElement;
+      const deadlineTimeField = dialog.querySelector('[name="deadline_time"]').parentElement;
       
       if (frequencySelect && weeklyDaysSection) {
-        // Fonction pour afficher/masquer la section des jours
-        const toggleWeeklyDays = (frequency) => {
-          weeklyDaysSection.style.display = frequency === 'daily' ? 'block' : 'none';
+        // Fonction pour afficher/masquer la section des jours et les champs liés
+        const toggleFields = (frequency) => {
+          const isDaily = frequency === 'daily';
+          const isBonus = frequency === 'none';
+          
+          // Afficher/masquer la section des jours (seulement pour daily)
+          weeklyDaysSection.style.display = isDaily ? 'block' : 'none';
+          
+          // Masquer les points de pénalité et l'heure limite pour les tâches bonus
+          if (penaltyPointsField) {
+            penaltyPointsField.style.display = isBonus ? 'none' : 'block';
+          }
+          if (deadlineTimeField) {
+            deadlineTimeField.style.display = isBonus ? 'none' : 'block';
+          }
         };
         
         // Event listeners pour ha-select
         frequencySelect.addEventListener('selected', (e) => {
           const selectedFreq = e.detail.value || e.target.value;
-          toggleWeeklyDays(selectedFreq);
+          toggleFields(selectedFreq);
         });
         
         frequencySelect.addEventListener('change', (e) => {
           const selectedFreq = e.target.value;
-          toggleWeeklyDays(selectedFreq);
+          toggleFields(selectedFreq);
         });
+        
+        // Initialiser l'affichage selon la fréquence actuelle
+        const currentFrequency = isEdit ? task.frequency : 'daily';
+        toggleFields(currentFrequency);
       }
       
       // Ajouter les event listeners pour les checkboxes cliquables
@@ -1772,7 +1790,7 @@ class KidsTasksCard extends HTMLElement {
     }
     
     // Fallback sur les fréquences par défaut si l'entité n'est pas disponible
-    return ['daily', 'weekly', 'monthly', 'once'];
+    return ['daily', 'weekly', 'monthly', 'once', 'none'];
   }
 
   getAvailableRewardCategories() {
@@ -1884,7 +1902,8 @@ class KidsTasksCard extends HTMLElement {
       'daily': 'Quotidienne',
       'weekly': 'Hebdomadaire',
       'monthly': 'Mensuelle', 
-      'once': 'Une fois'
+      'once': 'Une fois',
+      'none': 'Bonus'
     };
     return labels[frequency] || frequency;
   }
@@ -2036,7 +2055,10 @@ class KidsTasksCard extends HTMLElement {
 
   getTasksView() {
     const children = this.getChildren();
-    const tasks = this.getTasks();
+    const allTasks = this.getTasks();
+    // Filtrer les tâches pour exclure les tâches bonus (frequency='none')
+    const tasks = allTasks.filter(task => task.frequency !== 'none');
+    
     return `
       <div class="section">
         <h2>
@@ -2046,7 +2068,7 @@ class KidsTasksCard extends HTMLElement {
         ${tasks.length > 0 ? tasks.map(task => this.renderTaskItem(task, children, false, true)).join('') : `
           <div class="empty-state">
             <div class="empty-state-icon">📝</div>
-            <p>Aucune tâche créée</p>
+            <p>Aucune tâche récurrente créée</p>
             <button class="btn btn-primary" data-action="add-task">Créer votre première tâche</button>
           </div>
         `}
@@ -5358,7 +5380,13 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Onglet des tâches passées
   renderPastTab(tasks) {
-    if (tasks.length === 0) {
+    // Obtenir les occurrences des tâches bonus validées
+    const bonusTaskOccurrences = this.getBonusTaskOccurrences();
+    
+    // Combiner les tâches normales avec les occurrences bonus
+    const allPastTasks = [...tasks, ...bonusTaskOccurrences];
+    
+    if (allPastTasks.length === 0) {
       return `
         <div class="empty-state">
           <div class="empty-icon">📚</div>
@@ -5369,8 +5397,8 @@ class KidsTasksChildCard extends HTMLElement {
     }
 
     // Séparer les tâches réussies des tâches manquées
-    const completedTasks = tasks.filter(task => task.status === 'validated' || task.status === 'completed');
-    const missedTasks = tasks.filter(task => task.status === 'missed' || task.penalty_applied);
+    const completedTasks = allPastTasks.filter(task => task.status === 'validated' || task.status === 'completed');
+    const missedTasks = allPastTasks.filter(task => task.status === 'missed' || task.penalty_applied);
     
     // Vérifier si nous sommes dans une carte enfant
     const isChildCard = this.config && this.config.child_id;
@@ -5392,7 +5420,7 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
                     <div class="task-points-compact">
-                      +${task.points} points
+                      +<span style="color: #4caf50;">${task.points}</span> points
                       ${task.last_completed_at ? ` • ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}` : ''}
                       ${task.last_validated_at ? ` • Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
@@ -5419,7 +5447,7 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
                     <div class="task-points-compact">
-                      ${task.penalty_points ? `-${task.penalty_points}` : `-${Math.floor(task.points / 2)}`} points
+                      -<span style="color: #f44336;">${task.penalty_points ? task.penalty_points : Math.floor(task.points / 2)}</span> points
                       ${task.penalty_applied_at ? ` • Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
                   </div>
@@ -5435,13 +5463,133 @@ class KidsTasksChildCard extends HTMLElement {
     `;
   }
 
-  // Onglet bonus (vide pour l'instant)
+  // Obtenir les occurrences des tâches bonus validées pour l'historique
+  getBonusTaskOccurrences() {
+    const child = this.getChild();
+    if (!child) return [];
+
+    const allTasks = this.getTasks();
+    const bonusTasks = allTasks.filter(task => task.frequency === 'none');
+    const occurrences = [];
+
+    bonusTasks.forEach(task => {
+      if (task.child_statuses && task.child_statuses[child.id]) {
+        const childStatus = task.child_statuses[child.id];
+        
+        // Nouveau : utiliser l'historique des validations si disponible
+        if (childStatus.validation_history && childStatus.validation_history.length > 0) {
+          childStatus.validation_history.forEach((validation, index) => {
+            occurrences.push({
+              id: `${task.id}_bonus_${validation.validated_at}_${index}`,
+              name: `${task.name} (Bonus)`,
+              description: task.description,
+              icon: task.icon,
+              category: task.category,
+              points: task.points,
+              frequency: 'none',
+              status: 'validated',
+              last_completed_at: validation.completed_at,
+              last_validated_at: validation.validated_at,
+              isBonus: true
+            });
+          });
+        } 
+        // Fallback pour l'ancienne méthode (si pas d'historique mais validation présente)
+        else if (childStatus.validated_at) {
+          occurrences.push({
+            id: `${task.id}_bonus_${childStatus.validated_at}`,
+            name: `${task.name} (Bonus)`,
+            description: task.description,
+            icon: task.icon,
+            category: task.category,
+            points: task.points,
+            frequency: 'none',
+            status: 'validated',
+            last_completed_at: childStatus.completed_at,
+            last_validated_at: childStatus.validated_at,
+            isBonus: true
+          });
+        }
+      }
+    });
+
+    // Trier par date de validation (plus récent en premier)
+    return occurrences.sort((a, b) => new Date(b.last_validated_at) - new Date(a.last_validated_at));
+  }
+
+  // Onglet bonus
   renderBonusTab() {
+    const allTasks = this.getTasks();
+    // Filtrer uniquement les tâches bonus (frequency='none')
+    const bonusTasks = allTasks.filter(task => task.frequency === 'none');
+    
+    if (bonusTasks.length === 0) {
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">⭐</div>
+          <div class="empty-text">Aucune tâche bonus</div>
+          <div class="empty-subtext">Les tâches avec fréquence "Aucune" apparaîtront ici</div>
+        </div>
+      `;
+    }
+
     return `
-      <div class="empty-state">
-        <div class="empty-icon">⭐</div>
-        <div class="empty-text">Section Bonus</div>
-        <div class="empty-subtext">Fonctionnalités à venir...</div>
+      <div class="bonus-tasks">
+        ${bonusTasks.map(task => this.renderBonusTaskCard(task)).join('')}
+      </div>
+    `;
+  }
+
+  // Méthode pour afficher une carte de tâche bonus
+  renderBonusTaskCard(task) {
+    const child = this.getChild();
+    if (!child) return '';
+
+    // Déterminer le statut de la tâche pour cet enfant
+    const childStatus = task.child_statuses && task.child_statuses[child.id] 
+      ? task.child_statuses[child.id].status 
+      : 'todo';
+
+    const categoryIcon = this.safeGetCategoryIcon(task);
+    const taskIcon = task.icon || categoryIcon;
+    
+    // Couleur de bordure selon le statut
+    let borderColor = '#e0e0e0'; // Gris par défaut
+    if (childStatus === 'pending_validation') {
+      borderColor = '#ff9800'; // Orange
+    } else if (childStatus === 'validated') {
+      borderColor = '#4caf50'; // Vert
+    }
+
+    return `
+      <div class="task-card bonus-task" style="border-left: 4px solid ${borderColor};">
+        <div class="task-header">
+          <div class="task-icon">${taskIcon}</div>
+          <div class="task-info">
+            <div class="task-name">${task.name}</div>
+            <div class="task-description">${task.description || ''}</div>
+          </div>
+        </div>
+        <div class="task-points">
+          <div class="points-display">
+            <span class="label">Points:</span>
+            <span class="value" style="color: #4caf50;">${task.points}</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          ${childStatus === 'todo' ? `
+            <button class="btn-compact btn-complete" 
+                    data-action="complete_task" 
+                    data-id="${task.id}">Terminé</button>
+          ` : childStatus === 'pending_validation' ? `
+            <span class="status-indicator pending">En attente de validation</span>
+          ` : `
+            <span class="status-indicator completed">✓ Validée</span>
+            <button class="btn-compact btn-complete" 
+                    data-action="complete_task" 
+                    data-id="${task.id}">Refaire</button>
+          `}
+        </div>
       </div>
     `;
   }
