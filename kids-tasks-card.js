@@ -5534,7 +5534,7 @@ class KidsTasksChildCard extends HTMLElement {
     }
 
     return `
-      <div class="bonus-tasks">
+      <div class="task-list-compact">
         ${bonusTasks.map(task => this.renderBonusTaskCard(task)).join('')}
       </div>
     `;
@@ -5550,44 +5550,50 @@ class KidsTasksChildCard extends HTMLElement {
       ? task.child_statuses[child.id].status 
       : 'todo';
 
-    const categoryIcon = this.safeGetCategoryIcon(task);
-    const taskIcon = task.icon || categoryIcon;
-    
-    // Couleur de bordure selon le statut
-    let borderColor = '#e0e0e0'; // Gris par défaut
+    // Déterminer la classe de style selon le statut (même logique que les tâches normales)
+    let delayClass = '';
     if (childStatus === 'pending_validation') {
-      borderColor = '#ff9800'; // Orange
+      delayClass = 'pending';
     } else if (childStatus === 'validated') {
-      borderColor = '#4caf50'; // Vert
+      delayClass = 'on-time';
+    } else {
+      delayClass = 'on-time'; // Les tâches bonus n'ont pas de retard
     }
 
     return `
-      <div class="task-card bonus-task" style="border-left: 4px solid ${borderColor};">
-        <div class="task-header">
-          <div class="task-icon">${taskIcon}</div>
-          <div class="task-info">
-            <div class="task-name">${task.name}</div>
-            <div class="task-description">${task.description || ''}</div>
+      <div class="task-compact ${childStatus} ${delayClass}">
+        <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
+        <div class="task-main-compact">
+          <div class="task-name-compact">${task.name}</div>
+          <div class="task-points-compact">
+            ${this.config && this.config.child_id ? `
+              ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span></div>` : ''}
+            ` : `
+              ${task.points > 0 ? `+${task.points}` : ''}
+            `}
           </div>
         </div>
-        <div class="task-points">
-          <div class="points-display">
-            <span class="label">Points:</span>
-            <span class="value" style="color: #4caf50;">${task.points}</span>
-          </div>
-        </div>
-        <div class="task-actions">
+        <div class="task-action-compact">
           ${childStatus === 'todo' ? `
             <button class="btn-compact btn-complete" 
                     data-action="complete_task" 
                     data-id="${task.id}">Terminé</button>
           ` : childStatus === 'pending_validation' ? `
-            <span class="status-indicator pending">En attente de validation</span>
+            ${this.config && this.config.child_id ? `
+              <span class="status-indicator pending">En attente de validation</span>
+            ` : `
+              <button class="btn-compact btn-validate" 
+                      data-action="validate_task"
+                      data-id="${task.id}">Validation</button>
+            `}
           ` : `
             <span class="status-indicator completed">✓ Validée</span>
-            <button class="btn-compact btn-complete" 
-                    data-action="complete_task" 
-                    data-id="${task.id}">Refaire</button>
+            ${childStatus === 'validated' ? `
+              <button class="btn-compact btn-complete" 
+                      data-action="complete_task" 
+                      data-id="${task.id}" 
+                      style="margin-top: 4px;">Refaire</button>
+            ` : ''}
           `}
         </div>
       </div>
