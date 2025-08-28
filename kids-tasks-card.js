@@ -5024,6 +5024,11 @@ class KidsTasksChildCard extends HTMLElement {
           border-left: 4px solid #f44336; /* Rouge pour en retard */
         }
         
+        /* Liseret vert pour les tâches réussies dans la carte enfant */
+        .task-compact.success-border {
+          border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
+        }
+        
         .task-icon-compact {
           font-size: 1.5em;
           width: 32px;
@@ -5343,18 +5348,23 @@ class KidsTasksChildCard extends HTMLElement {
     // Séparer les tâches réussies des tâches manquées
     const completedTasks = tasks.filter(task => task.status === 'validated' || task.status === 'completed');
     const missedTasks = tasks.filter(task => task.status === 'missed' || task.penalty_applied);
+    
+    // Vérifier si nous sommes dans une carte enfant
+    const isChildCard = this.config && this.config.child_id;
 
     return `
       <div class="past-tasks-container">
         ${completedTasks.length > 0 ? `
           <div class="past-section">
-            <div class="section-header success">
-              <span class="section-icon">✅</span>
-              <span class="section-title">Tâches réussies (${completedTasks.length})</span>
-            </div>
+            ${!isChildCard ? `
+              <div class="section-header success">
+                <span class="section-icon">✅</span>
+                <span class="section-title">Tâches réussies (${completedTasks.length})</span>
+              </div>
+            ` : ''}
             <div class="task-list-compact">
               ${completedTasks.map(task => `
-                <div class="task-compact completed">
+                <div class="task-compact completed ${isChildCard ? 'success-border' : ''}">
                   <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
