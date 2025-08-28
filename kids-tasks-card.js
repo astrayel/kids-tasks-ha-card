@@ -4837,6 +4837,19 @@ class KidsTasksChildCard extends HTMLElement {
           background: #e8f5e8;
         }
         
+        .reward-square.points-only {
+          border-left: 4px solid #4caf50;
+        }
+        
+        .reward-square.coins-only {
+          border-left: 4px solid #ffc107;
+        }
+        
+        .reward-square.dual-currency {
+          border-left: 4px solid #9c27b0;
+          background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%);
+        }
+        
         .reward-square:hover {
           transform: translateY(-1px);
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -4943,6 +4956,18 @@ class KidsTasksChildCard extends HTMLElement {
             border-radius: 4px;
           }
           
+          .reward-square.points-only {
+            border-left: 3px solid #4caf50;
+          }
+          
+          .reward-square.coins-only {
+            border-left: 3px solid #ffc107;
+          }
+          
+          .reward-square.dual-currency {
+            border-left: 3px solid #9c27b0;
+          }
+          
           .reward-icon-large {
             font-size: 0.9em;
             margin-bottom: 1px;
@@ -4967,6 +4992,18 @@ class KidsTasksChildCard extends HTMLElement {
           .reward-square {
             padding: 3px;
             border-radius: 3px;
+          }
+          
+          .reward-square.points-only {
+            border-left: 2px solid #4caf50;
+          }
+          
+          .reward-square.coins-only {
+            border-left: 2px solid #ffc107;
+          }
+          
+          .reward-square.dual-currency {
+            border-left: 2px solid #9c27b0;
           }
           
           .reward-icon-large {
@@ -5673,10 +5710,17 @@ class KidsTasksChildCard extends HTMLElement {
     const affordableRewards = rewards.filter(r => r.cost <= childPoints && r.coin_cost <= childCoins);
     const expensiveRewards = rewards.filter(r => r.cost > childPoints || r.coin_cost > childCoins);
 
+    // Helper function to get currency class
+    const getCurrencyClass = (reward) => {
+      if (reward.cost > 0 && reward.coin_cost > 0) return 'dual-currency';
+      if (reward.coin_cost > 0) return 'coins-only';
+      return 'points-only';
+    };
+
     return `
       <div class="rewards-grid">
         ${affordableRewards.map(reward => `
-          <div class="reward-square affordable" 
+          <div class="reward-square affordable ${getCurrencyClass(reward)}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
             <div class="reward-icon-large">${this.safeGetCategoryIcon(reward, '🎁')}</div>
@@ -5685,7 +5729,7 @@ class KidsTasksChildCard extends HTMLElement {
           </div>
         `).join('')}
         ${expensiveRewards.map(reward => `
-          <div class="reward-square" 
+          <div class="reward-square ${getCurrencyClass(reward)}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
             <div class="reward-icon-large" style="opacity: 0.5">${this.safeGetCategoryIcon(reward, '🎁')}</div>
