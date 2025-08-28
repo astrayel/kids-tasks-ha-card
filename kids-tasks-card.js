@@ -575,6 +575,7 @@ class KidsTasksCard extends HTMLElement {
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'other';
     const points = parseInt(form.querySelector('[name="points"]').value);
+    const coins = parseInt(form.querySelector('[name="coins"]').value) || 0;
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
     // Récupérer les enfants assignés (checkboxes)
@@ -616,6 +617,11 @@ class KidsTasksCard extends HTMLElement {
       serviceData.penalty_points = penalty_points;
     }
     
+    // Ajouter coins seulement s'ils sont > 0
+    if (coins > 0) {
+      serviceData.coins = coins;
+    }
+    
     // Ajouter l'assignation
     if (assigned_child_ids.length > 0) {
       serviceData.assigned_child_ids = assigned_child_ids;
@@ -649,6 +655,7 @@ class KidsTasksCard extends HTMLElement {
     const description = form.querySelector('[name="description"]').value || '';
     const icon = form.querySelector('[name="icon"]').value || null;
     const cost = parseInt(form.querySelector('[name="cost"]').value);
+    const coin_cost = parseInt(form.querySelector('[name="coin_cost"]').value) || 0;
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'fun';
     const limitedQuantityInput = form.querySelector('[name="limited_quantity"]');
@@ -659,6 +666,7 @@ class KidsTasksCard extends HTMLElement {
       description,
       icon,
       cost,
+      coin_cost,
       category,
       limited_quantity
     };
@@ -1166,6 +1174,15 @@ class KidsTasksCard extends HTMLElement {
             max="100">
           </ha-textfield>
           <ha-textfield
+            label="Coins"
+            name="coins"
+            type="number"
+            value="${isEdit ? task.coins || '0' : '0'}"
+            min="0"
+            max="50"
+            helper-text="Coins attribués en bonus">
+          </ha-textfield>
+          <ha-textfield
             label="Points de pénalité"
             name="penalty_points"
             type="number"
@@ -1387,6 +1404,15 @@ class KidsTasksCard extends HTMLElement {
             value="${isEdit ? reward.cost : '50'}"
             min="1"
             max="1000">
+          </ha-textfield>
+          
+          <ha-textfield
+            label="Coût en coins"
+            name="coin_cost"
+            type="number"
+            value="${isEdit ? reward.coin_cost || 0 : '0'}"
+            min="0"
+            max="500">
           </ha-textfield>
           
           <ha-select
@@ -5622,7 +5648,8 @@ class KidsTasksChildCard extends HTMLElement {
       `;
     }
 
-    const childCoins = child.coins || 0;
+    const child = this.getChild();
+    const childCoins = child ? child.coins || 0 : 0;
     const affordableRewards = rewards.filter(r => r.cost <= childPoints && r.coin_cost <= childCoins);
     const expensiveRewards = rewards.filter(r => r.cost > childPoints || r.coin_cost > childCoins);
 
