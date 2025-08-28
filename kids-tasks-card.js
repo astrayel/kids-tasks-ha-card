@@ -4905,11 +4905,6 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         /* Styles pour l'onglet historique */
-        .past-tasks-container {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
         
         .past-section {
           background: var(--secondary-background-color, #fafafa);
@@ -5105,6 +5100,27 @@ class KidsTasksChildCard extends HTMLElement {
         
         .btn-compact:active {
           transform: scale(0.95);
+        }
+        
+        /* Indicateurs de statut pour les tâches */
+        .status-indicator {
+          font-size: 0.8em;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-weight: 500;
+          text-align: center;
+        }
+        
+        .status-indicator.pending {
+          background-color: #fff3e0;
+          color: #f57c00;
+          border: 1px solid #ffcc02;
+        }
+        
+        .status-indicator.completed {
+          background-color: #e8f5e8;
+          color: #2e7d32;
+          border: 1px solid #4caf50;
         }
         
         /* Responsive pour tâches compactes */
@@ -5312,7 +5328,12 @@ class KidsTasksChildCard extends HTMLElement {
               <div class="task-main-compact">
                 <div class="task-name-compact">${task.name}</div>
                 <div class="task-points-compact">
-                  ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+                  ${this.config && this.config.child_id ? `
+                    ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span></div>` : ''}
+                    ${task.penalty_points ? `<div>Pénalité: <span style="color: #f44336;">${task.penalty_points}</span></div>` : ''}
+                  ` : `
+                    ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+                  `}
                 </div>
               </div>
               <div class="task-action-compact">
@@ -5320,10 +5341,16 @@ class KidsTasksChildCard extends HTMLElement {
                   <button class="btn-compact btn-complete" 
                           data-action="complete_task" 
                           data-id="${task.id}">Terminé</button>
+                ` : task.status === 'pending_validation' ? `
+                  ${this.config && this.config.child_id ? `
+                    <span class="status-indicator pending">En attente de validation</span>
+                  ` : `
+                    <button class="btn-compact btn-validate" 
+                            data-action="validate_task"
+                            data-id="${task.id}">Validation</button>
+                  `}
                 ` : `
-                  <button class="btn-compact btn-validate" 
-                          data-action="validate_task"
-                          data-id="${task.id}">Validation</button>
+                  <span class="status-indicator completed">✓ Validée</span>
                 `}
               </div>
             </div>
@@ -5353,7 +5380,7 @@ class KidsTasksChildCard extends HTMLElement {
     const isChildCard = this.config && this.config.child_id;
 
     return `
-      <div class="past-tasks-container">
+      <div>
         ${completedTasks.length > 0 ? `
           <div class="past-section">
             ${!isChildCard ? `
@@ -5384,7 +5411,7 @@ class KidsTasksChildCard extends HTMLElement {
         ` : ''}
 
         ${missedTasks.length > 0 ? `
-          <div class="past-section">
+          <div class="past-section" style="margin-top: ${completedTasks.length > 0 ? '20px' : '0'};">
             <div class="section-header penalty">
               <span class="section-icon">❌</span>
               <span class="section-title">Tâches manquées (${missedTasks.length})</span>
