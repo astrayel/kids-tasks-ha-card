@@ -654,8 +654,15 @@ class KidsTasksCard extends HTMLElement {
     const name = form.querySelector('[name="name"]').value;
     const description = form.querySelector('[name="description"]').value || '';
     const icon = form.querySelector('[name="icon"]').value || null;
-    const cost = parseInt(form.querySelector('[name="cost"]').value);
+    const cost = parseInt(form.querySelector('[name="cost"]').value) || 0;
     const coin_cost = parseInt(form.querySelector('[name="coin_cost"]').value) || 0;
+    
+    // Validation : une récompense doit avoir au moins un coût (points ou coins)
+    if (cost === 0 && coin_cost === 0) {
+      alert('Une récompense doit coûter au moins 1 point ou 1 coin.');
+      return;
+    }
+    
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'fun';
     const limitedQuantityInput = form.querySelector('[name="limited_quantity"]');
@@ -1397,12 +1404,11 @@ class KidsTasksCard extends HTMLElement {
         
         <div class="form-row">
           <ha-textfield
-            label="Coût en points *"
+            label="Coût en points"
             name="cost"
             type="number"
-            required
             value="${isEdit ? reward.cost : '50'}"
-            min="1"
+            min="0"
             max="1000">
           </ha-textfield>
           
@@ -2227,7 +2233,7 @@ class KidsTasksCard extends HTMLElement {
 
   renderRewardCard(reward, showActions = false) {
     return `
-      <div class="child-card">
+      <div class="reward-card">
         ${showActions ? `
           <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
         ` : ''}
@@ -2375,7 +2381,7 @@ class KidsTasksCard extends HTMLElement {
           word-wrap: break-word;
         }
         
-        .child-card {
+        .child-card, .reward-card {
           display: flex;
           flex-direction: row;
           align-items: flex-start;
@@ -2388,6 +2394,10 @@ class KidsTasksCard extends HTMLElement {
           position: relative;
           min-height: 160px;
           height: 160px;
+        }
+        
+        .reward-card {
+          border-left-color: var(--custom-dashboard-primary, #6b73ff);
         }
         
         /* Drag & Drop styles */
@@ -2983,11 +2993,11 @@ class KidsTasksCard extends HTMLElement {
         
         /* Tablette */
         @media (max-width: 1024px) and (min-width: 769px) {
-          .child-card {
+          .child-card, .reward-card {
             padding: 14px;
             padding-bottom: 50px;
           }
-          .child-card .task-actions {
+          .child-card .task-actions, .reward-card .task-actions {
             right: 8px;
             bottom: 8px;
           }
@@ -3019,7 +3029,7 @@ class KidsTasksCard extends HTMLElement {
           }
           
           /* Styles enfants - disposition horizontale forcée */
-          .child-card {
+          .child-card, .reward-card {
             display: flex !important;
             flex-direction: row !important;
             align-items: flex-start !important;
@@ -5748,7 +5758,7 @@ class KidsTasksChildCard extends HTMLElement {
         font-weight: bold;
         text-align: center;
         margin-bottom: 8px;
-        color: #212121;
+        color: var(--primary-text-color, #212121);
       }
       .reward-modal-price {
         font-size: 1.2em;
@@ -5758,10 +5768,11 @@ class KidsTasksChildCard extends HTMLElement {
         margin-bottom: 16px;
       }
       .reward-modal-description {
-        color: #757575;
+        color: var(--primary-text-color, #212121);
         line-height: 1.5;
         margin-bottom: 24px;
         text-align: center;
+        font-weight: 500;
       }
       .reward-modal-actions {
         display: flex;
