@@ -5064,7 +5064,6 @@ class KidsTasksChildCard extends HTMLElement {
         
         .task-points-compact {
           font-size: 0.85em;
-          color: var(--success-color, #4CAF50);
           font-weight: 500;
         }
         
