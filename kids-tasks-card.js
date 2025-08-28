@@ -4908,9 +4908,6 @@ class KidsTasksChildCard extends HTMLElement {
         
         .past-section {
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 12px;
-          padding: 16px;
-          border: 1px solid var(--divider-color, #e0e0e0);
         }
         
         .section-header {
@@ -5328,8 +5325,8 @@ class KidsTasksChildCard extends HTMLElement {
                 <div class="task-name-compact">${task.name}</div>
                 <div class="task-points-compact">
                   ${this.config && this.config.child_id ? `
-                    ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span></div>` : ''}
-                    ${task.penalty_points ? `<div>Pénalité: <span style="color: #f44336;">${task.penalty_points}</span></div>` : ''}
+                    ${task.points > 0 ? `<div><span style="color: #4caf50;">${task.points}</span> points</div>` : ''}
+                    ${task.penalty_points ? `<div>Pénalité: <span style="color: #f44336;">${task.penalty_points}</span> points</div>` : ''}
                   ` : `
                     ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
