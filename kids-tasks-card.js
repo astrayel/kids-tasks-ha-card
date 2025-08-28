@@ -1451,7 +1451,7 @@ class KidsTasksCard extends HTMLElement {
     const content = `
       <div class="reward-info" style="text-align: center; margin-bottom: 24px; padding: 16px; background: var(--secondary-background-color); border-radius: 8px;">
         <h3 style="margin: 0 0 8px 0; color: var(--primary-text-color);">${this.safeGetCategoryIcon(reward, '🎁')} ${reward.name}</h3>
-        <p style="margin: 4px 0;"><strong>Coût:</strong> ${reward.cost} points</p>
+        <p style="margin: 4px 0;"><strong>Coût:</strong> ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''}</p>
         <p style="margin: 4px 0;"><strong>Catégorie:</strong> ${this.getCategoryLabel(reward.category)}</p>
         ${reward.description ? `<p style="margin: 8px 0 0 0;">${reward.description}</p>` : ''}
         ${reward.remaining_quantity !== null ? `<p style="margin: 4px 0;"><strong>Stock restant:</strong> ${reward.remaining_quantity}</p>` : ''}
@@ -1466,8 +1466,8 @@ class KidsTasksCard extends HTMLElement {
           required>
           <ha-list-item value="">Choisir un enfant...</ha-list-item>
           ${children.map(child => `
-            <ha-list-item value="${child.id}" ${child.points < reward.cost ? 'disabled' : ''}>
-              ${child.name} (${child.points} points) ${child.points >= reward.cost ? '' : '- Pas assez de points'}
+            <ha-list-item value="${child.id}" ${(child.points < reward.cost || child.coins < reward.coin_cost) ? 'disabled' : ''}>
+              ${child.name} (${child.points} points, ${child.coins} coins) ${(child.points >= reward.cost && child.coins >= reward.coin_cost) ? '' : '- Pas assez de monnaie'}
             </ha-list-item>
           `).join('')}
         </ha-select>
@@ -1532,6 +1532,7 @@ class KidsTasksCard extends HTMLElement {
         
         if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
           const points = parseInt(pointsEntity.state) || 0;
+          const coins = parseInt(pointsEntity.attributes.coins) || 0;
           const level = parseInt(pointsEntity.attributes.level) || 1;
           const progress = ((points % 100) / 100) * 100;
           
@@ -1553,6 +1554,7 @@ class KidsTasksCard extends HTMLElement {
             id: childId,
             name: childName,
             points: points,
+            coins: coins,
             level: level,
             progress: progress,
             avatar: pointsEntity.attributes.avatar || '👶',
@@ -1683,6 +1685,7 @@ class KidsTasksCard extends HTMLElement {
             category: attrs.category || 'other',
             icon: attrs.icon,
             points: parseInt(attrs.points) || 10,
+            coins: parseInt(attrs.coins) || 0,
             frequency: attrs.frequency || 'daily',
             status: taskEntity.state || 'todo',
             assigned_child_id: attrs.assigned_child_id,
@@ -1728,6 +1731,7 @@ class KidsTasksCard extends HTMLElement {
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
+            coin_cost: parseInt(attrs.coin_cost) || 0,
             category: attrs.category || 'fun',
             icon: attrs.icon,
             description: attrs.description || '',
@@ -2108,6 +2112,7 @@ class KidsTasksCard extends HTMLElement {
     try {
       const name = child.name || 'Enfant sans nom';
       const points = child.points || 0;
+      const coins = child.coins || 0;
       const level = child.level || 1;
       
       // Calculer les tâches de manière sûre
@@ -2135,7 +2140,7 @@ class KidsTasksCard extends HTMLElement {
           <div class="child-info">
             <div class='child-wrapper'><div class="child-name">${name}</div><div class="level-badge">Niveau ${level}</div></div>
             <div class="child-stats">
-              ${points} points • Niveau ${level}<br>
+              ${points} points • ${coins} coins • Niveau ${level}<br>
               ${completedToday}/${todayTasks} tâches aujourd'hui
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
@@ -2172,7 +2177,7 @@ class KidsTasksCard extends HTMLElement {
             <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
           </div>
           <div class="task-meta">
-            ${childName} • ${task.points} points
+            ${childName} • ${task.points} points${task.coins > 0 ? ` + ${task.coins} coins` : ''}
             ${task.description ? `<br>${task.description}` : ''}
             <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
             ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
@@ -2204,7 +2209,7 @@ class KidsTasksCard extends HTMLElement {
         <div class="child-info">
           <div class="child-name">${reward.name}</div>
           <div class="child-stats">
-            ${reward.cost} points • ${this.getCategoryLabel(reward.category)}
+            ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
             ${reward.remaining_quantity !== null ? `<br>${reward.remaining_quantity} restant(s)` : ''}
             ${reward.description ? `<br>${reward.description}` : ''}
           </div>
@@ -3813,6 +3818,7 @@ class KidsTasksChildCard extends HTMLElement {
     if (!pointsEntity) return null;
 
     const points = parseInt(pointsEntity.state) || 0;
+    const coins = parseInt(pointsEntity.attributes.coins) || 0;
     const level = parseInt(pointsEntity.attributes.level) || 1;
     const progress = ((points % 100) / 100) * 100;
 
@@ -3820,6 +3826,7 @@ class KidsTasksChildCard extends HTMLElement {
       id: this.config.child_id,
       name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || 'Enfant',
       points: points,
+      coins: coins,
       level: level,
       progress: progress,
       avatar: pointsEntity.attributes.avatar || '👶',
@@ -3887,6 +3894,7 @@ class KidsTasksChildCard extends HTMLElement {
               description: attrs.description || '',
               category: attrs.category || 'other',
               points: parseInt(attrs.points) || 10,
+              coins: parseInt(attrs.coins) || 0,
               penalty_points: parseInt(attrs.penalty_points) || 0,
               status: childStatus,
               frequency: attrs.frequency || 'daily',
@@ -3933,6 +3941,7 @@ class KidsTasksChildCard extends HTMLElement {
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
             cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
+            coin_cost: parseInt(attrs.coin_cost) || 0,
             category: attrs.category || 'fun',
             icon: attrs.icon,
             description: attrs.description || '',
@@ -4213,6 +4222,7 @@ class KidsTasksChildCard extends HTMLElement {
             id: entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
             name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
             points: parseInt(entity.state) || 0,
+            coins: parseInt(entity.attributes.coins) || 0,
             level: entity.attributes.level || 1
           });
         }
@@ -4756,8 +4766,8 @@ class KidsTasksChildCard extends HTMLElement {
         /* Récompenses en grille */
         .rewards-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-          gap: 6px;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 8px;
           margin-top: 16px;
         }
         
@@ -4871,15 +4881,15 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .rewards-grid {
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
           }
         }
         
         @media (max-width: 400px) {
           .rewards-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 3px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
           }
           
           .reward-square {
@@ -4904,8 +4914,8 @@ class KidsTasksChildCard extends HTMLElement {
         
         @media (max-width: 320px) {
           .rewards-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3px;
           }
           
           .reward-square {
@@ -5026,7 +5036,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         /* Liserets colorés selon le statut de retard */
-        .task-compact.on-time {
+        .task-compact.on-time, points-earned {
           border-left: 4px solid #4caf50; /* Vert pour à l'heure */
         }
         
@@ -5034,7 +5044,7 @@ class KidsTasksChildCard extends HTMLElement {
           border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
         }
         
-        .task-compact.delayed {
+        .task-compact.delayed, points-lost {
           border-left: 4px solid #f44336; /* Rouge pour en retard */
         }
         
@@ -5347,10 +5357,10 @@ class KidsTasksChildCard extends HTMLElement {
                 <div class="task-name-compact">${task.name}</div>
                 <div class="task-points-compact">
                   ${this.config && this.config.child_id ? `
-                    ${task.points > 0 ? `<div><span style="color: #4caf50;">${task.points}</span> points</div>` : ''}
-                    ${task.penalty_points ? `<div>Pénalité: <span style="color: #f44336;">${task.penalty_points}</span> points</div>` : ''}
+                    ${task.points > 0 ? `<div>Gain: <span class="points-earned">${task.points}</span> points${task.coins > 0 ? ` + <span class="points-earned">${task.coins}</span> coins` : ''}</div>` : ''}
+                    ${task.penalty_points ? `<div>Pénalité: <span class="points-lost">${task.penalty_points}</span> points</div>` : ''}
                   ` : `
-                    ${task.points > 0 ? `+${task.points}` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+                    ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
                 </div>
               </div>
@@ -5420,7 +5430,7 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
                     <div class="task-points-compact">
-                      +<span style="color: #4caf50;">${task.points}</span> points
+                      +<span style="color: #4caf50;">${task.points}</span> points${task.coins > 0 ? ` + <span style="color: #4caf50;">${task.coins}</span> coins` : ''}
                       ${task.last_completed_at ? ` • ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}` : ''}
                       ${task.last_validated_at ? ` • Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
@@ -5447,7 +5457,7 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
                     <div class="task-points-compact">
-                      -<span style="color: #f44336;">${task.penalty_points ? task.penalty_points : Math.floor(task.points / 2)}</span> points
+                      -<span class="points-lost">${task.penalty_points ? task.penalty_points : Math.floor(task.points / 2)}</span> points
                       ${task.penalty_applied_at ? ` • Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
                   </div>
@@ -5567,9 +5577,9 @@ class KidsTasksChildCard extends HTMLElement {
           <div class="task-name-compact">${task.name}</div>
           <div class="task-points-compact">
             ${this.config && this.config.child_id ? `
-              ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span></div>` : ''}
+              ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span>${task.coins > 0 ? ` + <span style="color: #4caf50;">${task.coins}</span> coins` : ''}</div>` : ''}
             ` : `
-              ${task.points > 0 ? `+${task.points}` : ''}
+              ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''}
             `}
           </div>
         </div>
@@ -5612,8 +5622,9 @@ class KidsTasksChildCard extends HTMLElement {
       `;
     }
 
-    const affordableRewards = rewards.filter(r => r.cost <= childPoints);
-    const expensiveRewards = rewards.filter(r => r.cost > childPoints);
+    const childCoins = child.coins || 0;
+    const affordableRewards = rewards.filter(r => r.cost <= childPoints && r.coin_cost <= childCoins);
+    const expensiveRewards = rewards.filter(r => r.cost > childPoints || r.coin_cost > childCoins);
 
     return `
       <div class="rewards-grid">
@@ -5623,7 +5634,7 @@ class KidsTasksChildCard extends HTMLElement {
                data-id="${reward.id}">
             <div class="reward-icon-large">${this.safeGetCategoryIcon(reward, '🎁')}</div>
             <div class="reward-name">${reward.name}</div>
-            <div class="reward-price">${reward.cost}</div>
+            <div class="reward-price">${reward.cost}${reward.coin_cost > 0 ? ` + ${reward.coin_cost}c` : ''}</div>
           </div>
         `).join('')}
         ${expensiveRewards.map(reward => `
@@ -5632,7 +5643,7 @@ class KidsTasksChildCard extends HTMLElement {
                data-id="${reward.id}">
             <div class="reward-icon-large" style="opacity: 0.5">${this.safeGetCategoryIcon(reward, '🎁')}</div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
-            <div class="reward-price" style="opacity: 0.5">${reward.cost}</div>
+            <div class="reward-price" style="opacity: 0.5">${reward.cost}${reward.coin_cost > 0 ? ` + ${reward.coin_cost}c` : ''}</div>
           </div>
         `).join('')}
       </div>
@@ -5646,7 +5657,7 @@ class KidsTasksChildCard extends HTMLElement {
     if (!reward) return;
 
     const child = this.getChild();
-    const canAfford = reward.cost <= child.points;
+    const canAfford = reward.cost <= child.points && reward.coin_cost <= (child.coins || 0);
 
     const modal = document.createElement('div');
     modal.className = 'reward-modal';
@@ -5766,7 +5777,7 @@ class KidsTasksChildCard extends HTMLElement {
         <button class="reward-modal-close" data-action="close_modal">×</button>
         <div class="reward-modal-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
         <div class="reward-modal-name">${reward.name}</div>
-        <div class="reward-modal-price">${reward.cost} points</div>
+        <div class="reward-modal-price">${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''}</div>
         ${reward.description ? `<div class="reward-modal-description">${reward.description}</div>` : ''}
         <div class="reward-modal-actions">
           <button class="btn-modal btn-modal-cancel" data-action="close_modal">Annuler</button>
@@ -5774,7 +5785,7 @@ class KidsTasksChildCard extends HTMLElement {
                   data-action="claim_reward" 
                   data-id="${reward.id}"
                   ${!canAfford ? 'disabled' : ''}>
-            ${canAfford ? `Acheter (${reward.cost} points)` : `Pas assez de points (${reward.cost - child.points} manquants)`}
+            ${canAfford ? `Acheter (${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''})` : 'Pas assez de monnaie'}
           </button>
         </div>
       </div>
