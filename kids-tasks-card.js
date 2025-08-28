@@ -2381,7 +2381,7 @@ class KidsTasksCard extends HTMLElement {
           word-wrap: break-word;
         }
         
-        .child-card, .reward-card {
+        .child-card {
           display: flex;
           flex-direction: row;
           align-items: flex-start;
@@ -2398,6 +2398,16 @@ class KidsTasksCard extends HTMLElement {
         
         .reward-card {
           border-left-color: var(--custom-dashboard-primary, #6b73ff);
+          display: flex;
+          flex-direction: row;
+          align-items: flex-start;
+          padding: 8px;
+          margin: 8px 0;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 8px;
+          border-left: 4px solid var(--custom-dashboard-secondary);
+          transition: all 0.3s;
+          position: relative;
         }
         
         /* Drag & Drop styles */
