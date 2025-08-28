@@ -1407,7 +1407,7 @@ class KidsTasksCard extends HTMLElement {
             label="Coût en points"
             name="cost"
             type="number"
-            value="${isEdit ? reward.cost : '50'}"
+            value="${isEdit ? reward.cost : '0'}"
             min="0"
             max="1000">
           </ha-textfield>
@@ -4858,6 +4858,18 @@ class KidsTasksChildCard extends HTMLElement {
         .reward-icon-large {
           font-size: 1em;
           margin-bottom: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 1.2em;
+        }
+        
+        .reward-icon-large ha-icon {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
         }
         
         .reward-name {
@@ -4971,6 +4983,11 @@ class KidsTasksChildCard extends HTMLElement {
           .reward-icon-large {
             font-size: 0.9em;
             margin-bottom: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 1.1em;
           }
           
           .reward-name {
@@ -5008,6 +5025,11 @@ class KidsTasksChildCard extends HTMLElement {
           
           .reward-icon-large {
             font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 1em;
           }
           
           .reward-name {
@@ -5323,6 +5345,16 @@ class KidsTasksChildCard extends HTMLElement {
           font-size: 4em;
           text-align: center;
           margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .reward-modal-icon ha-icon {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
         }
         
         .reward-modal-name {
@@ -5806,6 +5838,16 @@ class KidsTasksChildCard extends HTMLElement {
         font-size: 4em;
         text-align: center;
         margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .reward-modal-icon ha-icon {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
       }
       .reward-modal-name {
         font-size: 1.5em;
