@@ -671,12 +671,16 @@ class KidsTasksCard extends HTMLElement {
     const serviceData = {
       name,
       description,
-      icon,
       cost,
       coin_cost,
       category,
       limited_quantity
     };
+    
+    // N'inclure l'icône que si elle est définie
+    if (icon) {
+      serviceData.icon = icon;
+    }
 
     if (isEdit) {
       const rewardIdInput = form.querySelector('[name="reward_id"]');
