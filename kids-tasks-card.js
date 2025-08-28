@@ -1437,7 +1437,7 @@ class KidsTasksCard extends HTMLElement {
           label="Quantité limitée"
           name="limited_quantity"
           type="number"
-          value="${isEdit && reward.limited_quantity ? reward.limited_quantity : ''}"
+          value="${isEdit && reward.limited_quantity !== null && reward.limited_quantity !== undefined ? reward.limited_quantity : ''}"
           min="1"
           max="100"
           placeholder="Laissez vide pour illimité">
