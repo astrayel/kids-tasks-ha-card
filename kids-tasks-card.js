@@ -2181,6 +2181,9 @@ class KidsTasksCard extends HTMLElement {
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
               </div>
+              <div class="coins-bar">
+                <div class="coins-fill" style="width: ${Math.min(coins, 100)}%"></div>
+              </div>
             </div>
           </div>
           ${showActions ? `
@@ -2213,11 +2216,13 @@ class KidsTasksCard extends HTMLElement {
             <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
           </div>
           <div class="task-meta">
-            ${childName} • ${task.points} points${task.coins > 0 ? ` + ${task.coins} coins` : ''}
+            ${childName}
+            ${task.points > 0 ? `<br><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span>` : ''}
+            ${task.penalty_points > 0 ? `<br><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span>` : ''}
+            ${task.coins > 0 ? `<br><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
             ${task.description ? `<br>${task.description}` : ''}
             <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
             ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
-            ${task.penalty_points > 0 ? ` • ⚠️ Pénalité: ${task.penalty_points} points` : ''}
             ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: red;">⏰ Heure limite dépassée</span>` : ''}
           </div>
         </div>
@@ -2588,6 +2593,21 @@ class KidsTasksCard extends HTMLElement {
         .progress-fill {
           height: 100%;
           background: var(--custom-progress-bar-color);
+          transition: width 0.3s ease;
+        }
+        
+        .coins-bar {
+          width: 120px;
+          height: 6px;
+          background: var(--divider-color, #e0e0e0);
+          border-radius: 3px;
+          overflow: hidden;
+          margin-top: 4px;
+        }
+        
+        .coins-fill {
+          height: 100%;
+          background: #FFD700;
           transition: width 0.3s ease;
         }
         
@@ -5483,8 +5503,9 @@ class KidsTasksChildCard extends HTMLElement {
                 <div class="task-name-compact">${task.name}</div>
                 <div class="task-points-compact">
                   ${this.config && this.config.child_id ? `
-                    ${task.points > 0 ? `<div>Gain: <span class="points-earned">${task.points}</span> points${task.coins > 0 ? ` + <span class="points-earned">${task.coins}</span> coins` : ''}</div>` : ''}
-                    ${task.penalty_points ? `<div>Pénalité: <span class="points-lost">${task.penalty_points}</span> points</div>` : ''}
+                    ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
+                    ${task.penalty_points > 0 ? `<div><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span></div>` : ''}
+                    ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
                   ` : `
                     ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
@@ -5556,9 +5577,10 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
                     <div class="task-points-compact">
-                      +<span style="color: #4caf50;">${task.points}</span> points${task.coins > 0 ? ` + <span style="color: #4caf50;">${task.coins}</span> coins` : ''}
-                      ${task.last_completed_at ? ` • ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}` : ''}
-                      ${task.last_validated_at ? ` • Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}` : ''}
+                      ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
+                      ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
+                      ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
+                      ${task.last_validated_at ? `<div style="color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                   </div>
                   <div class="task-action-compact">
@@ -5703,7 +5725,8 @@ class KidsTasksChildCard extends HTMLElement {
           <div class="task-name-compact">${task.name}</div>
           <div class="task-points-compact">
             ${this.config && this.config.child_id ? `
-              ${task.points > 0 ? `<div>Points: <span style="color: #4caf50;">${task.points}</span>${task.coins > 0 ? ` + <span style="color: #4caf50;">${task.coins}</span> coins` : ''}</div>` : ''}
+              ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
+              ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
             ` : `
               ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''}
             `}
