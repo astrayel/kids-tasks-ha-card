@@ -1766,7 +1766,7 @@ class KidsTasksCard extends HTMLElement {
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
-            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
+            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 0,
             coin_cost: parseInt(attrs.coin_cost) || 0,
             category: attrs.category || 'fun',
             icon: attrs.icon,
@@ -3990,7 +3990,7 @@ class KidsTasksChildCard extends HTMLElement {
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
-            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 50,
+            cost: parseInt(attrs.cost) || parseInt(rewardEntity.state) || 0,
             coin_cost: parseInt(attrs.coin_cost) || 0,
             category: attrs.category || 'fun',
             icon: attrs.icon,
