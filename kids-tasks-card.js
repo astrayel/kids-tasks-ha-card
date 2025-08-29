@@ -4878,13 +4878,14 @@ class KidsTasksChildCard extends HTMLElement {
         
         .reward-name {
           font-weight: bold;
-          font-size: 0.65em;
-          margin-bottom: 1px;
+          font-size: 0.8em;
+          margin-bottom: 2px;
           color: var(--primary-text-color);
-          line-height: 1.1;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          line-height: 1.2;
+          text-align: center;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
           max-width: 100%;
         }
         
@@ -4995,8 +4996,11 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-name {
-            font-size: 0.6em;
-            margin-bottom: 0px;
+            font-size: 0.75em;
+            margin-bottom: 1px;
+            line-height: 1.1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
           }
           
           .reward-price {
@@ -5037,7 +5041,10 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-name {
-            font-size: 0.55em;
+            font-size: 0.7em;
+            line-height: 1.1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
           }
           
           .reward-price {
