@@ -4233,7 +4233,7 @@ class KidsTasksChildCard extends HTMLElement {
                 <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
                 <div class="level-badge">Niveau ${stats.level}</div>
                 <!-- Placeholder pour avatar cosmétique -->
-                <div class="cosmetic-avatar-placeholder"></div>
+                <!--<div class="cosmetic-avatar-placeholder"></div>-->
               </div>
             </div>
             ` : `
@@ -4642,7 +4642,7 @@ class KidsTasksChildCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 3px solid rgba(255,255,255,0.2);
+          border: 3px dashed rgba(255,255,255,0.2);
         }
         
         .avatar img {
@@ -4662,7 +4662,7 @@ class KidsTasksChildCard extends HTMLElement {
         
         .avatar-section .level-badge {
           position: absolute;
-          bottom: -5px;
+          top: 72px;
           left: 50%;
           transform: translateX(-50%);
           background: var(--primary-color, #3f51b5);
