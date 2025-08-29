@@ -2181,9 +2181,6 @@ class KidsTasksCard extends HTMLElement {
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
               </div>
-              <div class="coins-bar">
-                <div class="coins-fill" style="width: ${Math.min(coins, 100)}%"></div>
-              </div>
             </div>
           </div>
           ${showActions ? `
@@ -2593,21 +2590,6 @@ class KidsTasksCard extends HTMLElement {
         .progress-fill {
           height: 100%;
           background: var(--custom-progress-bar-color);
-          transition: width 0.3s ease;
-        }
-        
-        .coins-bar {
-          width: 120px;
-          height: 6px;
-          background: var(--divider-color, #e0e0e0);
-          border-radius: 3px;
-          overflow: hidden;
-          margin-top: 4px;
-        }
-        
-        .coins-fill {
-          height: 100%;
-          background: #FFD700;
           transition: width 0.3s ease;
         }
         
@@ -4237,6 +4219,16 @@ class KidsTasksChildCard extends HTMLElement {
                   <div class="gauge-fill tasks-progress" style="width: ${stats.totalTasksToday > 0 ? (stats.completedTasks / stats.totalTasksToday) * 100 : 0}%"></div>
                 </div>
               </div>
+              
+              <div class="gauge">
+                <div class="gauge-header">
+                  <div class="gauge-label">Coins</div>
+                  <div class="gauge-text">${child.coins || 0}</div>
+                </div>
+                <div class="gauge-bar">
+                  <div class="gauge-fill coins-progress" style="width: ${Math.min((child.coins || 0), 100)}%"></div>
+                </div>
+              </div>
             ${this.config.show_progress ? '</div>' : ''}
           </div>
         </div>
@@ -4669,6 +4661,10 @@ class KidsTasksChildCard extends HTMLElement {
         
         .tasks-progress {
           background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+        
+        .coins-progress {
+          background: linear-gradient(90deg, #9C27B0, #E1BEE7);
         }
         
         .gauge-text {
