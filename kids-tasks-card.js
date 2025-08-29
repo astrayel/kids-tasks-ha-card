@@ -4635,12 +4635,24 @@ class KidsTasksChildCard extends HTMLElement {
 
     const action = target.dataset.action;
     const id = target.dataset.id;
+    
+    // Debug pour les actions cosmétiques
+    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards') {
+      console.log('DEBUG COSMETICS: Click intercepted:', action, 'target:', target);
+      console.log('DEBUG COSMETICS: Target datasets:', target.dataset);
+    }
 
     this.handleAction(action, id);
   }
 
   handleAction(action, id = null) {
     if (!this._hass) return;
+    
+    // Debug pour les actions cosmétiques
+    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards') {
+      console.log('DEBUG COSMETICS: Action received:', action, 'id:', id);
+      console.log('DEBUG COSMETICS: _hass available:', !!this._hass);
+    }
 
     try {
       switch (action) {
@@ -4683,13 +4695,43 @@ class KidsTasksChildCard extends HTMLElement {
           break;
           
         case 'load-cosmetics-catalog':
-          this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {});
-          this.showNotification('Chargement du catalogue cosmétique...', 'info');
+          console.log('DEBUG COSMETICS: Starting load cosmetics catalog');
+          try {
+            this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {})
+              .then(() => {
+                console.log('DEBUG COSMETICS: Load catalog service completed successfully');
+                this.showNotification('Catalogue cosmétique chargé avec succès ! 📚', 'success');
+              })
+              .catch(error => {
+                console.error('DEBUG COSMETICS: Load catalog service failed:', error);
+                this.showNotification('Erreur lors du chargement du catalogue : ' + error.message, 'error');
+              });
+            this.showNotification('Chargement du catalogue cosmétique...', 'info');
+          } catch (error) {
+            console.error('DEBUG COSMETICS: Load catalog action failed:', error);
+            this.showNotification('Erreur : ' + error.message, 'error');
+          }
           break;
           
         case 'create-cosmetic-rewards':
-          this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {});
-          this.showNotification('Création des récompenses cosmétiques...', 'info');
+          console.log('DEBUG COSMETICS: Starting create cosmetic rewards');
+          try {
+            this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {})
+              .then(() => {
+                console.log('DEBUG COSMETICS: Create rewards service completed successfully');
+                this.showNotification('Récompenses cosmétiques créées avec succès ! 🎆', 'success');
+                // Rafraîchir la vue pour afficher les nouvelles récompenses
+                setTimeout(() => this.render(), 1000);
+              })
+              .catch(error => {
+                console.error('DEBUG COSMETICS: Create rewards service failed:', error);
+                this.showNotification('Erreur lors de la création des récompenses : ' + error.message, 'error');
+              });
+            this.showNotification('Création des récompenses cosmétiques...', 'info');
+          } catch (error) {
+            console.error('DEBUG COSMETICS: Create rewards action failed:', error);
+            this.showNotification('Erreur : ' + error.message, 'error');
+          }
           break;
           
         case 'switch-cosmetics-child':
@@ -4826,7 +4868,6 @@ class KidsTasksChildCard extends HTMLElement {
             
             
           if (isAssigned) {
-            console.log('DEBUG CHILD: Task is assigned to this child:', attrs.task_name);
             
             // Utiliser uniquement le statut individuel de l'enfant
             let childStatus = 'todo';
@@ -4842,9 +4883,7 @@ class KidsTasksChildCard extends HTMLElement {
               childValidatedAt = individualStatus.validated_at;
               childPenaltyAppliedAt = individualStatus.penalty_applied_at;
               childPenaltyApplied = individualStatus.penalty_applied || false;
-              console.log('DEBUG CHILD: Using individual status for', attrs.task_name, ':', childStatus);
             } else {
-              console.log('DEBUG CHILD: No individual status found for', attrs.task_name, 'child_id:', this.config.child_id);
             }
             
             tasks.push({
@@ -5378,7 +5417,6 @@ class KidsTasksChildCard extends HTMLElement {
     const todoTasks = tasks.filter(t => {
       const isTodo = t.status === 'todo';
       const isActive = this.isTaskActiveToday(t);
-      console.log('DEBUG FILTER TODO:', t.name, 'isTodo:', isTodo, 'isActive:', isActive, 'active:', t.active);
       return isTodo && isActive;
     });
     
