@@ -4698,12 +4698,12 @@ class KidsTasksChildCard extends HTMLElement {
           break;
           
         case 'activate-cosmetic':
-          const childId = target.dataset.childId;
+          const targetChildId = target.dataset.childId;
           const cosmeticType = target.dataset.cosmeticType;
           const cosmeticId = target.dataset.cosmeticId;
           
           this._hass.callService('kids_tasks', 'activate_cosmetic', {
-            child_id: childId,
+            child_id: targetChildId,
             cosmetic_type: cosmeticType,
             cosmetic_id: cosmeticId
           });
