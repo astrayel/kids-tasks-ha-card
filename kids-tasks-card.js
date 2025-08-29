@@ -1960,6 +1960,7 @@ class KidsTasksCard extends HTMLElement {
       { id: 'children', label: '👶 Enfants', icon: '👶' },
       { id: 'tasks', label: '📝 Tâches', icon: '📝' },
       { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' },
+      { id: 'cosmetics', label: '🎨 Cosmétiques', icon: '🎨' },
       { id: 'validation', label: '✅ Validation', icon: '✅' }
     ];
 
@@ -1981,6 +1982,7 @@ class KidsTasksCard extends HTMLElement {
       case 'children': return this.getChildrenView();
       case 'tasks': return this.getTasksView();
       case 'rewards': return this.getRewardsView();
+      case 'cosmetics': return this.getCosmeticsView();
       case 'validation': return this.getValidationView();
       default: return this.getDashboardView();
     }
@@ -2516,6 +2518,219 @@ class KidsTasksCard extends HTMLElement {
         </div>
       </div>
     `;
+  }
+
+  getCosmeticsView() {
+    const children = this.getChildren();
+    const rewards = this.getRewards().filter(r => r.reward_type === 'cosmetic');
+    
+    return `
+      <div class="section">
+        <h2>
+          🎨 Cosmétiques
+          <div class="section-actions">
+            <button class="btn btn-primary" data-action="load-cosmetics-catalog">
+              🔄 Charger le catalogue
+            </button>
+            <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
+              ⚡ Créer les récompenses
+            </button>
+          </div>
+        </h2>
+        
+        ${children.length > 0 ? `
+          <div class="cosmetics-children-tabs">
+            ${children.map((child, index) => `
+              <button class="cosmetics-child-tab ${index === 0 ? 'active' : ''}" 
+                      data-action="switch-cosmetics-child" data-child-id="${child.id}">
+                <span class="child-avatar">${child.avatar || '👶'}</span>
+                <span class="child-name">${child.name}</span>
+                <div class="child-currency">
+                  <span class="points">${child.points}p</span>
+                  <span class="coins">${child.coins}c</span>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+          
+          <div class="cosmetics-content">
+            ${children.map((child, index) => `
+              <div class="cosmetics-child-panel ${index === 0 ? 'active' : ''}" data-child-id="${child.id}">
+                ${this.renderCosmeticsForChild(child, rewards)}
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">👶</div>
+            <p>Aucun enfant configuré</p>
+            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Ajoutez des enfants pour gérer leurs cosmétiques.</p>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderCosmeticsForChild(child, cosmeticRewards) {
+    const categories = {
+      'avatar': { name: 'Avatars', icon: '👤', description: 'Personnalisez l\'apparence de votre enfant' },
+      'background': { name: 'Arrière-plans', icon: '🖼️', description: 'Changez le fond de la carte de l\'enfant' },
+      'outfit': { name: 'Accessoires', icon: '👕', description: 'Ajoutez des accessoires à l\'avatar' },
+      'theme': { name: 'Thèmes', icon: '🎨', description: 'Modifiez l\'apparence générale de l\'interface' }
+    };
+    
+    const activeCosmetics = child.active_cosmetics || {};
+    const ownedCosmetics = child.cosmetic_collection || {};
+    
+    return `
+      <div class="cosmetics-categories">
+        ${Object.entries(categories).map(([categoryId, category]) => {
+          const categoryRewards = cosmeticRewards.filter(r => 
+            r.cosmetic_data && r.cosmetic_data.type === categoryId
+          );
+          const activeItem = activeCosmetics[categoryId];
+          const ownedItems = ownedCosmetics[categoryId] || [];
+          
+          return `
+            <div class="cosmetic-category">
+              <div class="cosmetic-category-header">
+                <h3>
+                  <span class="category-icon">${category.icon}</span>
+                  ${category.name}
+                  ${activeItem ? `<span class="active-indicator">Actif: ${activeItem}</span>` : ''}
+                </h3>
+                <p class="category-description">${category.description}</p>
+              </div>
+              
+              <div class="cosmetic-items-grid">
+                <!-- Éléments par défaut -->
+                <div class="cosmetic-item default-item ${!activeItem ? 'active' : ''}">
+                  <div class="cosmetic-preview">
+                    <div class="default-preview">${category.icon}</div>
+                  </div>
+                  <div class="cosmetic-info">
+                    <div class="cosmetic-name">Par défaut</div>
+                    <div class="cosmetic-status">Gratuit</div>
+                  </div>
+                  <button class="btn btn-sm ${!activeItem ? 'btn-success' : 'btn-outline'}" 
+                          data-action="activate-cosmetic" 
+                          data-child-id="${child.id}" 
+                          data-cosmetic-type="${categoryId}" 
+                          data-cosmetic-id="default_${categoryId}">
+                    ${!activeItem ? '✅ Actif' : 'Activer'}
+                  </button>
+                </div>
+                
+                ${categoryRewards.map(reward => {
+                  const isOwned = ownedItems.includes(reward.cosmetic_data.cosmetic_id);
+                  const isActive = activeItem === reward.cosmetic_data.cosmetic_id;
+                  const canAfford = child.points >= reward.cost && child.coins >= reward.coin_cost;
+                  
+                  return `
+                    <div class="cosmetic-item ${isOwned ? 'owned' : ''} ${isActive ? 'active' : ''}">
+                      <div class="cosmetic-preview">
+                        ${this.renderCosmeticPreview(reward.cosmetic_data)}
+                      </div>
+                      <div class="cosmetic-info">
+                        <div class="cosmetic-name">${reward.name}</div>
+                        <div class="cosmetic-rarity rarity-${reward.cosmetic_data.rarity || 'common'}">
+                          ${this.getRarityLabel(reward.cosmetic_data.rarity || 'common')}
+                        </div>
+                        ${reward.description ? `<div class="cosmetic-description">${reward.description}</div>` : ''}
+                      </div>
+                      <div class="cosmetic-actions">
+                        ${isOwned ? `
+                          <button class="btn btn-sm ${isActive ? 'btn-success' : 'btn-outline'}" 
+                                  data-action="activate-cosmetic" 
+                                  data-child-id="${child.id}" 
+                                  data-cosmetic-type="${categoryId}" 
+                                  data-cosmetic-id="${reward.cosmetic_data.cosmetic_id}">
+                            ${isActive ? '✅ Actif' : 'Activer'}
+                          </button>
+                        ` : `
+                          <div class="cosmetic-cost">
+                            ${reward.cost > 0 ? `<span class="cost-points">${reward.cost}p</span>` : ''}
+                            ${reward.coin_cost > 0 ? `<span class="cost-coins">${reward.coin_cost}c</span>` : ''}
+                          </div>
+                          <button class="btn btn-sm ${canAfford ? 'btn-primary' : 'btn-disabled'}" 
+                                  data-action="claim-reward" 
+                                  data-reward-id="${reward.id}" 
+                                  data-child-id="${child.id}"
+                                  ${!canAfford ? 'disabled' : ''}>
+                            ${canAfford ? '💰 Acheter' : '❌ Pas assez'}
+                          </button>
+                        `}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+                
+                ${categoryRewards.length === 0 ? `
+                  <div class="cosmetic-item empty-category">
+                    <div class="empty-category-message">
+                      <p>Aucun cosmétique ${category.name.toLowerCase()} disponible</p>
+                      <p class="hint">Utilisez "Créer les récompenses" pour générer les cosmétiques depuis le catalogue.</p>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  renderCosmeticPreview(cosmeticData) {
+    const catalogData = cosmeticData.catalog_data || {};
+    
+    switch (cosmeticData.type) {
+      case 'avatar':
+        if (catalogData.emoji) {
+          return `<div class="avatar-preview">${catalogData.emoji}</div>`;
+        }
+        if (catalogData.pixel_art) {
+          return `<img class="pixel-art-preview" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
+        }
+        return `<div class="avatar-preview">👤</div>`;
+        
+      case 'background':
+        if (catalogData.css_gradient) {
+          return `<div class="background-preview" style="background: ${catalogData.css_gradient};"></div>`;
+        }
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>`;
+        
+      case 'outfit':
+        if (catalogData.emoji_overlay) {
+          return `<div class="outfit-preview">
+            <span class="base-avatar">👤</span>
+            <span class="outfit-overlay">${catalogData.emoji_overlay}</span>
+          </div>`;
+        }
+        return `<div class="outfit-preview">👕</div>`;
+        
+      case 'theme':
+        const cssVars = catalogData.css_variables || {};
+        const primaryColor = cssVars['--primary-color'] || '#667eea';
+        const secondaryColor = cssVars['--secondary-color'] || '#764ba2';
+        return `<div class="theme-preview">
+          <div class="theme-color" style="background-color: ${primaryColor};"></div>
+          <div class="theme-color" style="background-color: ${secondaryColor};"></div>
+        </div>`;
+        
+      default:
+        return `<div class="generic-preview">🎨</div>`;
+    }
+  }
+
+  getRarityLabel(rarity) {
+    const rarityLabels = {
+      'common': 'Commun',
+      'rare': 'Rare', 
+      'epic': 'Épique',
+      'legendary': 'Légendaire'
+    };
+    return rarityLabels[rarity] || 'Commun';
   }
 
   // Styles CSS identiques au fichier précédent
@@ -4467,6 +4682,34 @@ class KidsTasksChildCard extends HTMLElement {
           this.showNotification('Récompense échangée ! 🎁', 'success');
           break;
           
+        case 'load-cosmetics-catalog':
+          this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {});
+          this.showNotification('Chargement du catalogue cosmétique...', 'info');
+          break;
+          
+        case 'create-cosmetic-rewards':
+          this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {});
+          this.showNotification('Création des récompenses cosmétiques...', 'info');
+          break;
+          
+        case 'switch-cosmetics-child':
+          // Changer l'onglet enfant actif dans la vue cosmétiques
+          this.switchCosmeticsChild(target.dataset.childId);
+          break;
+          
+        case 'activate-cosmetic':
+          const childId = target.dataset.childId;
+          const cosmeticType = target.dataset.cosmeticType;
+          const cosmeticId = target.dataset.cosmeticId;
+          
+          this._hass.callService('kids_tasks', 'activate_cosmetic', {
+            child_id: childId,
+            cosmetic_type: cosmeticType,
+            cosmetic_id: cosmeticId
+          });
+          this.showNotification(`Cosmétique ${cosmeticType} activé ! 🎨`, 'success');
+          break;
+          
         default:
           console.warn('Action inconnue:', action);
       }
@@ -4474,6 +4717,22 @@ class KidsTasksChildCard extends HTMLElement {
       console.error('Action échouée:', error);
       this.showNotification('Erreur: ' + error.message, 'error');
     }
+  }
+
+  switchCosmeticsChild(childId) {
+    // Désactiver tous les onglets et panneaux enfants
+    const tabs = this.shadowRoot.querySelectorAll('.cosmetics-child-tab');
+    const panels = this.shadowRoot.querySelectorAll('.cosmetics-child-panel');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    panels.forEach(panel => panel.classList.remove('active'));
+    
+    // Activer l'onglet et le panneau sélectionnés
+    const selectedTab = this.shadowRoot.querySelector(`[data-child-id="${childId}"][data-action="switch-cosmetics-child"]`);
+    const selectedPanel = this.shadowRoot.querySelector(`.cosmetics-child-panel[data-child-id="${childId}"]`);
+    
+    if (selectedTab) selectedTab.classList.add('active');
+    if (selectedPanel) selectedPanel.classList.add('active');
   }
 
   // Méthode pour résoudre l'avatar effectif
@@ -6963,6 +7222,321 @@ class KidsTasksChildCardEditor extends HTMLElement {
           border-radius: 20px;
           font-size: 0.9em;
           font-weight: 500;
+        }
+        
+        /* Styles pour l'interface cosmétiques */
+        .cosmetics-children-tabs {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 24px;
+          border-bottom: 2px solid var(--divider-color, #e0e0e0);
+          padding-bottom: 16px;
+        }
+        
+        .cosmetics-child-tab {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: var(--card-background-color, white);
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          min-width: 120px;
+        }
+        
+        .cosmetics-child-tab:hover {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          transform: translateY(-2px);
+        }
+        
+        .cosmetics-child-tab.active {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          border-color: var(--primary-color, #3f51b5);
+        }
+        
+        .cosmetics-child-tab .child-avatar {
+          font-size: 1.5em;
+        }
+        
+        .cosmetics-child-tab .child-name {
+          font-weight: 500;
+        }
+        
+        .cosmetics-child-tab .child-currency {
+          display: flex;
+          gap: 4px;
+          font-size: 0.85em;
+          opacity: 0.8;
+        }
+        
+        .cosmetics-content {
+          position: relative;
+        }
+        
+        .cosmetics-child-panel {
+          display: none;
+        }
+        
+        .cosmetics-child-panel.active {
+          display: block;
+        }
+        
+        .cosmetics-categories {
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+        }
+        
+        .cosmetic-category {
+          background: var(--card-background-color, white);
+          border-radius: 16px;
+          padding: 24px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        .cosmetic-category-header h3 {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 0 0 8px 0;
+          font-size: 1.3em;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .cosmetic-category-header .category-icon {
+          font-size: 1.2em;
+        }
+        
+        .cosmetic-category-header .active-indicator {
+          background: var(--success-color, #4caf50);
+          color: white;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.8em;
+          font-weight: 500;
+          margin-left: auto;
+        }
+        
+        .category-description {
+          margin: 0 0 20px 0;
+          color: var(--secondary-text-color, #757575);
+          font-size: 0.95em;
+        }
+        
+        .cosmetic-items-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 16px;
+        }
+        
+        .cosmetic-item {
+          display: flex;
+          flex-direction: column;
+          background: var(--card-background-color, white);
+          border: 2px solid var(--divider-color, #e0e0e0);
+          border-radius: 12px;
+          padding: 16px;
+          transition: all 0.3s;
+        }
+        
+        .cosmetic-item:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .cosmetic-item.owned {
+          border-color: var(--success-color, #4caf50);
+          background: rgba(76, 175, 80, 0.05);
+        }
+        
+        .cosmetic-item.active {
+          border-color: var(--primary-color, #3f51b5);
+          background: rgba(63, 81, 181, 0.1);
+          box-shadow: 0 4px 16px rgba(63, 81, 181, 0.3);
+        }
+        
+        .cosmetic-item.default-item {
+          background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+          border-color: #bdbdbd;
+        }
+        
+        .cosmetic-item.empty-category {
+          justify-content: center;
+          align-items: center;
+          min-height: 120px;
+          text-align: center;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .cosmetic-preview {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 80px;
+          margin-bottom: 16px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          position: relative;
+        }
+        
+        .avatar-preview {
+          font-size: 3em;
+        }
+        
+        .pixel-art-preview {
+          max-width: 64px;
+          max-height: 64px;
+          image-rendering: pixelated;
+        }
+        
+        .background-preview {
+          width: 60px;
+          height: 40px;
+          border-radius: 8px;
+          border: 2px solid rgba(255,255,255,0.8);
+        }
+        
+        .outfit-preview {
+          position: relative;
+          font-size: 2.5em;
+        }
+        
+        .outfit-preview .base-avatar {
+          display: block;
+        }
+        
+        .outfit-preview .outfit-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          font-size: 0.8em;
+          transform: translateX(50%) translateY(-20%);
+        }
+        
+        .theme-preview {
+          display: flex;
+          gap: 4px;
+        }
+        
+        .theme-color {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.8);
+        }
+        
+        .generic-preview {
+          font-size: 3em;
+          opacity: 0.6;
+        }
+        
+        .default-preview {
+          font-size: 2.5em;
+          opacity: 0.7;
+        }
+        
+        .cosmetic-info {
+          flex: 1;
+          margin-bottom: 16px;
+        }
+        
+        .cosmetic-name {
+          font-weight: 600;
+          font-size: 1.1em;
+          margin-bottom: 4px;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .cosmetic-rarity {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 500;
+          margin-bottom: 8px;
+        }
+        
+        .rarity-common {
+          background: #e8f5e8;
+          color: #2e7d32;
+        }
+        
+        .rarity-rare {
+          background: #e3f2fd;
+          color: #1976d2;
+        }
+        
+        .rarity-epic {
+          background: #f3e5f5;
+          color: #7b1fa2;
+        }
+        
+        .rarity-legendary {
+          background: #fff3e0;
+          color: #f57c00;
+        }
+        
+        .cosmetic-description {
+          font-size: 0.9em;
+          color: var(--secondary-text-color, #757575);
+          margin-bottom: 8px;
+        }
+        
+        .cosmetic-status {
+          font-size: 0.85em;
+          color: var(--success-color, #4caf50);
+          font-weight: 500;
+        }
+        
+        .cosmetic-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .cosmetic-cost {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+        
+        .cost-points {
+          background: #2196f3;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 500;
+        }
+        
+        .cost-coins {
+          background: #ff9800;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 500;
+        }
+        
+        .empty-category-message {
+          text-align: center;
+        }
+        
+        .empty-category-message .hint {
+          font-size: 0.85em;
+          opacity: 0.7;
+          margin-top: 8px;
+        }
+        
+        .section-actions {
+          display: flex;
+          gap: 8px;
+          margin-left: auto;
         }
       </style>
     `;
