@@ -2203,35 +2203,37 @@ class KidsTasksCard extends HTMLElement {
     
     return `
       <div class="task-item ${task.status}">
-        ${showManagement ? `
-          <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
-        ` : ''}
-        <div class="task-icon">${taskIcon}</div>
-        <div class="task-content">
-          <div class="task-header">
-            <div class="task-title">${task.name}</div>
-            <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
-          </div>
-          <div class="task-meta">
-            ${childName}
-            ${task.points > 0 ? `<br><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span>` : ''}
-            ${task.penalty_points > 0 ? `<br><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span>` : ''}
-            ${task.coins > 0 ? `<br><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
-            ${task.description ? `<br>${task.description}` : ''}
-            <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
-            ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
-            ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: red;">⏰ Heure limite dépassée</span>` : ''}
-          </div>
+        <div class="task-top-row">
+          <div class="task-title">${task.name}</div>
+          <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
+          ${showManagement ? `
+            <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
+          ` : ''}
         </div>
-        <div class="task-actions">
-          ${showValidation && task.status === 'pending_validation' ? `
-            <button class="btn btn-success btn-icon validate-btn" data-action="validate-task" data-id="${task.id}">Valider</button>
-            <button class="btn btn-danger btn-icon reject-btn" data-action="reject-task" data-id="${task.id}">Rejeter</button>
-          ` : showManagement ? `
-            <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
-          ` : `
-            <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
-          `}
+        <div class="task-main-row">
+          <div class="task-icon">${taskIcon}</div>
+          <div class="task-content">
+            <div class="task-meta">
+              ${childName}
+              ${task.points > 0 ? `<br><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span>` : ''}
+              ${task.penalty_points > 0 ? `<br><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span>` : ''}
+              ${task.coins > 0 ? `<br><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
+              ${task.description ? `<br>${task.description}` : ''}
+              <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
+              ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
+              ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: red;">⏰ Heure limite dépassée</span>` : ''}
+            </div>
+          </div>
+          <div class="task-actions">
+            ${showValidation && task.status === 'pending_validation' ? `
+              <button class="btn btn-success btn-icon validate-btn" data-action="validate-task" data-id="${task.id}">Valider</button>
+              <button class="btn btn-danger btn-icon reject-btn" data-action="reject-task" data-id="${task.id}">Rejeter</button>
+            ` : showManagement ? `
+              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
+            ` : `
+              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
+            `}
+          </div>
         </div>
       </div>
     `;
@@ -2636,7 +2638,7 @@ class KidsTasksCard extends HTMLElement {
         
         .task-item {
           display: flex;
-          align-items: center;
+          flex-direction: column;
           padding: 12px;
           margin: 8px 0;
           background: var(--secondary-background-color, #fafafa);
@@ -2650,13 +2652,20 @@ class KidsTasksCard extends HTMLElement {
         .task-item.pending_validation { border-left-color: #ff5722; background: #fff3e0; }
         .task-item.validated { border-left-color: #4caf50; }
         
-        .task-content { flex: 1; }
-        .task-header {
+        .task-top-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 8px;
+        }
+        
+        .task-main-row {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 4px;
         }
+        
+        .task-content { flex: 1; }
         .task-title {
           font-weight: bold;
           color: var(--primary-text-color, #212121);
@@ -4219,9 +4228,13 @@ class KidsTasksChildCard extends HTMLElement {
           <div class="header-content">
             ${this.config.show_avatar ? `
             <div class="avatar-section">
-              <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
               <div class="child-name-header">${child.name}</div>
-              <div class="level-badge">Niveau ${stats.level}</div>
+              <div class="avatar-container">
+                <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
+                <div class="level-badge">Niveau ${stats.level}</div>
+                <!-- Placeholder pour avatar cosmétique -->
+                <div class="cosmetic-avatar-placeholder"></div>
+              </div>
             </div>
             ` : `
             <div class="no-avatar-section">
@@ -4243,7 +4256,7 @@ class KidsTasksChildCard extends HTMLElement {
               
               <div class="gauge">
                 <div class="gauge-header">
-                  <div class="gauge-label">Niveau</div>
+                  <div class="gauge-label">Niveau ${stats.level}</div>
                   <div class="gauge-text">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
                 </div>
                 <div class="gauge-bar circular">
@@ -4612,6 +4625,13 @@ class KidsTasksChildCard extends HTMLElement {
           min-width: 80px;
         }
         
+        .avatar-container {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
         .avatar {
           font-size: 3em;
           margin-bottom: 8px;
@@ -4632,12 +4652,40 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .child-name-header {
-          font-size: 1em;
-          font-weight: 600;
+          font-size: 1.3em;
+          font-weight: 700;
           text-align: center;
-          margin: 4px 0;
+          margin: 0 0 12px 0;
           color: var(--header-text-color);
           text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .avatar-section .level-badge {
+          position: absolute;
+          bottom: -5px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 600;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          z-index: 2;
+        }
+        
+        .cosmetic-avatar-placeholder {
+          margin-top: 8px;
+          width: 40px;
+          height: 40px;
+          border: 2px dashed rgba(255,255,255,0.3);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7em;
+          color: rgba(255,255,255,0.6);
         }
         
         .level-badge {
@@ -5264,6 +5312,13 @@ class KidsTasksChildCard extends HTMLElement {
           white-space: nowrap;
         }
         
+        .task-name-row-compact {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+        }
+        
         .task-points-compact {
           font-size: 0.85em;
           font-weight: 500;
@@ -5612,12 +5667,14 @@ class KidsTasksChildCard extends HTMLElement {
                 <div class="task-compact completed ${isChildCard ? 'success-border' : ''}">
                   <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main-compact">
-                    <div class="task-name-compact">${task.name}</div>
+                    <div class="task-name-row-compact">
+                      <div class="task-name-compact">${task.name}</div>
+                      ${task.last_validated_at ? `<div class="task-validation-compact" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
+                    </div>
                     <div class="task-points-compact">
                       ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
                       ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
                       ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
-                      ${task.last_validated_at ? `<div style="color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                   </div>
                   <div class="task-action-compact">
