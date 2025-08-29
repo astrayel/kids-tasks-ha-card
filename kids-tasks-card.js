@@ -4878,7 +4878,7 @@ class KidsTasksChildCard extends HTMLElement {
         
         .reward-name {
           font-weight: bold;
-          font-size: 0.8em;
+          font-size: 1em;
           margin-bottom: 2px;
           color: var(--primary-text-color);
           line-height: 1.2;
@@ -4996,7 +4996,7 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-name {
-            font-size: 0.75em;
+            font-size: 1em;
             margin-bottom: 1px;
             line-height: 1.1;
             word-wrap: break-word;
@@ -5041,7 +5041,7 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-name {
-            font-size: 0.7em;
+            font-size: 1em;
             line-height: 1.1;
             word-wrap: break-word;
             overflow-wrap: break-word;
