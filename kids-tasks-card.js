@@ -964,9 +964,9 @@ class KidsTasksCard extends HTMLElement {
     }
   }
 
-  showChildForm(childId = null) {
+  showChildForm(editChildId = null) {
     const children = this.getChildren();
-    const child = childId ? children.find(c => c.id === childId) : null;
+    const child = editChildId ? children.find(c => c.id === editChildId) : null;
     const isEdit = !!child;
     const persons = this.getPersonEntities();
 
@@ -1896,8 +1896,8 @@ class KidsTasksCard extends HTMLElement {
     const children = this.getChildren();
     const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
     
-    return assignedIds.map(childId => {
-      const child = children.find(c => c.id === childId);
+    return assignedIds.map(assignedChildId => {
+      const child = children.find(c => c.id === assignedChildId);
       return child ? child.name : 'Enfant inconnu';
     }).filter(name => name);
   }
@@ -2526,212 +2526,33 @@ class KidsTasksCard extends HTMLElement {
     
     return `
       <div class="section">
-        <h2>
-          🎨 Cosmétiques
-          <div class="section-actions">
-            <button class="btn btn-primary" data-action="load-cosmetics-catalog">
-              🔄 Charger le catalogue
-            </button>
-            <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
-              ⚡ Créer les récompenses
-            </button>
-          </div>
-        </h2>
+        <h2>🎨 Cosmétiques</h2>
+        <div class="section-actions">
+          <button class="btn btn-primary" data-action="load-cosmetics-catalog">
+            🔄 Charger le catalogue
+          </button>
+          <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
+            ⚡ Créer les récompenses
+          </button>
+        </div>
         
         ${children.length > 0 ? `
-          <div class="cosmetics-children-tabs">
-            ${children.map((child, index) => `
-              <button class="cosmetics-child-tab ${index === 0 ? 'active' : ''}" 
-                      data-action="switch-cosmetics-child" data-child-id="${child.id}">
-                <span class="child-avatar">${child.avatar || '👶'}</span>
-                <span class="child-name">${child.name}</span>
-                <div class="child-currency">
-                  <span class="points">${child.points}p</span>
-                  <span class="coins">${child.coins}c</span>
-                </div>
-              </button>
-            `).join('')}
-          </div>
-          
-          <div class="cosmetics-content">
-            ${children.map((child, index) => `
-              <div class="cosmetics-child-panel ${index === 0 ? 'active' : ''}" data-child-id="${child.id}">
-                ${this.renderCosmeticsForChild(child, rewards)}
-              </div>
-            `).join('')}
+          <div class="cosmetics-simple">
+            <p>Interface cosmétique simplifiée</p>
+            <p>Enfants: ${children.length}</p>
+            <p>Récompenses cosmétiques: ${rewards.length}</p>
           </div>
         ` : `
           <div class="empty-state">
             <div class="empty-state-icon">👶</div>
             <p>Aucun enfant configuré</p>
-            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Ajoutez des enfants pour gérer leurs cosmétiques.</p>
           </div>
         `}
       </div>
     `;
   }
 
-  renderCosmeticsForChild(child, cosmeticRewards) {
-    const categories = {
-      'avatar': { name: 'Avatars', icon: '👤', description: 'Personnalisez l\'apparence de votre enfant' },
-      'background': { name: 'Arrière-plans', icon: '🖼️', description: 'Changez le fond de la carte de l\'enfant' },
-      'outfit': { name: 'Accessoires', icon: '👕', description: 'Ajoutez des accessoires à l\'avatar' },
-      'theme': { name: 'Thèmes', icon: '🎨', description: 'Modifiez l\'apparence générale de l\'interface' }
-    };
-    
-    const activeCosmetics = child.active_cosmetics || {};
-    const ownedCosmetics = child.cosmetic_collection || {};
-    
-    return `
-      <div class="cosmetics-categories">
-        ${Object.entries(categories).map(([categoryId, category]) => {
-          const categoryRewards = cosmeticRewards.filter(r => 
-            r.cosmetic_data && r.cosmetic_data.type === categoryId
-          );
-          const activeItem = activeCosmetics[categoryId];
-          const ownedItems = ownedCosmetics[categoryId] || [];
-          
-          return `
-            <div class="cosmetic-category">
-              <div class="cosmetic-category-header">
-                <h3>
-                  <span class="category-icon">${category.icon}</span>
-                  ${category.name}
-                  ${activeItem ? `<span class="active-indicator">Actif: ${activeItem}</span>` : ''}
-                </h3>
-                <p class="category-description">${category.description}</p>
-              </div>
-              
-              <div class="cosmetic-items-grid">
-                <!-- Éléments par défaut -->
-                <div class="cosmetic-item default-item ${!activeItem ? 'active' : ''}">
-                  <div class="cosmetic-preview">
-                    <div class="default-preview">${category.icon}</div>
-                  </div>
-                  <div class="cosmetic-info">
-                    <div class="cosmetic-name">Par défaut</div>
-                    <div class="cosmetic-status">Gratuit</div>
-                  </div>
-                  <button class="btn btn-sm ${!activeItem ? 'btn-success' : 'btn-outline'}" 
-                          data-action="activate-cosmetic" 
-                          data-child-id="${child.id}" 
-                          data-cosmetic-type="${categoryId}" 
-                          data-cosmetic-id="default_${categoryId}">
-                    ${!activeItem ? '✅ Actif' : 'Activer'}
-                  </button>
-                </div>
-                
-                ${categoryRewards.map(reward => {
-                  const isOwned = ownedItems.includes(reward.cosmetic_data.cosmetic_id);
-                  const isActive = activeItem === reward.cosmetic_data.cosmetic_id;
-                  const canAfford = child.points >= reward.cost && child.coins >= reward.coin_cost;
-                  
-                  return `
-                    <div class="cosmetic-item ${isOwned ? 'owned' : ''} ${isActive ? 'active' : ''}">
-                      <div class="cosmetic-preview">
-                        ${this.renderCosmeticPreview(reward.cosmetic_data)}
-                      </div>
-                      <div class="cosmetic-info">
-                        <div class="cosmetic-name">${reward.name}</div>
-                        <div class="cosmetic-rarity rarity-${reward.cosmetic_data.rarity || 'common'}">
-                          ${this.getRarityLabel(reward.cosmetic_data.rarity || 'common')}
-                        </div>
-                        ${reward.description ? `<div class="cosmetic-description">${reward.description}</div>` : ''}
-                      </div>
-                      <div class="cosmetic-actions">
-                        ${isOwned ? `
-                          <button class="btn btn-sm ${isActive ? 'btn-success' : 'btn-outline'}" 
-                                  data-action="activate-cosmetic" 
-                                  data-child-id="${child.id}" 
-                                  data-cosmetic-type="${categoryId}" 
-                                  data-cosmetic-id="${reward.cosmetic_data.cosmetic_id}">
-                            ${isActive ? '✅ Actif' : 'Activer'}
-                          </button>
-                        ` : `
-                          <div class="cosmetic-cost">
-                            ${reward.cost > 0 ? `<span class="cost-points">${reward.cost}p</span>` : ''}
-                            ${reward.coin_cost > 0 ? `<span class="cost-coins">${reward.coin_cost}c</span>` : ''}
-                          </div>
-                          <button class="btn btn-sm ${canAfford ? 'btn-primary' : 'btn-disabled'}" 
-                                  data-action="claim-reward" 
-                                  data-reward-id="${reward.id}" 
-                                  data-child-id="${child.id}"
-                                  ${!canAfford ? 'disabled' : ''}>
-                            ${canAfford ? '💰 Acheter' : '❌ Pas assez'}
-                          </button>
-                        `}
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-                
-                ${categoryRewards.length === 0 ? `
-                  <div class="cosmetic-item empty-category">
-                    <div class="empty-category-message">
-                      <p>Aucun cosmétique ${category.name.toLowerCase()} disponible</p>
-                      <p class="hint">Utilisez "Créer les récompenses" pour générer les cosmétiques depuis le catalogue.</p>
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  renderCosmeticPreview(cosmeticData) {
-    const catalogData = cosmeticData.catalog_data || {};
-    
-    switch (cosmeticData.type) {
-      case 'avatar':
-        if (catalogData.emoji) {
-          return `<div class="avatar-preview">${catalogData.emoji}</div>`;
-        }
-        if (catalogData.pixel_art) {
-          return `<img class="pixel-art-preview" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
-        }
-        return `<div class="avatar-preview">👤</div>`;
-        
-      case 'background':
-        if (catalogData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogData.css_gradient};"></div>`;
-        }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>`;
-        
-      case 'outfit':
-        if (catalogData.emoji_overlay) {
-          return `<div class="outfit-preview">
-            <span class="base-avatar">👤</span>
-            <span class="outfit-overlay">${catalogData.emoji_overlay}</span>
-          </div>`;
-        }
-        return `<div class="outfit-preview">👕</div>`;
-        
-      case 'theme':
-        const cssVars = catalogData.css_variables || {};
-        const primaryColor = cssVars['--primary-color'] || '#667eea';
-        const secondaryColor = cssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview">
-          <div class="theme-color" style="background-color: ${primaryColor};"></div>
-          <div class="theme-color" style="background-color: ${secondaryColor};"></div>
-        </div>`;
-        
-      default:
-        return `<div class="generic-preview">🎨</div>`;
-    }
-  }
-
-  getRarityLabel(rarity) {
-    const rarityLabels = {
-      'common': 'Commun',
-      'rare': 'Rare', 
-      'epic': 'Épique',
-      'legendary': 'Légendaire'
-    };
-    return rarityLabels[rarity] || 'Commun';
-  }
+  // Méthodes cosmétiques temporairement simplifiées
 
   // Styles CSS identiques au fichier précédent
   getStyles() {
@@ -4719,7 +4540,7 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
-  switchCosmeticsChild(childId) {
+  switchCosmeticsChild(selectedChildId) {
     // Désactiver tous les onglets et panneaux enfants
     const tabs = this.shadowRoot.querySelectorAll('.cosmetics-child-tab');
     const panels = this.shadowRoot.querySelectorAll('.cosmetics-child-panel');
@@ -4728,8 +4549,8 @@ class KidsTasksChildCard extends HTMLElement {
     panels.forEach(panel => panel.classList.remove('active'));
     
     // Activer l'onglet et le panneau sélectionnés
-    const selectedTab = this.shadowRoot.querySelector(`[data-child-id="${childId}"][data-action="switch-cosmetics-child"]`);
-    const selectedPanel = this.shadowRoot.querySelector(`.cosmetics-child-panel[data-child-id="${childId}"]`);
+    const selectedTab = this.shadowRoot.querySelector(`[data-child-id="${selectedChildId}"][data-action="switch-cosmetics-child"]`);
+    const selectedPanel = this.shadowRoot.querySelector(`.cosmetics-child-panel[data-child-id="${selectedChildId}"]`);
     
     if (selectedTab) selectedTab.classList.add('active');
     if (selectedPanel) selectedPanel.classList.add('active');
@@ -4960,8 +4781,8 @@ class KidsTasksChildCard extends HTMLElement {
     const children = this.getChildren();
     const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
     
-    return assignedIds.map(childId => {
-      const child = children.find(c => c.id === childId);
+    return assignedIds.map(assignedChildId => {
+      const child = children.find(c => c.id === assignedChildId);
       return child ? child.name : 'Enfant inconnu';
     }).filter(name => name);
   }
@@ -5170,8 +4991,8 @@ class KidsTasksChildCard extends HTMLElement {
     const children = this.getChildren();
     const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
     
-    return assignedIds.map(childId => {
-      const child = children.find(c => c.id === childId);
+    return assignedIds.map(assignedChildId => {
+      const child = children.find(c => c.id === assignedChildId);
       return child ? child.name : 'Enfant inconnu';
     }).filter(name => name);
   }
