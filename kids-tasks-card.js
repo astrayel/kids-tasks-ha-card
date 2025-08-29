@@ -254,6 +254,11 @@ class KidsTasksCard extends HTMLElement {
           this.callService('kids_tasks', 'remove_reward', { reward_id: id });
         }
         break;
+      case 'filter-tasks':
+        const filter = event.target.dataset.filter;
+        this.taskFilter = filter;
+        this.render();
+        break;
     }
   }
 
@@ -1954,7 +1959,8 @@ class KidsTasksCard extends HTMLElement {
       { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
       { id: 'children', label: '👶 Enfants', icon: '👶' },
       { id: 'tasks', label: '📝 Tâches', icon: '📝' },
-      { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' }
+      { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' },
+      { id: 'validation', label: '✅ Validation', icon: '✅' }
     ];
 
     return `
@@ -1975,6 +1981,7 @@ class KidsTasksCard extends HTMLElement {
       case 'children': return this.getChildrenView();
       case 'tasks': return this.getTasksView();
       case 'rewards': return this.getRewardsView();
+      case 'validation': return this.getValidationView();
       default: return this.getDashboardView();
     }
   }
@@ -2016,7 +2023,7 @@ class KidsTasksCard extends HTMLElement {
               <div class="stat-label">Terminées aujourd'hui</div>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" data-action="switch-view" data-id="validation" title="Voir les tâches à valider">
             <div class="stat-info">
               <div class="stat-header">
                 <div class="stat-icon">⏳</div>
@@ -2097,7 +2104,11 @@ class KidsTasksCard extends HTMLElement {
     const children = this.getChildren();
     const allTasks = this.getTasks();
     // Filtrer les tâches pour exclure les tâches bonus (frequency='none')
-    const tasks = allTasks.filter(task => task.frequency !== 'none');
+    const allRegularTasks = allTasks.filter(task => task.frequency !== 'none');
+    
+    // Appliquer le filtre sélectionné
+    const currentFilter = this.taskFilter || 'active';
+    const tasks = this.filterTasks(allRegularTasks, currentFilter);
     
     return `
       <div class="section">
@@ -2105,13 +2116,105 @@ class KidsTasksCard extends HTMLElement {
           Gestion des tâches
           <button class="btn btn-primary add-btn" data-action="add-task">Ajouter</button>
         </h2>
-        ${tasks.length > 0 ? tasks.map(task => this.renderTaskItem(task, children, false, true)).join('') : `
+        
+        <!-- Filtres pour les tâches -->
+        <div class="task-filters">
+          <button class="filter-btn ${currentFilter === 'active' ? 'active' : ''}" data-action="filter-tasks" data-filter="active">Actives</button>
+          <button class="filter-btn ${currentFilter === 'inactive' ? 'active' : ''}" data-action="filter-tasks" data-filter="inactive">Désactivées</button>
+          <button class="filter-btn ${currentFilter === 'out-of-period' ? 'active' : ''}" data-action="filter-tasks" data-filter="out-of-period">Hors période</button>
+          <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-action="filter-tasks" data-filter="all">Toutes</button>
+        </div>
+        
+        ${tasks.length > 0 ? `
+          <div class="task-list-compact">
+            ${tasks.map(task => this.renderTaskItemCompact(task, children)).join('')}
+          </div>
+        ` : `
           <div class="empty-state">
             <div class="empty-state-icon">📝</div>
-            <p>Aucune tâche récurrente créée</p>
-            <button class="btn btn-primary" data-action="add-task">Créer votre première tâche</button>
+            <p>Aucune tâche ${this.getFilterLabel(currentFilter)}</p>
+            ${currentFilter === 'active' ? '<button class="btn btn-primary" data-action="add-task">Créer votre première tâche</button>' : ''}
           </div>
         `}
+      </div>
+    `;
+  }
+
+  filterTasks(tasks, filter) {
+    switch (filter) {
+      case 'active':
+        return tasks.filter(task => task.active !== false && this.isTaskInPeriod(task));
+      case 'inactive':
+        return tasks.filter(task => task.active === false);
+      case 'out-of-period':
+        return tasks.filter(task => task.active !== false && !this.isTaskInPeriod(task));
+      case 'all':
+        return tasks;
+      default:
+        return tasks.filter(task => task.active !== false && this.isTaskInPeriod(task));
+    }
+  }
+
+  isTaskInPeriod(task) {
+    // Vérifier si la tâche est dans sa période de validité
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    switch (task.frequency) {
+      case 'daily':
+        return true; // Les tâches quotidiennes sont toujours valides
+      case 'weekly':
+        // Vérifier si c'est un jour valide de la semaine
+        if (task.weekly_days && task.weekly_days.length > 0) {
+          const dayOfWeek = now.getDay(); // 0 = dimanche, 1 = lundi, ...
+          const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          return task.weekly_days.includes(daysMap[dayOfWeek]);
+        }
+        return true; // Si pas de restriction de jours, toujours valide
+      case 'monthly':
+        return true; // Les tâches mensuelles sont toujours valides
+      case 'once':
+        // Vérifier si pas encore complétée
+        return task.status !== 'validated' && task.status !== 'completed';
+      default:
+        return true;
+    }
+  }
+
+  getFilterLabel(filter) {
+    const labels = {
+      'active': 'active',
+      'inactive': 'désactivée',
+      'out-of-period': 'hors période',
+      'all': ''
+    };
+    return labels[filter] || '';
+  }
+
+  renderTaskItemCompact(task, children) {
+    const childName = this.formatAssignedChildren(task);
+    const taskIcon = this.safeGetCategoryIcon(task, '📋');
+    
+    return `
+      <div class="task-item-compact ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
+        <div class="task-icon-compact">${taskIcon}</div>
+        <div class="task-main-compact">
+          <div class="task-name-compact">${task.name}</div>
+          <div class="task-meta-compact">
+            <span class="assigned-child">${childName}</span>
+            <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
+            <span class="task-category">${this.getCategoryLabel(task.category)}</span>
+          </div>
+        </div>
+        <div class="task-rewards-compact">
+          ${task.points > 0 ? `<span class="reward-points">+${task.points}p</span>` : ''}
+          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}c</span>` : ''}
+          ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}p</span>` : ''}
+        </div>
+        <div class="task-actions-compact">
+          <button class="btn btn-secondary btn-sm" data-action="edit-task" data-id="${task.id}">Modifier</button>
+          <button class="btn btn-danger btn-sm" data-action="remove-task" data-id="${task.id}">×</button>
+        </div>
       </div>
     `;
   }
@@ -2151,14 +2254,23 @@ class KidsTasksCard extends HTMLElement {
       const coins = child.coins || 0;
       const level = child.level || 1;
       
-      // Calculer les tâches de manière sûre
+      // Calculer les tâches et stats de manière sûre
       let completedToday = 0;
       let todayTasks = 0;
+      let stats = null;
       
       try {
         const tasks = this.getTasks();
+        const childTasks = tasks.filter(task => 
+          task.assigned_child_ids && task.assigned_child_ids.includes(child.id)
+        );
         completedToday = this.getChildCompletedToday(child.id, tasks).length;
         todayTasks = this.getChildTasksToday(child.id, tasks).length;
+        
+        // Calculer les stats pour les jauges (mode parent)
+        if (showActions) {
+          stats = this.calculateChildStats(child, childTasks);
+        }
       } catch (taskError) {
         console.warn('Erreur lors du calcul des tâches:', taskError);
       }
@@ -2167,7 +2279,7 @@ class KidsTasksCard extends HTMLElement {
       const avatar = this.getEffectiveAvatar(child, 'large');
       
       return `
-        <div class="child-card" ${showActions ? `draggable="true" data-child-id="${child.id || 'unknown'}"` : ''}>
+        <div class="child-card ${showActions ? 'management-mode' : ''}" ${showActions ? `draggable="true" data-child-id="${child.id || 'unknown'}"` : ''}>
           ${showActions ? `
             <div class="drag-handle" title="Glisser pour réorganiser">⋮⋮</div>
             <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
@@ -2175,13 +2287,46 @@ class KidsTasksCard extends HTMLElement {
           <div class="child-avatar">${avatar}</div>
           <div class="child-info">
             <div class='child-wrapper'><div class="child-name">${name}</div><div class="level-badge">Niveau ${level}</div></div>
-            <div class="child-stats">
-              ${points} points • ${coins} coins • Niveau ${level}<br>
-              ${completedToday}/${todayTasks} tâches aujourd'hui
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
+            ${showActions && stats ? `
+              <div class="child-gauges-compact">
+                <div class="gauge-compact">
+                  <div class="gauge-label-compact">Points totaux</div>
+                  <div class="gauge-text-compact">${points}</div>
+                  <div class="gauge-bar-compact">
+                    <div class="gauge-fill-compact total-points" style="width: ${Math.min((points / 500) * 100, 100)}%"></div>
+                  </div>
+                </div>
+                <div class="gauge-compact">
+                  <div class="gauge-label-compact">Niveau ${level}</div>
+                  <div class="gauge-text-compact">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
+                  <div class="gauge-bar-compact">
+                    <div class="gauge-fill-compact level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
+                  </div>
+                </div>
+                <div class="gauge-compact">
+                  <div class="gauge-label-compact">Tâches</div>
+                  <div class="gauge-text-compact">${completedToday}/${todayTasks}</div>
+                  <div class="gauge-bar-compact">
+                    <div class="gauge-fill-compact tasks-progress" style="width: ${todayTasks > 0 ? (completedToday / todayTasks) * 100 : 0}%"></div>
+                  </div>
+                </div>
+                <div class="gauge-compact">
+                  <div class="gauge-label-compact">Coins</div>
+                  <div class="gauge-text-compact">${coins}</div>
+                  <div class="gauge-bar-compact">
+                    <div class="gauge-fill-compact coins-progress" style="width: ${Math.min(coins, 100)}%"></div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ` : `
+              <div class="child-stats">
+                ${points} points • ${coins} coins • Niveau ${level}<br>
+                ${completedToday}/${todayTasks} tâches aujourd'hui
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
+                </div>
+              </div>
+            `}
           </div>
           ${showActions ? `
             <div class="task-actions">
@@ -2194,6 +2339,35 @@ class KidsTasksCard extends HTMLElement {
       console.error('Erreur dans renderChildCard:', error, 'Child data:', child);
       return `<div class="child-card"><div class="error">Erreur rendu: ${error.message}</div></div>`;
     }
+  }
+
+  calculateChildStats(child, tasks) {
+    const totalPoints = child.points || 0;
+    const level = child.level || 1;
+    const pointsToNextLevel = level * 100;
+    const pointsInCurrentLevel = totalPoints % 100;
+    
+    // Calculer les tâches actives aujourd'hui (similaire à getChildStats)
+    const today = new Date();
+    const activeTasks = tasks.filter(task => 
+      task.status === 'todo' && 
+      this.isTaskActiveToday ? this.isTaskActiveToday(task) : true
+    );
+    
+    const completedTasks = tasks.filter(task => 
+      (task.status === 'validated' || task.status === 'completed') &&
+      this.isTaskActiveToday ? this.isTaskActiveToday(task) : true
+    );
+    
+    return {
+      totalPoints,
+      level,
+      pointsInCurrentLevel,
+      pointsToNextLevel,
+      activeTasks: activeTasks.length,
+      completedTasks: completedTasks.length,
+      totalTasksToday: activeTasks.length + completedTasks.length
+    };
   }
 
   renderTaskItem(task, children, showValidation = false, showManagement = false) {
@@ -2260,6 +2434,85 @@ class KidsTasksCard extends HTMLElement {
           ` : `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
           `}
+        </div>
+      </div>
+    `;
+  }
+
+  getValidationView() {
+    const children = this.getChildren();
+    const allTasks = this.getTasks();
+    // Filtrer seulement les tâches en attente de validation
+    const pendingTasks = allTasks.filter(task => task.status === 'pending_validation');
+    
+    return `
+      <div class="section">
+        <h2>
+          Validation des tâches
+          ${pendingTasks.length > 0 ? `<span class="badge">${pendingTasks.length}</span>` : ''}
+        </h2>
+        
+        ${pendingTasks.length > 0 ? `
+          <div class="validation-tasks-list">
+            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">✅</div>
+            <p>Aucune tâche en attente de validation</p>
+            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Les tâches complétées par les enfants apparaîtront ici.</p>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderValidationTask(task, children) {
+    const childName = this.formatAssignedChildren(task);
+    const taskIcon = this.safeGetCategoryIcon(task, '📋');
+    
+    // Calculer l'âge de la demande
+    let ageText = '';
+    if (task.completed_at) {
+      const completedDate = new Date(task.completed_at);
+      const now = new Date();
+      const diffHours = Math.floor((now - completedDate) / (1000 * 60 * 60));
+      
+      if (diffHours < 1) {
+        ageText = 'À l\'instant';
+      } else if (diffHours < 24) {
+        ageText = `Il y a ${diffHours}h`;
+      } else {
+        const diffDays = Math.floor(diffHours / 24);
+        ageText = `Il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+      }
+    }
+    
+    return `
+      <div class="validation-task-item">
+        <div class="validation-task-icon">${taskIcon}</div>
+        <div class="validation-task-content">
+          <div class="validation-task-header">
+            <div class="validation-task-title">${task.name}</div>
+            <div class="validation-task-age">${ageText}</div>
+          </div>
+          <div class="validation-task-meta">
+            <span class="validation-child">${childName}</span>
+            <span class="validation-rewards">
+              ${task.points > 0 ? `+${task.points}p` : ''}
+              ${task.coins > 0 ? ` +${task.coins}c` : ''}
+            </span>
+            <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
+          </div>
+          ${task.description ? `<div class="validation-task-description">${task.description}</div>` : ''}
+        </div>
+        <div class="validation-task-actions">
+          <button class="btn btn-success btn-validation" data-action="validate-task" data-id="${task.id}">
+            ✅ Valider
+          </button>
+          <button class="btn btn-danger btn-validation" data-action="reject-task" data-id="${task.id}">
+            ❌ Rejeter
+          </button>
         </div>
       </div>
     `;
@@ -2636,6 +2889,67 @@ class KidsTasksCard extends HTMLElement {
           transition: width 0.3s ease;
         }
         
+        /* Styles pour les jauges compactes dans les cartes enfants (mode gestion) */
+        .child-card.management-mode {
+          min-height: 200px;
+          height: auto;
+        }
+        
+        .child-gauges-compact {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-top: 8px;
+        }
+        
+        .gauge-compact {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
+        .gauge-label-compact {
+          font-size: 0.7em;
+          font-weight: 600;
+          color: var(--secondary-text-color);
+        }
+        
+        .gauge-text-compact {
+          font-size: 0.65em;
+          font-weight: bold;
+          color: var(--primary-text-color);
+          text-align: right;
+        }
+        
+        .gauge-bar-compact {
+          height: 4px;
+          background: var(--divider-color, #e0e0e0);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+        
+        .gauge-fill-compact {
+          height: 100%;
+          border-radius: 2px;
+          transition: width 0.6s ease;
+        }
+        
+        .gauge-fill-compact.total-points {
+          background: linear-gradient(90deg, #ffd700, #ffed4a);
+        }
+        
+        .gauge-fill-compact.level-progress {
+          background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        
+        .gauge-fill-compact.tasks-progress {
+          background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+        
+        .gauge-fill-compact.coins-progress {
+          background: linear-gradient(90deg, #9C27B0, #E1BEE7);
+        }
+        
         .task-item {
           display: flex;
           flex-direction: column;
@@ -2671,6 +2985,290 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color, #212121);
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
+        
+        /* Styles pour les filtres de tâches */
+        .task-filters {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+          padding: 6px 12px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          background: var(--card-background-color, white);
+          border-radius: 16px;
+          font-size: 0.8em;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .filter-btn:hover {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          border-color: var(--primary-color, #3f51b5);
+        }
+        
+        .filter-btn.active {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          border-color: var(--primary-color, #3f51b5);
+          font-weight: 600;
+        }
+        
+        /* Styles pour l'affichage compact des tâches */
+        .task-list-compact {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        
+        .task-item-compact {
+          display: flex;
+          align-items: center;
+          padding: 8px 12px;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 6px;
+          border-left: 3px solid #ddd;
+          transition: all 0.3s ease;
+          min-height: 50px;
+        }
+        
+        .task-item-compact:hover {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          transform: translateY(-1px);
+        }
+        
+        .task-item-compact.inactive {
+          opacity: 0.6;
+          border-left-color: #ccc;
+        }
+        
+        .task-item-compact.out-of-period {
+          border-left-color: #ff9800;
+          background: #fff8e1;
+        }
+        
+        .task-item-compact.validated {
+          border-left-color: #4caf50;
+        }
+        
+        .task-item-compact.pending_validation {
+          border-left-color: #ff5722;
+          background: #fff3e0;
+        }
+        
+        .task-icon-compact {
+          font-size: 1.2em;
+          margin-right: 12px;
+          flex-shrink: 0;
+        }
+        
+        .task-main-compact {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .task-name-compact {
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+          font-size: 0.9em;
+          margin-bottom: 2px;
+        }
+        
+        .task-meta-compact {
+          display: flex;
+          gap: 8px;
+          font-size: 0.75em;
+          color: var(--secondary-text-color, #757575);
+          flex-wrap: wrap;
+        }
+        
+        .task-meta-compact span {
+          background: rgba(0,0,0,0.05);
+          padding: 1px 6px;
+          border-radius: 8px;
+        }
+        
+        .task-rewards-compact {
+          display: flex;
+          gap: 4px;
+          margin: 0 8px;
+          flex-shrink: 0;
+        }
+        
+        .reward-points {
+          background: #4CAF50;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.75em;
+          font-weight: bold;
+        }
+        
+        .reward-coins {
+          background: #9C27B0;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.75em;
+          font-weight: bold;
+        }
+        
+        .penalty-points {
+          background: #f44336;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 0.75em;
+          font-weight: bold;
+        }
+        
+        .task-actions-compact {
+          display: flex;
+          gap: 4px;
+          flex-shrink: 0;
+        }
+        
+        .btn-sm {
+          padding: 4px 8px;
+          font-size: 0.75em;
+          border-radius: 4px;
+        }
+        
+        /* Styles pour l'onglet Validation */
+        .validation-tasks-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .validation-task-item {
+          display: flex;
+          align-items: center;
+          padding: 12px;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 8px;
+          border-left: 4px solid #ff5722;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          transition: all 0.3s ease;
+        }
+        
+        .validation-task-item:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transform: translateY(-2px);
+        }
+        
+        .validation-task-icon {
+          font-size: 1.5em;
+          margin-right: 16px;
+          flex-shrink: 0;
+        }
+        
+        .validation-task-content {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .validation-task-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 4px;
+        }
+        
+        .validation-task-title {
+          font-weight: 700;
+          font-size: 1.1em;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .validation-task-age {
+          font-size: 0.8em;
+          color: var(--secondary-text-color, #757575);
+          font-style: italic;
+        }
+        
+        .validation-task-meta {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 4px;
+          font-size: 0.85em;
+          flex-wrap: wrap;
+        }
+        
+        .validation-child {
+          background: #2196f3;
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-weight: 600;
+        }
+        
+        .validation-rewards {
+          background: #4caf50;
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-weight: 600;
+        }
+        
+        .validation-category {
+          background: rgba(0,0,0,0.1);
+          padding: 2px 8px;
+          border-radius: 12px;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .validation-task-description {
+          font-size: 0.9em;
+          color: var(--secondary-text-color, #757575);
+          font-style: italic;
+          margin-top: 4px;
+        }
+        
+        .validation-task-actions {
+          display: flex;
+          gap: 8px;
+          flex-shrink: 0;
+          margin-left: 16px;
+        }
+        
+        .btn-validation {
+          padding: 8px 16px;
+          font-size: 0.85em;
+          font-weight: 600;
+          border-radius: 20px;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+        
+        .btn-validation:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .badge {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: bold;
+          margin-left: 8px;
+        }
+        
+        .stat-card.clickable {
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .stat-card.clickable:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
         
         /* Styles pour les icônes personnalisées */
         .icon-image {
