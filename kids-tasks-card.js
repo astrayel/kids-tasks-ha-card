@@ -2521,38 +2521,217 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getCosmeticsView() {
-    const children = this.getChildren();
-    const rewards = this.getRewards().filter(r => r.reward_type === 'cosmetic');
+    const cosmeticsChildren = this.getChildren();
+    const cosmeticsRewards = this.getRewards().filter(r => r.reward_type === 'cosmetic');
     
     return `
       <div class="section">
-        <h2>🎨 Cosmétiques</h2>
-        <div class="section-actions">
-          <button class="btn btn-primary" data-action="load-cosmetics-catalog">
-            🔄 Charger le catalogue
-          </button>
-          <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
-            ⚡ Créer les récompenses
-          </button>
-        </div>
+        <h2>
+          🎨 Cosmétiques
+          <div class="section-actions">
+            <button class="btn btn-primary" data-action="load-cosmetics-catalog">
+              🔄 Charger le catalogue
+            </button>
+            <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
+              ⚡ Créer les récompenses
+            </button>
+          </div>
+        </h2>
         
-        ${children.length > 0 ? `
-          <div class="cosmetics-simple">
-            <p>Interface cosmétique simplifiée</p>
-            <p>Enfants: ${children.length}</p>
-            <p>Récompenses cosmétiques: ${rewards.length}</p>
+        ${cosmeticsChildren.length > 0 ? `
+          <div class="cosmetics-children-tabs">
+            ${cosmeticsChildren.map((cosmeticChild, childIndex) => `
+              <button class="cosmetics-child-tab ${childIndex === 0 ? 'active' : ''}" 
+                      data-action="switch-cosmetics-child" data-child-id="${cosmeticChild.id}">
+                <span class="child-avatar">${cosmeticChild.avatar || '👶'}</span>
+                <span class="child-name">${cosmeticChild.name}</span>
+                <div class="child-currency">
+                  <span class="points">${cosmeticChild.points}p</span>
+                  <span class="coins">${cosmeticChild.coins}c</span>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+          
+          <div class="cosmetics-content">
+            ${cosmeticsChildren.map((cosmeticChild, childIndex) => `
+              <div class="cosmetics-child-panel ${childIndex === 0 ? 'active' : ''}" data-child-id="${cosmeticChild.id}">
+                ${this.renderCosmeticsForChild(cosmeticChild, cosmeticsRewards)}
+              </div>
+            `).join('')}
           </div>
         ` : `
           <div class="empty-state">
             <div class="empty-state-icon">👶</div>
             <p>Aucun enfant configuré</p>
+            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Ajoutez des enfants pour gérer leurs cosmétiques.</p>
           </div>
         `}
       </div>
     `;
   }
 
-  // Méthodes cosmétiques temporairement simplifiées
+  renderCosmeticsForChild(cosmeticChild, cosmeticRewardsList) {
+    const cosmeticsCategories = {
+      'avatar': { name: 'Avatars', icon: '👤', description: 'Personnalisez l\'apparence de votre enfant' },
+      'background': { name: 'Arrière-plans', icon: '🖼️', description: 'Changez le fond de la carte de l\'enfant' },
+      'outfit': { name: 'Accessoires', icon: '👕', description: 'Ajoutez des accessoires à l\'avatar' },
+      'theme': { name: 'Thèmes', icon: '🎨', description: 'Modifiez l\'apparence générale de l\'interface' }
+    };
+    
+    const activeCosmetics = cosmeticChild.active_cosmetics || {};
+    const ownedCosmetics = cosmeticChild.cosmetic_collection || {};
+    
+    return `
+      <div class="cosmetics-categories">
+        ${Object.entries(cosmeticsCategories).map(([categoryKey, categoryData]) => {
+          const categoryRewardsList = cosmeticRewardsList.filter(rewardItem => 
+            rewardItem.cosmetic_data && rewardItem.cosmetic_data.type === categoryKey
+          );
+          const activeCosmeticItem = activeCosmetics[categoryKey];
+          const ownedCosmeticItems = ownedCosmetics[categoryKey] || [];
+          
+          return `
+            <div class="cosmetic-category">
+              <div class="cosmetic-category-header">
+                <h3>
+                  <span class="category-icon">${categoryData.icon}</span>
+                  ${categoryData.name}
+                  ${activeCosmeticItem ? `<span class="active-indicator">Actif: ${activeCosmeticItem}</span>` : ''}
+                </h3>
+                <p class="category-description">${categoryData.description}</p>
+              </div>
+              
+              <div class="cosmetic-items-grid">
+                <!-- Élément par défaut -->
+                <div class="cosmetic-item default-item ${!activeCosmeticItem ? 'active' : ''}">
+                  <div class="cosmetic-preview">
+                    <div class="default-preview">${categoryData.icon}</div>
+                  </div>
+                  <div class="cosmetic-info">
+                    <div class="cosmetic-name">Par défaut</div>
+                    <div class="cosmetic-status">Gratuit</div>
+                  </div>
+                  <button class="btn btn-sm ${!activeCosmeticItem ? 'btn-success' : 'btn-outline'}" 
+                          data-action="activate-cosmetic" 
+                          data-child-id="${cosmeticChild.id}" 
+                          data-cosmetic-type="${categoryKey}" 
+                          data-cosmetic-id="default_${categoryKey}">
+                    ${!activeCosmeticItem ? '✅ Actif' : 'Activer'}
+                  </button>
+                </div>
+                
+                ${categoryRewardsList.map(rewardItem => {
+                  const isOwnedByChild = ownedCosmeticItems.includes(rewardItem.cosmetic_data.cosmetic_id);
+                  const isActiveCosmeticForChild = activeCosmeticItem === rewardItem.cosmetic_data.cosmetic_id;
+                  const childCanAfford = cosmeticChild.points >= rewardItem.cost && cosmeticChild.coins >= rewardItem.coin_cost;
+                  
+                  return `
+                    <div class="cosmetic-item ${isOwnedByChild ? 'owned' : ''} ${isActiveCosmeticForChild ? 'active' : ''}">
+                      <div class="cosmetic-preview">
+                        ${this.renderCosmeticItemPreview(rewardItem.cosmetic_data)}
+                      </div>
+                      <div class="cosmetic-info">
+                        <div class="cosmetic-name">${rewardItem.name}</div>
+                        <div class="cosmetic-rarity rarity-${rewardItem.cosmetic_data.rarity || 'common'}">
+                          ${this.getCosmeticRarityLabel(rewardItem.cosmetic_data.rarity || 'common')}
+                        </div>
+                        ${rewardItem.description ? `<div class="cosmetic-description">${rewardItem.description}</div>` : ''}
+                      </div>
+                      <div class="cosmetic-actions">
+                        ${isOwnedByChild ? `
+                          <button class="btn btn-sm ${isActiveCosmeticForChild ? 'btn-success' : 'btn-outline'}" 
+                                  data-action="activate-cosmetic" 
+                                  data-child-id="${cosmeticChild.id}" 
+                                  data-cosmetic-type="${categoryKey}" 
+                                  data-cosmetic-id="${rewardItem.cosmetic_data.cosmetic_id}">
+                            ${isActiveCosmeticForChild ? '✅ Actif' : 'Activer'}
+                          </button>
+                        ` : `
+                          <div class="cosmetic-cost">
+                            ${rewardItem.cost > 0 ? `<span class="cost-points">${rewardItem.cost}p</span>` : ''}
+                            ${rewardItem.coin_cost > 0 ? `<span class="cost-coins">${rewardItem.coin_cost}c</span>` : ''}
+                          </div>
+                          <button class="btn btn-sm ${childCanAfford ? 'btn-primary' : 'btn-disabled'}" 
+                                  data-action="claim-reward" 
+                                  data-reward-id="${rewardItem.id}" 
+                                  data-child-id="${cosmeticChild.id}"
+                                  ${!childCanAfford ? 'disabled' : ''}>
+                            ${childCanAfford ? '💰 Acheter' : '❌ Pas assez'}
+                          </button>
+                        `}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+                
+                ${categoryRewardsList.length === 0 ? `
+                  <div class="cosmetic-item empty-category">
+                    <div class="empty-category-message">
+                      <p>Aucun cosmétique ${categoryData.name.toLowerCase()} disponible</p>
+                      <p class="hint">Utilisez "Créer les récompenses" pour générer les cosmétiques depuis le catalogue.</p>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  renderCosmeticItemPreview(cosmeticItemData) {
+    const catalogItemData = cosmeticItemData.catalog_data || {};
+    
+    switch (cosmeticItemData.type) {
+      case 'avatar':
+        if (catalogItemData.emoji) {
+          return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
+        }
+        if (catalogItemData.pixel_art) {
+          return `<img class="pixel-art-preview" src="${catalogItemData.pixel_art}" alt="${catalogItemData.name}" />`;
+        }
+        return `<div class="avatar-preview">👤</div>`;
+        
+      case 'background':
+        if (catalogItemData.css_gradient) {
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient};"></div>`;
+        }
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>`;
+        
+      case 'outfit':
+        if (catalogItemData.emoji_overlay) {
+          return `<div class="outfit-preview">
+            <span class="base-avatar">👤</span>
+            <span class="outfit-overlay">${catalogItemData.emoji_overlay}</span>
+          </div>`;
+        }
+        return `<div class="outfit-preview">👕</div>`;
+        
+      case 'theme':
+        const themeCssVars = catalogItemData.css_variables || {};
+        const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
+        const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
+        return `<div class="theme-preview">
+          <div class="theme-color" style="background-color: ${themePrimaryColor};"></div>
+          <div class="theme-color" style="background-color: ${themeSecondaryColor};"></div>
+        </div>`;
+        
+      default:
+        return `<div class="generic-preview">🎨</div>`;
+    }
+  }
+
+  getCosmeticRarityLabel(rarityLevel) {
+    const cosmeticRarityLabels = {
+      'common': 'Commun',
+      'rare': 'Rare', 
+      'epic': 'Épique',
+      'legendary': 'Légendaire'
+    };
+    return cosmeticRarityLabels[rarityLevel] || 'Commun';
+  }
 
   // Styles CSS identiques au fichier précédent
   getStyles() {
