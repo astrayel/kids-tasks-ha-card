@@ -7201,7 +7201,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
           gap: 12px;
           border: 2px solid #2E7D32;
         }
-        .preview-avatar {
+        .preview-avatar { 
           font-size: 2em;
           width: 60px;
           height: 60px;
