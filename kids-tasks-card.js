@@ -2243,10 +2243,10 @@ class KidsTasksCard extends HTMLElement {
         ${showActions ? `
           <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
         ` : ''}
-        <div class="child-avatar">${this.safeGetCategoryIcon(reward, '🎁')}</div>
-        <div class="child-info">
-          <div class="child-name">${reward.name}</div>
-          <div class="child-stats">
+        <div class="reward-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+        <div class="reward-info">
+          <div class="reward-name">${reward.name}</div>
+          <div class="reward-stats">
             ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
             ${reward.remaining_quantity !== null ? `<br>${reward.remaining_quantity} restant(s)` : ''}
             ${reward.description ? `<br>${reward.description}` : ''}
@@ -2518,6 +2518,47 @@ class KidsTasksCard extends HTMLElement {
           flex-shrink: 0;
         }
         
+        .reward-icon { 
+          font-size: 2.5em; 
+          margin-right: 16px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          min-width: 3em;
+          min-height: 3em;
+          flex-shrink: 0;
+          padding-top: 8px;
+          height: 100%;
+          pointer-events: none;
+        }
+        .reward-icon img {
+          width: 3em !important;
+          height: 3em !important;
+          border-radius: 50% !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255,255,255,0.2);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
+        }
+        .reward-info { 
+          flex: 1; 
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+        }
+        .reward-name {
+          font-size: 1.3em;
+          font-weight: bold;
+          margin: 0 0 8px 0;
+          color: var(--primary-text-color, #212121);
+          text-align: left;
+        }
+        .reward-stats {
+          color: var(--secondary-text-color, #757575);
+          font-size: 0.9em;
+          margin-bottom: 8px;
+        }
+
         .task-icon {
           font-size: 2em;
           margin-right: 16px;
