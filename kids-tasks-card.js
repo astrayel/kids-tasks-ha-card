@@ -2871,9 +2871,9 @@ class KidsTasksCard extends HTMLElement {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 70px; height: 70px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 70px; height: 70px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       case 'outfit':
         if (catalogItemData.emoji_overlay) {
@@ -2888,7 +2888,7 @@ class KidsTasksCard extends HTMLElement {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview" style="width: 70px; height: 70px; border-radius: 12px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="theme-preview" style="width: 72px; height: 72px; border-radius: 12px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -7283,7 +7283,7 @@ class KidsTasksChildCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 50px; height: 50px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
         return '🖼️';
         
@@ -7300,7 +7300,56 @@ class KidsTasksChildCard extends HTMLElement {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview" style="width: 50px; height: 50px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="cosmetic-theme-preview" style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        
+      default:
+        return '🎨';
+    }
+  }
+
+  renderCosmeticPreviewLarge(cosmeticData, rewardName = null) {
+    // Version large pour les modals
+    if (!cosmeticData && rewardName) {
+      cosmeticData = this.generateCosmeticDataFromName(rewardName);
+    }
+    
+    if (!cosmeticData) {
+      return '🎨';
+    }
+    
+    const catalogData = cosmeticData.catalog_data || {};
+    const cosmeticType = cosmeticData.type ? cosmeticData.type.replace(/s$/, '') : '';
+    
+    switch (cosmeticType) {
+      case 'avatar':
+        if (catalogData.emoji) {
+          return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
+        }
+        if (catalogData.pixel_art) {
+          return `<img class="cosmetic-pixel-art-preview-large" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
+        }
+        return '👤';
+        
+      case 'background':
+        if (catalogData.css_gradient) {
+          return `<div class="cosmetic-background-preview-large" style="background: ${catalogData.css_gradient}; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1);"></div>`;
+        }
+        return '🖼️';
+        
+      case 'outfit':
+        if (catalogData.emoji_overlay) {
+          return `<div class="cosmetic-outfit-preview-large">
+            <span class="base-avatar" style="font-size: 3em;">👤</span>
+            <span class="outfit-overlay" style="font-size: 2em; position: absolute;">${catalogData.emoji_overlay}</span>
+          </div>`;
+        }
+        return '👕';
+        
+      case 'theme':
+        const themeCssVars = catalogData.css_variables || {};
+        const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
+        const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
+        return `<div class="cosmetic-theme-preview-large" style="width: 100px; height: 100px; border-radius: 16px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 2px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return '🎨';
@@ -7443,7 +7492,7 @@ class KidsTasksChildCard extends HTMLElement {
     modal.innerHTML = `
       <div class="reward-modal-content">
         <button class="reward-modal-close" data-action="close_modal">×</button>
-        <div class="reward-modal-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+        <div class="reward-modal-icon">${reward.cosmetic_data || reward.category === 'cosmetic' ? this.renderCosmeticPreviewLarge(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}</div>
         <div class="reward-modal-name">${reward.name}</div>
         <div class="reward-modal-price">${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''}</div>
         ${reward.description ? `<div class="reward-modal-description">${reward.description}</div>` : ''}
@@ -7938,7 +7987,6 @@ class KidsTasksChildCardEditor extends HTMLElement {
           align-items: center;
           height: 80px;
           margin-bottom: 16px;
-          background: #f8f9fa;
           border-radius: 8px;
           position: relative;
         }
