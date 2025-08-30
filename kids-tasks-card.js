@@ -13,6 +13,7 @@ class KidsTasksCard extends HTMLElement {
     this.config = config || {};
     this.title = config.title || 'Gestionnaire de Tâches Enfants';
     this.showNavigation = config.show_navigation !== false;
+    this.mode = config.mode || 'dashboard'; // 'dashboard' ou 'config'
   }
 
   set hass(hass) {
@@ -2037,14 +2038,23 @@ class KidsTasksCard extends HTMLElement {
 
   // Navigation et vues (réutilisation du code existant avec ajout des boutons de suppression)
   getNavigation() {
-    const tabs = [
-      { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
-      { id: 'children', label: '👶 Enfants', icon: '👶' },
-      { id: 'tasks', label: '📝 Tâches', icon: '📝' },
-      { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' },
-      { id: 'cosmetics', label: '🎨 Cosmétiques', icon: '🎨' },
-      { id: 'validation', label: '✅ Validation', icon: '✅' }
-    ];
+    let tabs = [];
+    
+    if (this.mode === 'config') {
+      // Onglets pour la carte de configuration
+      tabs = [
+        { id: 'tasks', label: '📝 Tâches', icon: '📝' },
+        { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' },
+        { id: 'cosmetics', label: '🎨 Cosmétiques', icon: '🎨' }
+      ];
+    } else {
+      // Onglets pour la carte dashboard
+      tabs = [
+        { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
+        { id: 'children', label: '👶 Enfants', icon: '👶' },
+        { id: 'validation', label: '✅ Validation', icon: '✅' }
+      ];
+    }
 
     return `
       <div class="nav-tabs">
@@ -2059,14 +2069,25 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getCurrentView() {
-    switch (this.currentView) {
-      case 'dashboard': return this.getDashboardView();
-      case 'children': return this.getChildrenView();
-      case 'tasks': return this.getTasksView();
-      case 'rewards': return this.getRewardsView();
-      case 'cosmetics': return this.getCosmeticsView();
-      case 'validation': return this.getValidationView();
-      default: return this.getDashboardView();
+    // Si mode est défini dans config, utiliser seulement les vues correspondantes
+    if (this.mode === 'config') {
+      // Carte de configuration : tâches, récompenses, cosmétiques
+      switch (this.currentView) {
+        case 'tasks': return this.getTasksView();
+        case 'rewards': return this.getRewardsView();
+        case 'cosmetics': return this.getCosmeticsView();
+        default: 
+          this.currentView = 'tasks'; // Vue par défaut pour config
+          return this.getTasksView();
+      }
+    } else {
+      // Carte dashboard : aperçu, enfants, validation
+      switch (this.currentView) {
+        case 'dashboard': return this.getDashboardView();
+        case 'children': return this.getChildrenView();
+        case 'validation': return this.getValidationView();
+        default: return this.getDashboardView();
+      }
     }
   }
 
@@ -2312,8 +2333,8 @@ class KidsTasksCard extends HTMLElement {
           <button class="btn btn-primary add-btn" data-action="add-reward">Ajouter</button>
         </h2>
         ${rewards.length > 0 ? `
-          <div class="grid grid-2">
-            ${rewards.map(reward => this.renderRewardCard(reward, true)).join('')}
+          <div class="reward-list-compact">
+            ${rewards.map(reward => this.renderRewardItemCompact(reward)).join('')}
           </div>
         ` : `
           <div class="empty-state">
@@ -2518,6 +2539,28 @@ class KidsTasksCard extends HTMLElement {
           ` : `
             <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
           `}
+        </div>
+      </div>
+    `;
+  }
+
+  renderRewardItemCompact(reward) {
+    const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
+    
+    return `
+      <div class="reward-item-compact">
+        <div class="reward-icon-compact">${rewardIcon}</div>
+        <div class="reward-main-compact">
+          <div class="reward-name-compact">${reward.name}</div>
+          <div class="reward-meta-compact">
+            ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
+            ${reward.remaining_quantity !== null ? ` • ${reward.remaining_quantity} restant(s)` : ''}
+          </div>
+          ${reward.description ? `<div class="reward-description-compact">${reward.description}</div>` : ''}
+        </div>
+        <div class="reward-actions-compact">
+          <button class="btn-icon-compact edit-btn" data-action="edit-reward" data-id="${reward.id}" title="Modifier">✎</button>
+          <button class="btn-icon-compact delete-btn" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">🗑</button>
         </div>
       </div>
     `;
@@ -3435,6 +3478,88 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 4px;
         }
         
+        /* Styles pour les récompenses compactes */
+        .reward-list-compact {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .reward-item-compact {
+          display: flex;
+          align-items: center;
+          padding: 8px 12px;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 6px;
+          border-left: 3px solid #4CAF50;
+          transition: all 0.3s ease;
+          min-height: 50px;
+        }
+        
+        .reward-item-compact:hover {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          transform: translateY(-1px);
+        }
+        
+        .reward-icon-compact {
+          font-size: 1.2em;
+          margin-right: 12px;
+          flex-shrink: 0;
+        }
+        
+        .reward-main-compact {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .reward-name-compact {
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+          font-size: 0.9em;
+          margin-bottom: 2px;
+        }
+        
+        .reward-meta-compact {
+          display: flex;
+          gap: 8px;
+          font-size: 0.75em;
+          color: var(--secondary-text-color, #757575);
+          flex-wrap: wrap;
+        }
+        
+        .reward-description-compact {
+          font-size: 0.75em;
+          color: var(--secondary-text-color, #757575);
+          margin-top: 2px;
+          line-height: 1.3;
+        }
+        
+        .reward-actions-compact {
+          display: flex;
+          gap: 4px;
+          flex-shrink: 0;
+        }
+        
+        .btn-icon-compact {
+          background: transparent;
+          border: none;
+          padding: 4px;
+          font-size: 0.85em;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          color: var(--secondary-text-color, #757575);
+        }
+        
+        .btn-icon-compact:hover {
+          background: var(--primary-color, #1976d2);
+          color: white;
+        }
+        
+        .btn-icon-compact.delete-btn:hover {
+          background: #f44336;
+        }
+        
         /* Styles pour l'onglet Validation */
         .validation-tasks-list {
           display: flex;
@@ -3545,6 +3670,73 @@ class KidsTasksCard extends HTMLElement {
         .btn-validation:hover {
           transform: translateY(-1px);
           box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Améliorations pour mobile - validations */
+        @media (max-width: 768px) {
+          .validation-task-item {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px;
+          }
+          
+          .validation-task-icon {
+            margin-right: 0;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 1.8em;
+          }
+          
+          .validation-task-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 8px;
+          }
+          
+          .validation-task-title {
+            font-size: 1.2em;
+            margin-bottom: 4px;
+          }
+          
+          .validation-task-age {
+            font-size: 0.85em;
+          }
+          
+          .validation-task-meta {
+            justify-content: center;
+            margin-bottom: 12px;
+          }
+          
+          .validation-task-actions {
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+            margin-left: 0;
+          }
+          
+          .btn-validation {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 0.9em;
+            min-width: 120px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .validation-task-actions {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .btn-validation {
+            width: 100%;
+          }
+          
+          .validation-task-meta {
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+          }
         }
         
         .badge {
@@ -7373,16 +7565,26 @@ class KidsTasksChildCardEditor extends HTMLElement {
           margin-left: auto;
         }
         
+        .cosmetic-category {
+          margin-bottom: 32px;
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: 12px;
+          padding: 24px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
         .category-description {
           margin: 0 0 20px 0;
           color: var(--secondary-text-color, #757575);
           font-size: 0.95em;
+          line-height: 1.4;
         }
         
         .cosmetic-items-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 20px;
+          margin-top: 16px;
         }
         
         .cosmetic-item {
@@ -7390,9 +7592,10 @@ class KidsTasksChildCardEditor extends HTMLElement {
           flex-direction: column;
           background: var(--card-background-color, white);
           border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: 12px;
-          padding: 16px;
-          transition: all 0.3s;
+          border-radius: 16px;
+          padding: 20px;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
         .cosmetic-item:hover {
