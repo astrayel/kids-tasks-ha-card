@@ -41,7 +41,10 @@
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
-      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)"
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement/**)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks\\cosmetics\\avatars/**)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks\\cosmetics\\outfits/**)"
     ],
     "deny": [],
     "ask": []

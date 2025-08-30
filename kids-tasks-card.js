@@ -1651,11 +1651,11 @@ class KidsTasksCard extends HTMLElement {
       top: 20px;
       right: 20px;
       padding: 12px 20px;
-      background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
+      background: ${type === 'error' ? 'var(--kt-notification-error)' : type === 'success' ? 'var(--kt-notification-success)' : 'var(--kt-notification-info)'};
       color: white;
       border-radius: 4px;
       z-index: 10000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 8px var(--kt-shadow-medium);
       font-family: var(--paper-font-body1_-_font-family, sans-serif);
     `;
     notification.textContent = message;
@@ -2424,8 +2424,9 @@ class KidsTasksCard extends HTMLElement {
             <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
           ` : ''}
           <div class="child-avatar">${avatar}</div>
+          <div class="level-badge">Niveau ${level}</div>
           <div class="child-info">
-            <div class='child-wrapper'><div class="child-name">${name}</div><div class="level-badge">Niveau ${level}</div></div>
+            <div class='child-wrapper'><div class="child-name">${name}</div></div>
             ${showActions && stats ? `
               <div class="child-gauges-compact">
                 <div class="gauge-compact">
@@ -2528,13 +2529,13 @@ class KidsTasksCard extends HTMLElement {
           <div class="task-content">
             <div class="task-meta">
               ${childName}
-              ${task.points > 0 ? `<br><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span>` : ''}
-              ${task.penalty_points > 0 ? `<br><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span>` : ''}
-              ${task.coins > 0 ? `<br><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
+              ${task.points > 0 ? `<br><span style="color: var(--kt-points-color); font-weight: bold;">+${task.points} points</span>` : ''}
+              ${task.penalty_points > 0 ? `<br><span style="color: var(--kt-penalty-color); font-weight: bold;">-${task.penalty_points} points</span>` : ''}
+              ${task.coins > 0 ? `<br><span style="color: var(--kt-coins-color); font-weight: bold;">+${task.coins} coins</span>` : ''}
               ${task.description ? `<br>${task.description}` : ''}
               <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
               ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
-              ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: red;">⏰ Heure limite dépassée</span>` : ''}
+              ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: var(--kt-error);">⏰ Heure limite dépassée</span>` : ''}
             </div>
           </div>
           <div class="task-actions">
@@ -2785,21 +2786,34 @@ class KidsTasksCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
+        if (catalogItemData.pixel_art) {
+          // Si c'est un nom de fichier PNG, construire l'URL
+          if (typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
+            const imageUrl = this.getCosmeticImagePath('avatars', catalogItemData.pixel_art);
+            return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 72px; height: 72px; image-rendering: pixelated;" />`;
+          }
+          // Sinon, traiter comme du contenu inline
+          return `<div class="pixel-art-preview" style="width: 72px; height: 72px;">${catalogItemData.pixel_art}</div>`;
+        }
         if (catalogItemData.emoji) {
           return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
-        }
-        if (catalogItemData.pixel_art) {
-          return `<img class="pixel-art-preview" src="${catalogItemData.pixel_art}" alt="${catalogItemData.name}" />`;
         }
         return `<div class="avatar-preview">👤</div>`;
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
         }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       case 'outfit':
+        if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('outfits', catalogItemData.pixel_art);
+          return `<div style="position: relative; width: 72px; height: 72px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kt-avatar-background); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px;">👤</div>
+            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 72px; height: 72px; image-rendering: pixelated;" />
+          </div>`;
+        }
         if (catalogItemData.emoji_overlay) {
           return `<div class="outfit-preview">
             <span class="base-avatar">👤</span>
@@ -2812,7 +2826,7 @@ class KidsTasksCard extends HTMLElement {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="theme-preview" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -2847,6 +2861,49 @@ class KidsTasksCard extends HTMLElement {
     return `
       <style>
         :host {
+          /* KidsTask Color Variables */
+          --kt-primary: var(--primary-color, #3f51b5);
+          --kt-secondary: var(--accent-color, #ff4081);
+          --kt-success: #4caf50;
+          --kt-warning: #ff9800;
+          --kt-error: #f44336;
+          --kt-info: #2196f3;
+          
+          /* Status colors */
+          --kt-status-todo: var(--kt-warning);
+          --kt-status-progress: var(--kt-info);
+          --kt-status-pending: #ff5722;
+          --kt-status-validated: var(--kt-success);
+          --kt-status-failed: var(--kt-error);
+          
+          /* Points and coins */
+          --kt-points-color: var(--kt-success);
+          --kt-coins-color: #9C27B0;
+          --kt-penalty-color: var(--kt-error);
+          
+          /* Rarity colors */
+          --kt-rarity-common: #9e9e9e;
+          --kt-rarity-rare: var(--kt-info);
+          --kt-rarity-epic: #9c27b0;
+          --kt-rarity-legendary: var(--kt-warning);
+          
+          /* Notification colors */
+          --kt-notification-success: var(--kt-success);
+          --kt-notification-error: var(--kt-error);
+          --kt-notification-info: var(--kt-info);
+          
+          /* Overlay and shadow colors */
+          --kt-overlay: rgba(0, 0, 0, 0.5);
+          --kt-shadow-light: rgba(0, 0, 0, 0.1);
+          --kt-shadow-medium: rgba(0, 0, 0, 0.2);
+          --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
+          
+          /* Avatar and cosmetic colors */
+          --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+          --kt-cosmetic-border: rgba(0,0,0,0.1);
+          --kt-cosmetic-background: var(--kt-cosmetic-background);
+          
+          /* Configurable colors from config */
           --custom-tab-color: ${tabColor};
           --custom-header-color: ${headerColor};
           --custom-dashboard-primary: ${dashboardPrimary};
@@ -2859,10 +2916,12 @@ class KidsTasksCard extends HTMLElement {
           --custom-progress-bar-color: ${progressBarColor};
           --custom-points-badge-color: ${pointsBadgeColor};
           --custom-icon-color: ${iconColor};
-          --custom-rarity-common: #9e9e9e;
-          --custom-rarity-rare: #2196f3;
-          --custom-rarity-epic: #9c27b0;
-          --custom-rarity-legendary: #ff9800;
+          
+          /* Deprecated - keep for compatibility */
+          --custom-rarity-common: var(--kt-rarity-common);
+          --custom-rarity-rare: var(--kt-rarity-rare);
+          --custom-rarity-epic: var(--kt-rarity-epic);
+          --custom-rarity-legendary: var(--kt-rarity-legendary);
         }
         * { box-sizing: border-box; }
         
@@ -2900,8 +2959,8 @@ class KidsTasksCard extends HTMLElement {
           overflow: hidden;
         }
         
-        .nav-tab:hover { background: rgba(255, 255, 255, 0.1); }
-        .nav-tab.active { background: rgba(255, 255, 255, 0.2); font-weight: bold; }
+        .nav-tab:hover { background: var(--kt-cosmetic-background); }
+        .nav-tab.active { background: var(--kt-cosmetic-background); font-weight: bold; }
         
         .content { padding: 20px; background: var(--card-background-color, white); }
         .section { margin-bottom: 24px; }
@@ -3083,7 +3142,7 @@ class KidsTasksCard extends HTMLElement {
           height: 3em !important;
           border-radius: 50% !important;
           object-fit: cover !important;
-          border: 2px solid rgba(255,255,255,0.2);
+          border: 2px solid var(--kt-cosmetic-background);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           flex-shrink: 0;
         }
@@ -3106,7 +3165,7 @@ class KidsTasksCard extends HTMLElement {
           height: 3em !important;
           border-radius: 50% !important;
           object-fit: cover !important;
-          border: 2px solid rgba(255,255,255,0.2);
+          border: 2px solid var(--kt-cosmetic-background);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           flex-shrink: 0;
         }
@@ -3145,7 +3204,7 @@ class KidsTasksCard extends HTMLElement {
           height: 2.5em !important;
           border-radius: 8px !important;
           object-fit: cover !important;
-          border: 2px solid rgba(255,255,255,0.1);
+          border: 2px solid var(--kt-cosmetic-background);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           flex-shrink: 0;
         }
@@ -3265,7 +3324,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .gauge-fill-compact.coins-progress {
-          background: linear-gradient(90deg, #9C27B0, #E1BEE7);
+          background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7);
         }
         
         .task-item {
@@ -3281,8 +3340,8 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .task-item:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .task-item.pending_validation { border-left-color: #ff5722; background: #fff3e0; }
-        .task-item.validated { border-left-color: #4caf50; }
+        .task-item.pending_validation { border-left-color: var(--kt-status-pending); background: #fff3e0; }
+        .task-item.validated { border-left-color: var(--kt-status-validated); }
         
         .task-top-row {
           display: flex;
@@ -3365,16 +3424,16 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .task-item-compact.out-of-period {
-          border-left-color: #ff9800;
+          border-left-color: var(--kt-warning);
           background: #fff8e1;
         }
         
         .task-item-compact.validated {
-          border-left-color: #4caf50;
+          border-left-color: var(--kt-success);
         }
         
         .task-item-compact.pending_validation {
-          border-left-color: #ff5722;
+          border-left-color: var(--kt-status-pending);
           background: #fff3e0;
         }
         
@@ -3418,7 +3477,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .reward-points {
-          background: #4CAF50;
+          background: var(--kt-success);
           color: white;
           padding: 2px 6px;
           border-radius: 8px;
@@ -3436,7 +3495,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .penalty-points {
-          background: #f44336;
+          background: var(--kt-error);
           color: white;
           padding: 2px 6px;
           border-radius: 8px;
@@ -3535,7 +3594,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .btn-icon-compact.delete-btn:hover {
-          background: #f44336;
+          background: var(--kt-error);
         }
         
         /* Styles pour l'onglet Validation */
@@ -3600,7 +3659,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .validation-child {
-          background: #2196f3;
+          background: var(--kt-info);
           color: white;
           padding: 2px 8px;
           border-radius: 12px;
@@ -3768,7 +3827,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .task-actions .edit-btn {
-          background-color: #4caf50;
+          background-color: var(--kt-success);
           color: white;
           border: 1px solid #4caf50;
           order: 2;
@@ -3779,7 +3838,7 @@ class KidsTasksCard extends HTMLElement {
         }
         
         .task-actions .delete-btn {
-          background-color: #f44336;
+          background-color: var(--kt-error);
           color: white;
           border: 1px solid #f44336;
           order: 1;
@@ -3796,7 +3855,7 @@ class KidsTasksCard extends HTMLElement {
           width: 24px;
           height: 24px;
           border: none;
-          background: #f44336;
+          background: var(--kt-error);
           color: white;
           border-radius: 50%;
           cursor: pointer;
@@ -3918,11 +3977,11 @@ class KidsTasksCard extends HTMLElement {
           display: inline-block;
         }
         
-        .status-todo { background: #ff9800; color: white; }
-        .status-in_progress { background: #2196f3; color: white; }
-        .status-pending_validation { background: #ff5722; color: white; }
-        .status-validated { background: #4caf50; color: white; }
-        .status-failed { background: #f44336; color: white; }
+        .status-todo { background: var(--kt-status-todo); color: white; }
+        .status-in_progress { background: var(--kt-status-progress); color: white; }
+        .status-pending_validation { background: var(--kt-status-pending); color: white; }
+        .status-validated { background: var(--kt-status-validated); color: white; }
+        .status-failed { background: var(--kt-status-failed); color: white; }
         
         .btn {
           padding: 8px 16px;
@@ -3947,8 +4006,8 @@ class KidsTasksCard extends HTMLElement {
         .btn:active { transform: translateY(0); }
         
         .btn-primary { background: var(--custom-dashboard-primary); color: white; }
-        .btn-success { background: #4caf50; color: white; }
-        .btn-danger { background: #f44336; color: white; }
+        .btn-success { background: var(--kt-success); color: white; }
+        .btn-danger { background: var(--kt-error); color: white; }
         .btn-secondary {
           background: var(--secondary-background-color, #fafafa);
           color: var(--primary-text-color, #212121);
@@ -5205,7 +5264,7 @@ class KidsTasksChildCard extends HTMLElement {
       top: 20px;
       right: 20px;
       padding: 12px 20px;
-      background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
+      background: ${type === 'error' ? 'var(--kt-notification-error)' : type === 'success' ? 'var(--kt-notification-success)' : 'var(--kt-notification-info)'};
       color: white;
       border-radius: 8px;
       z-index: 10000;
@@ -5755,13 +5814,13 @@ class KidsTasksChildCard extends HTMLElement {
           font-size: 3em;
           margin-bottom: 8px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.1);
+          background: var(--kt-cosmetic-background);
           width: 80px;
           height: 80px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 3px dashed rgba(255,255,255,0.2);
+          border: 3px dashed var(--kt-cosmetic-background);
         }
         
         .avatar img {
@@ -5872,7 +5931,7 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .coins-progress {
-          background: linear-gradient(90deg, #9C27B0, #E1BEE7);
+          background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7);
         }
         
         .gauge-text {
@@ -6183,7 +6242,7 @@ class KidsTasksChildCard extends HTMLElement {
           width: 20px;
           height: 12px;
           border-radius: 3px;
-          border: 1px solid rgba(0,0,0,0.1);
+          border: 1px solid var(--kt-cosmetic-border);
         }
         
         .cosmetic-outfit-preview {
@@ -7267,6 +7326,15 @@ class KidsTasksChildCard extends HTMLElement {
     </svg>`;
   }
 
+  getCosmeticImagePath(cosmeticType, fileName) {
+    // Construire le chemin vers l'image cosmétique
+    if (!fileName || !cosmeticType) return null;
+    
+    // URL de base pour les cosmétiques dans Home Assistant
+    const baseUrl = '/local/community/kids_tasks/cosmetics';
+    return `${baseUrl}/${cosmeticType}/${fileName}`;
+  }
+
   generateCosmeticDataFromName(rewardName) {
     // Générer des données cosmétiques basées sur le nom de la récompense
     if (!rewardName) return null;
@@ -7278,8 +7346,7 @@ class KidsTasksChildCard extends HTMLElement {
       return {
         type: 'avatar',
         catalog_data: { 
-          pixel_art: true,
-          default_avatar: true
+          pixel_art: 'default_child.png'
         }
       };
     }
@@ -7338,24 +7405,38 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
-        if (catalogData.pixel_art && catalogData.default_avatar) {
-          return this.generatePixelArtAvatar();
+        if (catalogData.pixel_art) {
+          // Si c'est un nom de fichier PNG, construire l'URL
+          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+            const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
+            return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
+          }
+          // Fallback pour l'ancien système (default_avatar = true)
+          if (catalogData.default_avatar) {
+            return this.generatePixelArtAvatar();
+          }
+          // Si c'est du SVG inline
+          return `<div style="display: inline-block; width: 54px; height: 54px;">${catalogData.pixel_art}</div>`;
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
-        }
-        if (catalogData.pixel_art) {
-          return `<img class="cosmetic-pixel-art-preview" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
         }
         return '👤';
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: 8px; border: 1px solid var(--kt-cosmetic-border);"></div>`;
         }
         return '🖼️';
         
       case 'outfit':
+        if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('outfits', catalogData.pixel_art);
+          return `<div style="position: relative; width: 54px; height: 54px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 54px; height: 54px; image-rendering: pixelated;" />
+          </div>`;
+        }
         if (catalogData.emoji_overlay) {
           return `<div class="cosmetic-outfit-preview">
             <span class="base-avatar">👤</span>
@@ -7368,7 +7449,7 @@ class KidsTasksChildCard extends HTMLElement {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview" style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="cosmetic-theme-preview" style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       default:
         return '🎨';
@@ -7390,14 +7471,21 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
-        if (catalogData.pixel_art && catalogData.default_avatar) {
-          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
+        if (catalogData.pixel_art) {
+          // Si c'est un nom de fichier PNG, construire l'URL
+          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+            const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
+            return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
+          }
+          // Fallback pour l'ancien système (default_avatar = true)
+          if (catalogData.default_avatar) {
+            return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
+          }
+          // Si c'est du SVG inline
+          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${catalogData.pixel_art}</div>`;
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
-        }
-        if (catalogData.pixel_art) {
-          return `<img class="cosmetic-pixel-art-preview-large" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
         }
         return '👤';
         
@@ -8095,7 +8183,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         }
 
         .cosmetic-simple-item.rarity-legendary {
-          border-left-color: #ff9800;
+          border-left-color: var(--kt-warning);
         }
 
         .cosmetic-simple-item:hover {
@@ -8270,7 +8358,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         }
         
         .cost-points {
-          background: #2196f3;
+          background: var(--kt-info);
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
@@ -8279,7 +8367,7 @@ class KidsTasksChildCardEditor extends HTMLElement {
         }
         
         .cost-coins {
-          background: #ff9800;
+          background: var(--kt-warning);
           color: white;
           padding: 4px 8px;
           border-radius: 12px;
