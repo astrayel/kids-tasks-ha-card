@@ -145,9 +145,6 @@ class KidsTasksCard extends HTMLElement {
     const action = target.dataset.action;
     const id = target.dataset.id;
     
-    // Debug pour les actions cosmétiques (PARENT CARD)
-    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards' || action === 'activate-cosmetic') {
-    }
 
     // Pour les filtres de tâches, passer le filtre à la place de l'ID
     if (action === 'filter-tasks') {
@@ -322,6 +319,43 @@ class KidsTasksCard extends HTMLElement {
         // Changer l'onglet enfant actif dans la vue cosmétiques
         console.log('DEBUG COSMETICS: Switching cosmetics child (PARENT)');
         this.switchCosmeticsChild(target.dataset.childId);
+        break;
+        
+      case 'give-cosmetic':
+        const giveButton = event.target;
+        const cosmeticId = giveButton.dataset.cosmeticId;
+        const select = giveButton.parentElement.querySelector('.cosmetic-give-select');
+        const childId = select.value;
+        
+        if (!childId) {
+          this.showNotification('Veuillez sélectionner un enfant', 'error');
+          return;
+        }
+        
+        if (!this._hass) {
+          this.showNotification('Erreur : Home Assistant non disponible', 'error');
+          return;
+        }
+        
+        try {
+          this._hass.callService('kids_tasks', 'claim_reward', {
+            child_id: childId,
+            reward_id: cosmeticId
+          })
+          .then(() => {
+            const cosmetic = this.getRewards().find(r => r.id === cosmeticId);
+            const child = this.getChildren().find(c => c.id === childId);
+            this.showNotification(`${cosmetic?.name || 'Cosmétique'} donné à ${child?.name || 'l\'enfant'} ! 🎁`, 'success');
+            select.value = ''; // Reset selection
+          })
+          .catch(error => {
+            console.error('Erreur lors du don du cosmétique:', error);
+            this.showNotification('Erreur lors du don : ' + error.message, 'error');
+          });
+        } catch (error) {
+          console.error('Erreur lors du don du cosmétique:', error);
+          this.showNotification('Erreur lors du don du cosmétique', 'error');
+        }
         break;
         
       case 'activate-cosmetic':
@@ -2662,35 +2696,41 @@ class KidsTasksCard extends HTMLElement {
   }
 
   getCosmeticsView() {
-    const cosmeticsChildren = this.getChildren();
+    const children = this.getChildren();
     const allRewards = this.getRewards();
     
-    // Filtrer par category: cosmetic et par nom
+    // Filtrer les cosmétiques
     const cosmeticsRewards = allRewards.filter(r => {
-      // Utiliser category au lieu de reward_type
-      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic');
-      const hasCosmetic2 = r.name && (
-        r.name.toLowerCase().includes('avatar') ||
-        r.name.toLowerCase().includes('thème') ||
-        r.name.toLowerCase().includes('theme') ||
-        r.name.toLowerCase().includes('background') ||
-        r.name.toLowerCase().includes('outfit') ||
-        r.name.toLowerCase().includes('océan') ||
-        r.name.toLowerCase().includes('coucher')
-      );
-      
-      if (hasCosmetic || hasCosmetic2) {
-        console.log('DEBUG: Found cosmetic:', r.name, 'category:', r.category, 'reward_type:', r.reward_type, 'cosmetic_data:', r.cosmetic_data);
-      }
-      
-      return hasCosmetic || hasCosmetic2;
+      return !!(r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic');
     });
-    console.log('DEBUG PARENT COSMETICS: Cosmetic rewards found:', cosmeticsRewards.length);
+    
+    if (cosmeticsRewards.length === 0) {
+      return `
+        <div class="section">
+          <h2>
+            🎨 Cosmétiques
+            <div class="section-actions">
+              <button class="btn btn-primary" data-action="load-cosmetics-catalog">
+                🔄 Charger le catalogue
+              </button>
+              <button class="btn btn-secondary" data-action="create-cosmetic-rewards">
+                ⚡ Créer les récompenses
+              </button>
+            </div>
+          </h2>
+          <div class="empty-state">
+            <div class="empty-state-icon">🎨</div>
+            <p>Aucun cosmétique disponible</p>
+            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Chargez le catalogue et créez les récompenses pour voir les cosmétiques.</p>
+          </div>
+        </div>
+      `;
+    }
     
     return `
       <div class="section">
         <h2>
-          🎨 Cosmétiques
+          🎨 Cosmétiques (${cosmeticsRewards.length})
           <div class="section-actions">
             <button class="btn btn-primary" data-action="load-cosmetics-catalog">
               🔄 Charger le catalogue
@@ -2701,35 +2741,35 @@ class KidsTasksCard extends HTMLElement {
           </div>
         </h2>
         
-        ${cosmeticsChildren.length > 0 ? `
-          <div class="cosmetics-children-tabs">
-            ${cosmeticsChildren.map((cosmeticChild, childIndex) => `
-              <button class="cosmetics-child-tab ${childIndex === 0 ? 'active' : ''}" 
-                      data-action="switch-cosmetics-child" data-child-id="${cosmeticChild.id}">
-                <span class="child-avatar">${cosmeticChild.avatar || '👶'}</span>
-                <span class="child-name">${cosmeticChild.name}</span>
-                <div class="child-currency">
-                  <span class="points">${cosmeticChild.points}p</span>
-                  <span class="coins">${cosmeticChild.coins}c</span>
-                </div>
-              </button>
-            `).join('')}
-          </div>
-          
-          <div class="cosmetics-content">
-            ${cosmeticsChildren.map((cosmeticChild, childIndex) => `
-              <div class="cosmetics-child-panel ${childIndex === 0 ? 'active' : ''}" data-child-id="${cosmeticChild.id}">
-                ${this.renderCosmeticsForChild(cosmeticChild, cosmeticsRewards)}
+        <div class="cosmetics-simple-grid">
+          ${cosmeticsRewards.map(cosmetic => `
+            <div class="cosmetic-simple-item" data-cosmetic-id="${cosmetic.id}">
+              <div class="cosmetic-simple-preview">
+                ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
               </div>
-            `).join('')}
-          </div>
-        ` : `
-          <div class="empty-state">
-            <div class="empty-state-icon">👶</div>
-            <p>Aucun enfant configuré</p>
-            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Ajoutez des enfants pour gérer leurs cosmétiques.</p>
-          </div>
-        `}
+              <div class="cosmetic-simple-info">
+                <div class="cosmetic-simple-name">${cosmetic.name}</div>
+                <div class="cosmetic-simple-rarity">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
+                <div class="cosmetic-simple-cost">
+                  ${cosmetic.cost > 0 ? `${cosmetic.cost}p` : ''}
+                  ${cosmetic.coin_cost > 0 ? `${cosmetic.cost > 0 ? ' + ' : ''}${cosmetic.coin_cost}c` : ''}
+                  ${cosmetic.cost === 0 && cosmetic.coin_cost === 0 ? 'Gratuit' : ''}
+                </div>
+              </div>
+              <div class="cosmetic-simple-actions">
+                <select class="cosmetic-give-select" data-cosmetic-id="${cosmetic.id}">
+                  <option value="">Donner à...</option>
+                  ${children.map(child => `
+                    <option value="${child.id}">${child.name}</option>
+                  `).join('')}
+                </select>
+                <button class="btn btn-sm btn-primary" data-action="give-cosmetic" data-cosmetic-id="${cosmetic.id}">
+                  🎁 Donner
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   }
@@ -7989,6 +8029,63 @@ class KidsTasksChildCardEditor extends HTMLElement {
           margin-bottom: 16px;
           border-radius: 8px;
           position: relative;
+        }
+
+        .cosmetics-simple-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 16px;
+          margin-top: 16px;
+        }
+
+        .cosmetic-simple-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px;
+          background: var(--card-background-color, #fff);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+        }
+
+        .cosmetic-simple-preview {
+          flex-shrink: 0;
+        }
+
+        .cosmetic-simple-info {
+          flex-grow: 1;
+        }
+
+        .cosmetic-simple-name {
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        .cosmetic-simple-rarity {
+          font-size: 0.85em;
+          color: var(--secondary-text-color, #757575);
+          margin-bottom: 4px;
+        }
+
+        .cosmetic-simple-cost {
+          font-size: 0.9em;
+          font-weight: 500;
+          color: var(--primary-color, #1976d2);
+        }
+
+        .cosmetic-simple-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          align-items: flex-end;
+        }
+
+        .cosmetic-give-select {
+          padding: 4px 8px;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 4px;
+          background: var(--card-background-color, #fff);
+          font-size: 0.9em;
         }
         
         .avatar-preview {
