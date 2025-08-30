@@ -1868,7 +1868,10 @@ class KidsTasksCard extends HTMLElement {
             description: attrs.description || '',
             active: attrs.active !== false,
             remaining_quantity: attrs.remaining_quantity,
-            is_available: attrs.is_available !== false
+            is_available: attrs.is_available !== false,
+            reward_type: attrs.reward_type || 'standard',
+            cosmetic_data: attrs.cosmetic_data || null,
+            min_level: parseInt(attrs.min_level) || 1
           });
         }
       }
@@ -2059,7 +2062,8 @@ class KidsTasksCard extends HTMLElement {
       tabs = [
         { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
         { id: 'children', label: '👶 Enfants', icon: '👶' },
-        { id: 'validation', label: '✅ Validation', icon: '✅' }
+        { id: 'validation', label: '✅ Validation', icon: '✅' },
+        { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' }
       ];
     }
 
@@ -2088,11 +2092,12 @@ class KidsTasksCard extends HTMLElement {
           return this.getTasksView();
       }
     } else {
-      // Carte dashboard : aperçu, enfants, validation
+      // Carte dashboard : aperçu, enfants, validation, récompenses
       switch (this.currentView) {
         case 'dashboard': return this.getDashboardView();
         case 'children': return this.getChildrenView();
         case 'validation': return this.getValidationView();
+        case 'rewards': return this.getRewardsView();
         default: return this.getDashboardView();
       }
     }
@@ -2665,10 +2670,8 @@ class KidsTasksCard extends HTMLElement {
   getCosmeticsView() {
     const cosmeticsChildren = this.getChildren();
     const allRewards = this.getRewards();
-    console.log('DEBUG COSMETICS VIEW: All rewards:', allRewards);
     // Filtrer par cosmetic_data au lieu de reward_type
     const cosmeticsRewards = allRewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
-    console.log('DEBUG COSMETICS VIEW: Cosmetic rewards found:', cosmeticsRewards);
     
     return `
       <div class="section">
@@ -5183,7 +5186,10 @@ class KidsTasksChildCard extends HTMLElement {
             description: attrs.description || '',
             active: attrs.active !== false,
             remaining_quantity: attrs.remaining_quantity,
-            is_available: attrs.is_available !== false
+            is_available: attrs.is_available !== false,
+            reward_type: attrs.reward_type || 'standard',
+            cosmetic_data: attrs.cosmetic_data || null,
+            min_level: parseInt(attrs.min_level) || 1
           });
         }
       }
