@@ -2670,15 +2670,11 @@ class KidsTasksCard extends HTMLElement {
     const cosmeticsChildren = this.getChildren();
     const allRewards = this.getRewards();
     console.log('DEBUG PARENT COSMETICS: Total rewards found:', allRewards.length);
-    allRewards.forEach((r, i) => {
-      console.log(`DEBUG PARENT REWARD ${i}:`, {
-        id: r.id,
-        name: r.name,
-        reward_type: r.reward_type,
-        cosmetic_data: r.cosmetic_data,
-        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
-      });
-    });
+    // Tester avec une boucle for simple
+    for (let i = 0; i < Math.min(allRewards.length, 5); i++) {
+      const r = allRewards[i];
+      console.log(`DEBUG PARENT REWARD ${i}:`, r.name, 'cosmetic_data:', r.cosmetic_data, 'reward_type:', r.reward_type);
+    }
     
     // Filtrer par cosmetic_data et par nom (détection permissive)
     const cosmeticsRewards = allRewards.filter(r => {
