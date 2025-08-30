@@ -1851,12 +1851,17 @@ class KidsTasksCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
+    // Debug: Compter toutes les entités qui commencent par kidtasks_reward_
+    const rewardEntityIds = Object.keys(entities).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+    console.log('DEBUG getRewards(): Found reward entity IDs:', rewardEntityIds);
+    
     // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_reward_
     Object.keys(entities).forEach(entityId => {
       if (entityId.startsWith('sensor.kidtasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
+          console.log(`DEBUG getRewards(): Entity ${entityId} attributes:`, attrs);
           
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
@@ -2670,8 +2675,20 @@ class KidsTasksCard extends HTMLElement {
   getCosmeticsView() {
     const cosmeticsChildren = this.getChildren();
     const allRewards = this.getRewards();
+    console.log('DEBUG PARENT COSMETICS: Total rewards found:', allRewards.length);
+    allRewards.forEach((r, i) => {
+      console.log(`DEBUG PARENT REWARD ${i}:`, {
+        id: r.id,
+        name: r.name,
+        reward_type: r.reward_type,
+        cosmetic_data: r.cosmetic_data,
+        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
+      });
+    });
+    
     // Filtrer par cosmetic_data au lieu de reward_type
     const cosmeticsRewards = allRewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
+    console.log('DEBUG PARENT COSMETICS: Cosmetic rewards found:', cosmeticsRewards.length);
     
     return `
       <div class="section">
@@ -5169,12 +5186,17 @@ class KidsTasksChildCard extends HTMLElement {
     const entities = this._hass.states;
     const rewards = [];
     
+    // Debug: Compter toutes les entités qui commencent par kidtasks_reward_
+    const rewardEntityIds = Object.keys(entities).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+    console.log('DEBUG getRewards(): Found reward entity IDs:', rewardEntityIds);
+    
     // VERSION SIMPLIFIÉE - Chercher UNIQUEMENT les capteurs kidtasks_reward_
     Object.keys(entities).forEach(entityId => {
       if (entityId.startsWith('sensor.kidtasks_reward_')) {
         const rewardEntity = entities[entityId];
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
+          console.log(`DEBUG getRewards(): Entity ${entityId} attributes:`, attrs);
           
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
@@ -7099,9 +7121,24 @@ class KidsTasksChildCard extends HTMLElement {
     const childCoins = child ? child.coins || 0 : 0;
     const childLevel = child ? child.level || 1 : 1;
     
+    // Debug temporaire pour diagnostiquer le problème
+    console.log('DEBUG CHILD CARD REWARDS: Total rewards found:', rewards.length);
+    rewards.forEach((r, i) => {
+      console.log(`DEBUG REWARD ${i}:`, {
+        id: r.id,
+        name: r.name,
+        reward_type: r.reward_type,
+        cosmetic_data: r.cosmetic_data,
+        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
+      });
+    });
+    
     // Séparer les récompenses normales des cosmétiques
     const regularRewards = rewards.filter(r => !r.cosmetic_data && r.reward_type !== 'cosmetic');
     const cosmeticRewards = rewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
+    
+    console.log('DEBUG CHILD CARD: Regular rewards count:', regularRewards.length);
+    console.log('DEBUG CHILD CARD: Cosmetic rewards count:', cosmeticRewards.length);
     
     // Filtrer par niveau minimum
     const availableRegularRewards = regularRewards.filter(r => (r.min_level || 1) <= childLevel);
