@@ -2871,9 +2871,9 @@ class KidsTasksCard extends HTMLElement {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 70px; height: 70px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 70px; height: 70px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       case 'outfit':
         if (catalogItemData.emoji_overlay) {
@@ -2888,7 +2888,7 @@ class KidsTasksCard extends HTMLElement {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview" style="width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="theme-preview" style="width: 70px; height: 70px; border-radius: 12px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -7257,11 +7257,6 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   renderCosmeticPreview(cosmeticData, rewardName = null) {
-    // Debug temporaire
-    if (rewardName && rewardName.includes('Océan')) {
-      console.log('DEBUG Océan cosmetic data:', cosmeticData);
-    }
-    
     // Si pas de cosmetic_data, essayer de la générer depuis le nom
     if (!cosmeticData && rewardName) {
       cosmeticData = this.generateCosmeticDataFromName(rewardName);
@@ -7276,11 +7271,6 @@ class KidsTasksChildCard extends HTMLElement {
     // Normaliser le type (enlever le 's' final si présent pour 'backgrounds' -> 'background')
     const cosmeticType = cosmeticData.type ? cosmeticData.type.replace(/s$/, '') : '';
     
-    // Debug temporaire 
-    if (rewardName && rewardName.includes('Océan')) {
-      console.log('DEBUG Océan normalized type:', cosmeticType, 'catalog_data:', catalogData);
-    }
-    
     switch (cosmeticType) {
       case 'avatar':
         if (catalogData.emoji) {
@@ -7293,7 +7283,7 @@ class KidsTasksChildCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 50px; height: 50px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
         return '🖼️';
         
@@ -7310,7 +7300,7 @@ class KidsTasksChildCard extends HTMLElement {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview" style="width: 24px; height: 24px; border-radius: 4px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="cosmetic-theme-preview" style="width: 50px; height: 50px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return '🎨';
