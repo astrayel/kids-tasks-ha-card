@@ -1859,6 +1859,7 @@ class KidsTasksCard extends HTMLElement {
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
+          
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
@@ -2669,28 +2670,23 @@ class KidsTasksCard extends HTMLElement {
   getCosmeticsView() {
     const cosmeticsChildren = this.getChildren();
     const allRewards = this.getRewards();
-    console.log('DEBUG PARENT COSMETICS: Total rewards found:', allRewards.length);
-    // Tester avec une boucle for simple
-    for (let i = 0; i < Math.min(allRewards.length, 5); i++) {
-      const r = allRewards[i];
-      console.log(`DEBUG PARENT REWARD ${i}:`, r.name, 'cosmetic_data:', r.cosmetic_data, 'reward_type:', r.reward_type);
-    }
     
-    // Filtrer par cosmetic_data et par nom (détection permissive)
+    // Filtrer par category: cosmetic et par nom
     const cosmeticsRewards = allRewards.filter(r => {
-      // Critères de détection plus permissifs
-      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic');
+      // Utiliser category au lieu de reward_type
+      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic');
       const hasCosmetic2 = r.name && (
         r.name.toLowerCase().includes('avatar') ||
         r.name.toLowerCase().includes('thème') ||
         r.name.toLowerCase().includes('theme') ||
         r.name.toLowerCase().includes('background') ||
         r.name.toLowerCase().includes('outfit') ||
-        r.name.toLowerCase().includes('cosmetic')
+        r.name.toLowerCase().includes('océan') ||
+        r.name.toLowerCase().includes('coucher')
       );
       
-      if (hasCosmetic2) {
-        console.log('DEBUG: Found potential cosmetic by name:', r.name, 'reward_type:', r.reward_type, 'cosmetic_data:', r.cosmetic_data);
+      if (hasCosmetic || hasCosmetic2) {
+        console.log('DEBUG: Found cosmetic:', r.name, 'category:', r.category, 'reward_type:', r.reward_type, 'cosmetic_data:', r.cosmetic_data);
       }
       
       return hasCosmetic || hasCosmetic2;
@@ -2802,7 +2798,7 @@ class KidsTasksCard extends HTMLElement {
                   return `
                     <div class="cosmetic-item ${isOwnedByChild ? 'owned' : ''} ${isActiveCosmeticForChild ? 'active' : ''}">
                       <div class="cosmetic-preview">
-                        ${this.renderCosmeticItemPreview(rewardItem.cosmetic_data)}
+                        ${this.renderCosmeticItemPreview(rewardItem.cosmetic_data, rewardItem.name)}
                       </div>
                       <div class="cosmetic-info">
                         <div class="cosmetic-name">${rewardItem.name}</div>
@@ -2854,7 +2850,16 @@ class KidsTasksCard extends HTMLElement {
     `;
   }
 
-  renderCosmeticItemPreview(cosmeticItemData) {
+  renderCosmeticItemPreview(cosmeticItemData, rewardName = null) {
+    // Si pas de cosmetic_data, essayer de la générer depuis le nom
+    if (!cosmeticItemData && rewardName) {
+      cosmeticItemData = this.generateCosmeticDataFromName(rewardName);
+    }
+    
+    if (!cosmeticItemData) {
+      return `<div class="generic-preview">🎨</div>`;
+    }
+    
     const catalogItemData = cosmeticItemData.catalog_data || {};
     
     switch (cosmeticItemData.type) {
@@ -5201,6 +5206,7 @@ class KidsTasksChildCard extends HTMLElement {
         if (rewardEntity && rewardEntity.attributes && rewardEntity.state !== 'unavailable') {
           const attrs = rewardEntity.attributes;
           
+          
           rewards.push({
             id: attrs.reward_id || entityId.replace('sensor.kidtasks_reward_', ''),
             name: attrs.reward_name || attrs.friendly_name || 'Récompense',
@@ -7124,28 +7130,18 @@ class KidsTasksChildCard extends HTMLElement {
     const childCoins = child ? child.coins || 0 : 0;
     const childLevel = child ? child.level || 1 : 1;
     
-    // Debug temporaire pour diagnostiquer le problème
-    console.log('DEBUG CHILD CARD REWARDS: Total rewards found:', rewards.length);
-    rewards.forEach((r, i) => {
-      console.log(`DEBUG CHILD REWARD ${i}:`, {
-        id: r.id,
-        name: r.name,
-        reward_type: r.reward_type,
-        cosmetic_data: r.cosmetic_data,
-        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
-      });
-    });
     
-    // Séparer les récompenses normales des cosmétiques avec détection par nom
+    // Séparer les récompenses normales des cosmétiques avec détection par category
     const isCosmetic = (r) => {
-      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic');
+      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic');
       const hasCosmetic2 = r.name && (
         r.name.toLowerCase().includes('avatar') ||
         r.name.toLowerCase().includes('thème') ||
         r.name.toLowerCase().includes('theme') ||
         r.name.toLowerCase().includes('background') ||
         r.name.toLowerCase().includes('outfit') ||
-        r.name.toLowerCase().includes('cosmetic')
+        r.name.toLowerCase().includes('océan') ||
+        r.name.toLowerCase().includes('coucher')
       );
       return hasCosmetic || hasCosmetic2;
     };
@@ -7153,8 +7149,6 @@ class KidsTasksChildCard extends HTMLElement {
     const regularRewards = rewards.filter(r => !isCosmetic(r));
     const cosmeticRewards = rewards.filter(r => isCosmetic(r));
     
-    console.log('DEBUG CHILD CARD: Regular rewards count:', regularRewards.length);
-    console.log('DEBUG CHILD CARD: Cosmetic rewards count:', cosmeticRewards.length);
     
     // Filtrer par niveau minimum
     const availableRegularRewards = regularRewards.filter(r => (r.min_level || 1) <= childLevel);
@@ -7204,11 +7198,11 @@ class KidsTasksChildCard extends HTMLElement {
       
       <div class="rewards-grid">
         ${affordableRewards.map(reward => `
-          <div class="reward-square affordable ${getCurrencyClass(reward)} ${reward.cosmetic_data ? 'cosmetic' : 'regular'}" 
+          <div class="reward-square affordable ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
             <div class="reward-icon-large">
-              ${reward.cosmetic_data ? this.renderCosmeticPreview(reward.cosmetic_data) : this.safeGetCategoryIcon(reward, '🎁')}
+              ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name">${reward.name}</div>
             <div class="reward-price">
@@ -7219,11 +7213,11 @@ class KidsTasksChildCard extends HTMLElement {
           </div>
         `).join('')}
         ${expensiveRewards.map(reward => `
-          <div class="reward-square ${getCurrencyClass(reward)} ${reward.cosmetic_data ? 'cosmetic' : 'regular'}" 
+          <div class="reward-square ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
             <div class="reward-icon-large" style="opacity: 0.5">
-              ${reward.cosmetic_data ? this.renderCosmeticPreview(reward.cosmetic_data) : this.safeGetCategoryIcon(reward, '🎁')}
+              ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
             <div class="reward-price" style="opacity: 0.5">
@@ -7237,16 +7231,68 @@ class KidsTasksChildCard extends HTMLElement {
     `;
   }
 
-  renderCosmeticPreview(cosmeticData) {
-    console.log('DEBUG renderCosmeticPreview: cosmeticData:', cosmeticData);
+  generateCosmeticDataFromName(rewardName) {
+    // Générer des données cosmétiques basées sur le nom de la récompense
+    if (!rewardName) return null;
+    
+    const name = rewardName.toLowerCase();
+    
+    // Avatars
+    if (name.includes('avatar')) {
+      return {
+        type: 'avatar',
+        catalog_data: { emoji: '👤' }
+      };
+    }
+    
+    // Thèmes
+    if (name.includes('thème') || name.includes('theme')) {
+      let colors = { '--primary-color': '#667eea', '--secondary-color': '#764ba2' };
+      
+      if (name.includes('sombre') || name.includes('dark')) {
+        colors = { '--primary-color': '#4a5568', '--secondary-color': '#2d3748' };
+      } else if (name.includes('arc-en-ciel') || name.includes('rainbow')) {
+        colors = { '--primary-color': '#ff6b6b', '--secondary-color': '#4ecdc4' };
+      } else if (name.includes('spatial') || name.includes('space')) {
+        colors = { '--primary-color': '#1e3a8a', '--secondary-color': '#312e81' };
+      }
+      
+      return {
+        type: 'theme',
+        catalog_data: { css_variables: colors }
+      };
+    }
+    
+    // Arrière-plans
+    if (name.includes('background') || name.includes('coucher') || name.includes('océan')) {
+      let gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      
+      if (name.includes('coucher') || name.includes('sunset')) {
+        gradient = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)';
+      } else if (name.includes('océan') || name.includes('ocean')) {
+        gradient = 'linear-gradient(135deg, #667db6 0%, #0082c8 100%)';
+      }
+      
+      return {
+        type: 'background',
+        catalog_data: { css_gradient: gradient }
+      };
+    }
+    
+    return null;
+  }
+
+  renderCosmeticPreview(cosmeticData, rewardName = null) {
+    // Si pas de cosmetic_data, essayer de la générer depuis le nom
+    if (!cosmeticData && rewardName) {
+      cosmeticData = this.generateCosmeticDataFromName(rewardName);
+    }
+    
     if (!cosmeticData) {
-      console.log('DEBUG renderCosmeticPreview: No cosmetic data, returning default');
       return '🎨';
     }
     
     const catalogData = cosmeticData.catalog_data || {};
-    console.log('DEBUG renderCosmeticPreview: catalogData:', catalogData);
-    console.log('DEBUG renderCosmeticPreview: type:', cosmeticData.type);
     
     switch (cosmeticData.type) {
       case 'avatar':
