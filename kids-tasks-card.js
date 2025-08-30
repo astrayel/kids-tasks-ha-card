@@ -2669,6 +2669,16 @@ class KidsTasksCard extends HTMLElement {
   getCosmeticsView() {
     const cosmeticsChildren = this.getChildren();
     const allRewards = this.getRewards();
+    console.log('DEBUG PARENT COSMETICS: Total rewards found:', allRewards.length);
+    allRewards.forEach((r, i) => {
+      console.log(`DEBUG PARENT REWARD ${i}:`, {
+        id: r.id,
+        name: r.name,
+        reward_type: r.reward_type,
+        cosmetic_data: r.cosmetic_data,
+        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
+      });
+    });
     
     // Filtrer par cosmetic_data et par nom (détection permissive)
     const cosmeticsRewards = allRewards.filter(r => {
@@ -2683,8 +2693,13 @@ class KidsTasksCard extends HTMLElement {
         r.name.toLowerCase().includes('cosmetic')
       );
       
+      if (hasCosmetic2) {
+        console.log('DEBUG: Found potential cosmetic by name:', r.name, 'reward_type:', r.reward_type, 'cosmetic_data:', r.cosmetic_data);
+      }
+      
       return hasCosmetic || hasCosmetic2;
     });
+    console.log('DEBUG PARENT COSMETICS: Cosmetic rewards found:', cosmeticsRewards.length);
     
     return `
       <div class="section">
@@ -7113,6 +7128,18 @@ class KidsTasksChildCard extends HTMLElement {
     const childCoins = child ? child.coins || 0 : 0;
     const childLevel = child ? child.level || 1 : 1;
     
+    // Debug temporaire pour diagnostiquer le problème
+    console.log('DEBUG CHILD CARD REWARDS: Total rewards found:', rewards.length);
+    rewards.forEach((r, i) => {
+      console.log(`DEBUG CHILD REWARD ${i}:`, {
+        id: r.id,
+        name: r.name,
+        reward_type: r.reward_type,
+        cosmetic_data: r.cosmetic_data,
+        hasCosmetic: !!(r.cosmetic_data || r.reward_type === 'cosmetic')
+      });
+    });
+    
     // Séparer les récompenses normales des cosmétiques avec détection par nom
     const isCosmetic = (r) => {
       const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic');
@@ -7129,6 +7156,9 @@ class KidsTasksChildCard extends HTMLElement {
     
     const regularRewards = rewards.filter(r => !isCosmetic(r));
     const cosmeticRewards = rewards.filter(r => isCosmetic(r));
+    
+    console.log('DEBUG CHILD CARD: Regular rewards count:', regularRewards.length);
+    console.log('DEBUG CHILD CARD: Cosmetic rewards count:', cosmeticRewards.length);
     
     // Filtrer par niveau minimum
     const availableRegularRewards = regularRewards.filter(r => (r.min_level || 1) <= childLevel);
@@ -7212,9 +7242,15 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   renderCosmeticPreview(cosmeticData) {
-    if (!cosmeticData) return '🎨';
+    console.log('DEBUG renderCosmeticPreview: cosmeticData:', cosmeticData);
+    if (!cosmeticData) {
+      console.log('DEBUG renderCosmeticPreview: No cosmetic data, returning default');
+      return '🎨';
+    }
     
     const catalogData = cosmeticData.catalog_data || {};
+    console.log('DEBUG renderCosmeticPreview: catalogData:', catalogData);
+    console.log('DEBUG renderCosmeticPreview: type:', cosmeticData.type);
     
     switch (cosmeticData.type) {
       case 'avatar':
