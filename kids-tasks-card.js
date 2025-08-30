@@ -143,6 +143,12 @@ class KidsTasksCard extends HTMLElement {
 
     const action = target.dataset.action;
     const id = target.dataset.id;
+    
+    // Debug pour les actions cosmétiques (PARENT CARD)
+    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards' || action === 'activate-cosmetic') {
+      console.log('DEBUG COSMETICS: Click intercepted (PARENT CARD):', action, 'target:', target);
+      console.log('DEBUG COSMETICS: Target datasets (PARENT):', target.dataset);
+    }
 
     this.handleAction(action, id);
   }
@@ -258,6 +264,82 @@ class KidsTasksCard extends HTMLElement {
         const filter = event.target.dataset.filter;
         this.taskFilter = filter;
         this.render();
+        break;
+        
+      case 'load-cosmetics-catalog':
+        console.log('DEBUG COSMETICS: Starting load cosmetics catalog (PARENT CARD)');
+        if (!this._hass) {
+          console.error('DEBUG COSMETICS: _hass not available in parent card');
+          this.showNotification('Erreur : Home Assistant non disponible', 'error');
+          return;
+        }
+        try {
+          this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {})
+            .then(() => {
+              console.log('DEBUG COSMETICS: Load catalog service completed successfully (PARENT)');
+              this.showNotification('Catalogue cosmétique chargé avec succès ! 📚', 'success');
+            })
+            .catch(error => {
+              console.error('DEBUG COSMETICS: Load catalog service failed (PARENT):', error);
+              this.showNotification('Erreur lors du chargement du catalogue : ' + error.message, 'error');
+            });
+          this.showNotification('Chargement du catalogue cosmétique...', 'info');
+        } catch (error) {
+          console.error('DEBUG COSMETICS: Load catalog action failed (PARENT):', error);
+          this.showNotification('Erreur : ' + error.message, 'error');
+        }
+        break;
+        
+      case 'create-cosmetic-rewards':
+        console.log('DEBUG COSMETICS: Starting create cosmetic rewards (PARENT CARD)');
+        if (!this._hass) {
+          console.error('DEBUG COSMETICS: _hass not available in parent card');
+          this.showNotification('Erreur : Home Assistant non disponible', 'error');
+          return;
+        }
+        try {
+          this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {})
+            .then(() => {
+              console.log('DEBUG COSMETICS: Create rewards service completed successfully (PARENT)');
+              this.showNotification('Récompenses cosmétiques créées avec succès ! 🎆', 'success');
+              // Rafraîchir la vue pour afficher les nouvelles récompenses
+              setTimeout(() => this.render(), 1000);
+            })
+            .catch(error => {
+              console.error('DEBUG COSMETICS: Create rewards service failed (PARENT):', error);
+              this.showNotification('Erreur lors de la création des récompenses : ' + error.message, 'error');
+            });
+          this.showNotification('Création des récompenses cosmétiques...', 'info');
+        } catch (error) {
+          console.error('DEBUG COSMETICS: Create rewards action failed (PARENT):', error);
+          this.showNotification('Erreur : ' + error.message, 'error');
+        }
+        break;
+        
+      case 'switch-cosmetics-child':
+        // Changer l'onglet enfant actif dans la vue cosmétiques
+        console.log('DEBUG COSMETICS: Switching cosmetics child (PARENT)');
+        this.switchCosmeticsChild(target.dataset.childId);
+        break;
+        
+      case 'activate-cosmetic':
+        const targetChildId = target.dataset.childId;
+        const cosmeticType = target.dataset.cosmeticType;
+        const cosmeticId = target.dataset.cosmeticId;
+        console.log('DEBUG COSMETICS: Activating cosmetic (PARENT):', { targetChildId, cosmeticType, cosmeticId });
+        
+        if (!this._hass) {
+          console.error('DEBUG COSMETICS: _hass not available for activate cosmetic');
+          this.showNotification('Erreur : Home Assistant non disponible', 'error');
+          return;
+        }
+        
+        this._hass.callService('kids_tasks', 'activate_cosmetic', {
+          child_id: targetChildId,
+          cosmetic_type: cosmeticType,
+          cosmetic_id: cosmeticId
+        });
+        this.showNotification(`Cosmétique ${cosmeticType} activé ! 🎨`, 'success');
         break;
     }
   }
@@ -4636,11 +4718,6 @@ class KidsTasksChildCard extends HTMLElement {
     const action = target.dataset.action;
     const id = target.dataset.id;
     
-    // Debug pour les actions cosmétiques
-    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards') {
-      console.log('DEBUG COSMETICS: Click intercepted:', action, 'target:', target);
-      console.log('DEBUG COSMETICS: Target datasets:', target.dataset);
-    }
 
     this.handleAction(action, id);
   }
@@ -4648,11 +4725,6 @@ class KidsTasksChildCard extends HTMLElement {
   handleAction(action, id = null) {
     if (!this._hass) return;
     
-    // Debug pour les actions cosmétiques
-    if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards') {
-      console.log('DEBUG COSMETICS: Action received:', action, 'id:', id);
-      console.log('DEBUG COSMETICS: _hass available:', !!this._hass);
-    }
 
     try {
       switch (action) {
@@ -4692,64 +4764,6 @@ class KidsTasksChildCard extends HTMLElement {
             child_id: this.config.child_id,
           });
           this.showNotification('Récompense échangée ! 🎁', 'success');
-          break;
-          
-        case 'load-cosmetics-catalog':
-          console.log('DEBUG COSMETICS: Starting load cosmetics catalog');
-          try {
-            this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {})
-              .then(() => {
-                console.log('DEBUG COSMETICS: Load catalog service completed successfully');
-                this.showNotification('Catalogue cosmétique chargé avec succès ! 📚', 'success');
-              })
-              .catch(error => {
-                console.error('DEBUG COSMETICS: Load catalog service failed:', error);
-                this.showNotification('Erreur lors du chargement du catalogue : ' + error.message, 'error');
-              });
-            this.showNotification('Chargement du catalogue cosmétique...', 'info');
-          } catch (error) {
-            console.error('DEBUG COSMETICS: Load catalog action failed:', error);
-            this.showNotification('Erreur : ' + error.message, 'error');
-          }
-          break;
-          
-        case 'create-cosmetic-rewards':
-          console.log('DEBUG COSMETICS: Starting create cosmetic rewards');
-          try {
-            this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {})
-              .then(() => {
-                console.log('DEBUG COSMETICS: Create rewards service completed successfully');
-                this.showNotification('Récompenses cosmétiques créées avec succès ! 🎆', 'success');
-                // Rafraîchir la vue pour afficher les nouvelles récompenses
-                setTimeout(() => this.render(), 1000);
-              })
-              .catch(error => {
-                console.error('DEBUG COSMETICS: Create rewards service failed:', error);
-                this.showNotification('Erreur lors de la création des récompenses : ' + error.message, 'error');
-              });
-            this.showNotification('Création des récompenses cosmétiques...', 'info');
-          } catch (error) {
-            console.error('DEBUG COSMETICS: Create rewards action failed:', error);
-            this.showNotification('Erreur : ' + error.message, 'error');
-          }
-          break;
-          
-        case 'switch-cosmetics-child':
-          // Changer l'onglet enfant actif dans la vue cosmétiques
-          this.switchCosmeticsChild(target.dataset.childId);
-          break;
-          
-        case 'activate-cosmetic':
-          const targetChildId = target.dataset.childId;
-          const cosmeticType = target.dataset.cosmeticType;
-          const cosmeticId = target.dataset.cosmeticId;
-          
-          this._hass.callService('kids_tasks', 'activate_cosmetic', {
-            child_id: targetChildId,
-            cosmetic_type: cosmeticType,
-            cosmetic_id: cosmeticId
-          });
-          this.showNotification(`Cosmétique ${cosmeticType} activé ! 🎨`, 'success');
           break;
           
         default:
