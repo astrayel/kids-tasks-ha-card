@@ -315,12 +315,6 @@ class KidsTasksCard extends HTMLElement {
         }
         break;
         
-      case 'switch-cosmetics-child':
-        // Changer l'onglet enfant actif dans la vue cosmétiques
-        console.log('DEBUG COSMETICS: Switching cosmetics child (PARENT)');
-        this.switchCosmeticsChild(target.dataset.childId);
-        break;
-        
       case 'give-cosmetic':
         const giveButton = event.target;
         const giveCosmeticId = giveButton.dataset.cosmeticId;
@@ -2773,115 +2767,6 @@ class KidsTasksCard extends HTMLElement {
     `;
   }
 
-  renderCosmeticsForChild(cosmeticChild, cosmeticRewardsList) {
-    const cosmeticsCategories = {
-      'avatar': { name: 'Avatars', icon: '👤', description: 'Personnalisez l\'apparence de votre enfant' },
-      'background': { name: 'Arrière-plans', icon: '🖼️', description: 'Changez le fond de la carte de l\'enfant' },
-      'outfit': { name: 'Accessoires', icon: '👕', description: 'Ajoutez des accessoires à l\'avatar' },
-      'theme': { name: 'Thèmes', icon: '🎨', description: 'Modifiez l\'apparence générale de l\'interface' }
-    };
-    
-    const activeCosmetics = cosmeticChild.active_cosmetics || {};
-    const ownedCosmetics = cosmeticChild.cosmetic_collection || {};
-    
-    return `
-      <div class="cosmetics-categories">
-        ${Object.entries(cosmeticsCategories).map(([categoryKey, categoryData]) => {
-          const categoryRewardsList = cosmeticRewardsList.filter(rewardItem => 
-            rewardItem.cosmetic_data && rewardItem.cosmetic_data.type === categoryKey
-          );
-          const activeCosmeticItem = activeCosmetics[categoryKey];
-          const ownedCosmeticItems = ownedCosmetics[categoryKey] || [];
-          
-          return `
-            <div class="cosmetic-category">
-              <div class="cosmetic-category-header">
-                <h3>
-                  <span class="category-icon">${categoryData.icon}</span>
-                  ${categoryData.name}
-                  ${activeCosmeticItem ? `<span class="active-indicator">Actif: ${activeCosmeticItem}</span>` : ''}
-                </h3>
-                <p class="category-description">${categoryData.description}</p>
-              </div>
-              
-              <div class="cosmetic-items-grid">
-                <!-- Élément par défaut -->
-                <div class="cosmetic-item default-item ${!activeCosmeticItem ? 'active' : ''}">
-                  <div class="cosmetic-preview">
-                    <div class="default-preview">${categoryData.icon}</div>
-                  </div>
-                  <div class="cosmetic-info">
-                    <div class="cosmetic-name">Par défaut</div>
-                    <div class="cosmetic-status">Gratuit</div>
-                  </div>
-                  <button class="btn btn-sm ${!activeCosmeticItem ? 'btn-success' : 'btn-outline'}" 
-                          data-action="activate-cosmetic" 
-                          data-child-id="${cosmeticChild.id}" 
-                          data-cosmetic-type="${categoryKey}" 
-                          data-cosmetic-id="default_${categoryKey}">
-                    ${!activeCosmeticItem ? '✅ Actif' : 'Activer'}
-                  </button>
-                </div>
-                
-                ${categoryRewardsList.map(rewardItem => {
-                  const isOwnedByChild = ownedCosmeticItems.includes(rewardItem.cosmetic_data.cosmetic_id);
-                  const isActiveCosmeticForChild = activeCosmeticItem === rewardItem.cosmetic_data.cosmetic_id;
-                  const childCanAfford = cosmeticChild.points >= rewardItem.cost && cosmeticChild.coins >= rewardItem.coin_cost;
-                  
-                  return `
-                    <div class="cosmetic-item ${isOwnedByChild ? 'owned' : ''} ${isActiveCosmeticForChild ? 'active' : ''}">
-                      <div class="cosmetic-preview">
-                        ${this.renderCosmeticItemPreview(rewardItem.cosmetic_data, rewardItem.name)}
-                      </div>
-                      <div class="cosmetic-info">
-                        <div class="cosmetic-name">${rewardItem.name}</div>
-                        <div class="cosmetic-rarity rarity-${rewardItem.cosmetic_data.rarity || 'common'}">
-                          ${this.getCosmeticRarityLabel(rewardItem.cosmetic_data.rarity || 'common')}
-                        </div>
-                        ${rewardItem.description ? `<div class="cosmetic-description">${rewardItem.description}</div>` : ''}
-                      </div>
-                      <div class="cosmetic-actions">
-                        ${isOwnedByChild ? `
-                          <button class="btn btn-sm ${isActiveCosmeticForChild ? 'btn-success' : 'btn-outline'}" 
-                                  data-action="activate-cosmetic" 
-                                  data-child-id="${cosmeticChild.id}" 
-                                  data-cosmetic-type="${categoryKey}" 
-                                  data-cosmetic-id="${rewardItem.cosmetic_data.cosmetic_id}">
-                            ${isActiveCosmeticForChild ? '✅ Actif' : 'Activer'}
-                          </button>
-                        ` : `
-                          <div class="cosmetic-cost">
-                            ${rewardItem.cost > 0 ? `<span class="cost-points">${rewardItem.cost}p</span>` : ''}
-                            ${rewardItem.coin_cost > 0 ? `<span class="cost-coins">${rewardItem.coin_cost}c</span>` : ''}
-                          </div>
-                          <button class="btn btn-sm ${childCanAfford ? 'btn-primary' : 'btn-disabled'}" 
-                                  data-action="claim-reward" 
-                                  data-reward-id="${rewardItem.id}" 
-                                  data-child-id="${cosmeticChild.id}"
-                                  ${!childCanAfford ? 'disabled' : ''}>
-                            ${childCanAfford ? '💰 Acheter' : '❌ Pas assez'}
-                          </button>
-                        `}
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-                
-                ${categoryRewardsList.length === 0 ? `
-                  <div class="cosmetic-item empty-category">
-                    <div class="empty-category-message">
-                      <p>Aucun cosmétique ${categoryData.name.toLowerCase()} disponible</p>
-                      <p class="hint">Utilisez "Créer les récompenses" pour générer les cosmétiques depuis le catalogue.</p>
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
 
   renderCosmeticItemPreview(cosmeticItemData, rewardName = null) {
     // Si pas de cosmetic_data, essayer de la générer depuis le nom
@@ -5132,21 +5017,6 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
-  switchCosmeticsChild(selectedChildId) {
-    // Désactiver tous les onglets et panneaux enfants
-    const tabs = this.shadowRoot.querySelectorAll('.cosmetics-child-tab');
-    const panels = this.shadowRoot.querySelectorAll('.cosmetics-child-panel');
-    
-    tabs.forEach(tab => tab.classList.remove('active'));
-    panels.forEach(panel => panel.classList.remove('active'));
-    
-    // Activer l'onglet et le panneau sélectionnés
-    const selectedTab = this.shadowRoot.querySelector(`[data-child-id="${selectedChildId}"][data-action="switch-cosmetics-child"]`);
-    const selectedPanel = this.shadowRoot.querySelector(`.cosmetics-child-panel[data-child-id="${selectedChildId}"]`);
-    
-    if (selectedTab) selectedTab.classList.add('active');
-    if (selectedPanel) selectedPanel.classList.add('active');
-  }
 
   // Méthode pour résoudre l'avatar effectif
   getEffectiveAvatar(child, context = 'normal') {
