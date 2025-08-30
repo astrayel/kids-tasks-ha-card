@@ -2786,18 +2786,9 @@ class KidsTasksCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
-        if (catalogItemData.pixel_art) {
-          // Si c'est un nom de fichier PNG, construire l'URL
-          if (typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
-            const imageUrl = this.getCosmeticImagePath('avatars', catalogItemData.pixel_art);
-            return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 72px; height: 72px; image-rendering: pixelated;" />`;
-          }
-          // Si c'est des données base64, créer une image
-          if (typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.startsWith('data:image/')) {
-            return `<img class="pixel-art-preview" src="${catalogItemData.pixel_art}" alt="${catalogItemData.name}" style="width: 72px; height: 72px; image-rendering: pixelated;" />`;
-          }
-          // Sinon, traiter comme du contenu inline SVG
-          return `<div class="pixel-art-preview" style="width: 72px; height: 72px;">${catalogItemData.pixel_art}</div>`;
+        if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('avatars', catalogItemData.pixel_art);
+          return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 72px; height: 72px; image-rendering: pixelated;" />`;
         }
         if (catalogItemData.emoji) {
           return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
@@ -7409,22 +7400,13 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
-        if (catalogData.pixel_art) {
-          // Si c'est un nom de fichier PNG, construire l'URL
-          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
-            const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
-            return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
-          }
-          // Si c'est des données base64, créer une image
-          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.startsWith('data:image/')) {
-            return `<img class="cosmetic-pixel-art-preview" src="${catalogData.pixel_art}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
-          }
-          // Fallback pour l'ancien système (default_avatar = true)
-          if (catalogData.default_avatar) {
-            return this.generatePixelArtAvatar();
-          }
-          // Si c'est du SVG inline
-          return `<div style="display: inline-block; width: 54px; height: 54px;">${catalogData.pixel_art}</div>`;
+        if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
+          return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
+        }
+        // Fallback pour l'ancien système (default_avatar = true)
+        if (catalogData.default_avatar) {
+          return this.generatePixelArtAvatar();
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
@@ -7479,22 +7461,13 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
-        if (catalogData.pixel_art) {
-          // Si c'est un nom de fichier PNG, construire l'URL
-          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
-            const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
-            return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
-          }
-          // Si c'est des données base64, créer une image
-          if (typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.startsWith('data:image/')) {
-            return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${catalogData.pixel_art}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
-          }
-          // Fallback pour l'ancien système (default_avatar = true)
-          if (catalogData.default_avatar) {
-            return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
-          }
-          // Si c'est du SVG inline
-          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${catalogData.pixel_art}</div>`;
+        if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
+          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
+        }
+        // Fallback pour l'ancien système (default_avatar = true)
+        if (catalogData.default_avatar) {
+          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
