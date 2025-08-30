@@ -4400,6 +4400,15 @@ class KidsTasksCard extends HTMLElement {
     return child.avatar || '👶';
   }
 
+  getCosmeticImagePath(cosmeticType, fileName) {
+    // Construire le chemin vers l'image cosmétique
+    if (!fileName || !cosmeticType) return null;
+    
+    // URL de base pour les cosmétiques dans Home Assistant
+    const baseUrl = '/local/community/kids_tasks/cosmetics';
+    return `${baseUrl}/${cosmeticType}/${fileName}`;
+  }
+
   safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
     try {
       if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
