@@ -2961,11 +2961,6 @@ class KidsTasksCard extends HTMLElement {
     
     return `
       <style>
-        --rarity-common: #9e9e9e;
-        --rarity-rare: #2196f3;
-        --rarity-epic: #9c27b0;
-        --rarity-legendary: #ff9800;
-        
         :host {
           --custom-tab-color: ${tabColor};
           --custom-header-color: ${headerColor};
@@ -2979,6 +2974,10 @@ class KidsTasksCard extends HTMLElement {
           --custom-progress-bar-color: ${progressBarColor};
           --custom-points-badge-color: ${pointsBadgeColor};
           --custom-icon-color: ${iconColor};
+          --custom-rarity-common: #9e9e9e;
+          --custom-rarity-rare: #2196f3;
+          --custom-rarity-epic: #9c27b0;
+          --custom-rarity-legendary: #ff9800;
         }
         * { box-sizing: border-box; }
         
@@ -4241,35 +4240,35 @@ class KidsTasksCard extends HTMLElement {
         }
 
         .cosmetic-simple-item.rarity-common {
-          border-left-color: var(--rarity-common);
+          border-left-color: var(--custom-rarity-common);
         }
 
         .cosmetic-simple-item.rarity-rare {
-          border-left-color: var(--rarity-rare)
+          border-left-color: var(--custom-rarity-rare)
         }
 
         .cosmetic-simple-item.rarity-epic {
-          border-left-color: var(--rarity-epic);
+          border-left-color: var(--custom-rarity-epic);
         }
 
         .cosmetic-simple-item.rarity-legendary {
-          border-left-color: var(-- rarity-legendary);
+          border-left-color: var(-- custom-rarity-legendary);
         }
 
         .cosmetic-simple-rarity.rarity-common {
-          background: var(--rarity-common);
+          background: var(--custom-rarity-common);
           color: white;
         }
         .cosmetic-simple-rarity.rarity-rare {
-          background: var(--rarity-rare);
+          background: var(--custom-rarity-rare);
           color: white;
         }
         .cosmetic-simple-rarity.rarity-epic {
-          background: var(--rarity-epic);
+          background: var(--custom-rarity-epic);
           color: white;
         }
         .cosmetic-simple-rarity.rarity-legendary {
-          background: var(--rarity-legendary);
+          background: var(--custom-rarity-legendary);
           color: white;
         }
 
