@@ -3304,6 +3304,7 @@ class KidsTasksCard extends HTMLElement {
           border-radius: 12px;
           font-size: 0.8em;
           font-weight: 600;
+          text-align: center;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           z-index: 2;
         }
@@ -4264,12 +4265,6 @@ class KidsTasksCard extends HTMLElement {
           position: relative;
           top: -8px;
           place-self: center;
-          background-color: var(--custom-rarity-common);
-          border-radius: 0.75em;
-          padding: 2px 8px 2px 8px;
-          font-size: 0.7em;
-          font-weight: bolder;
-          border: 1px dashed #AAAAAA;
         }
 
         .cosmetic-simple-rarity.rarity-common {
