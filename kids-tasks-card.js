@@ -323,11 +323,11 @@ class KidsTasksCard extends HTMLElement {
         
       case 'give-cosmetic':
         const giveButton = event.target;
-        const cosmeticId = giveButton.dataset.cosmeticId;
+        const giveCosmeticId = giveButton.dataset.cosmeticId;
         const select = giveButton.parentElement.querySelector('.cosmetic-give-select');
-        const childId = select.value;
+        const selectedChildId = select.value;
         
-        if (!childId) {
+        if (!selectedChildId) {
           this.showNotification('Veuillez sélectionner un enfant', 'error');
           return;
         }
@@ -339,12 +339,12 @@ class KidsTasksCard extends HTMLElement {
         
         try {
           this._hass.callService('kids_tasks', 'claim_reward', {
-            child_id: childId,
-            reward_id: cosmeticId
+            child_id: selectedChildId,
+            reward_id: giveCosmeticId
           })
           .then(() => {
-            const cosmetic = this.getRewards().find(r => r.id === cosmeticId);
-            const child = this.getChildren().find(c => c.id === childId);
+            const cosmetic = this.getRewards().find(r => r.id === giveCosmeticId);
+            const child = this.getChildren().find(c => c.id === selectedChildId);
             this.showNotification(`${cosmetic?.name || 'Cosmétique'} donné à ${child?.name || 'l\'enfant'} ! 🎁`, 'success');
             select.value = ''; // Reset selection
           })
@@ -361,8 +361,8 @@ class KidsTasksCard extends HTMLElement {
       case 'activate-cosmetic':
         const targetChildId = target.dataset.childId;
         const cosmeticType = target.dataset.cosmeticType;
-        const cosmeticId = target.dataset.cosmeticId;
-        console.log('DEBUG COSMETICS: Activating cosmetic (PARENT):', { targetChildId, cosmeticType, cosmeticId });
+        const activeCosmeticId = target.dataset.cosmeticId;
+        console.log('DEBUG COSMETICS: Activating cosmetic (PARENT):', { targetChildId, cosmeticType, activeCosmeticId });
         
         if (!this._hass) {
           console.error('DEBUG COSMETICS: _hass not available for activate cosmetic');
@@ -373,7 +373,7 @@ class KidsTasksCard extends HTMLElement {
         this._hass.callService('kids_tasks', 'activate_cosmetic', {
           child_id: targetChildId,
           cosmetic_type: cosmeticType,
-          cosmetic_id: cosmeticId
+          cosmetic_id: activeCosmeticId
         });
         this.showNotification(`Cosmétique ${cosmeticType} activé ! 🎨`, 'success');
         break;
