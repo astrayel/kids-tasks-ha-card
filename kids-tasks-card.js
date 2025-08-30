@@ -8033,16 +8033,16 @@ class KidsTasksChildCardEditor extends HTMLElement {
 
         .cosmetics-simple-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 12px;
           margin-top: 16px;
         }
 
         .cosmetic-simple-item {
           display: flex;
           align-items: center;
-          gap: 16px;
-          padding: 16px;
+          gap: 12px;
+          padding: 12px;
           background: var(--card-background-color, #fff);
           border: 1px solid var(--divider-color, #e0e0e0);
           border-radius: 8px;
@@ -8076,16 +8076,18 @@ class KidsTasksChildCardEditor extends HTMLElement {
         .cosmetic-simple-actions {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
           align-items: flex-end;
+          min-width: 120px;
         }
 
         .cosmetic-give-select {
-          padding: 4px 8px;
+          padding: 4px 6px;
           border: 1px solid var(--divider-color, #e0e0e0);
           border-radius: 4px;
           background: var(--card-background-color, #fff);
-          font-size: 0.9em;
+          font-size: 0.85em;
+          width: 100%;
         }
         
         .avatar-preview {
