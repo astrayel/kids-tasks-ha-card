@@ -2747,22 +2747,21 @@ class KidsTasksCard extends HTMLElement {
               <div class="cosmetic-simple-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
               </div>
+              <div class="cosmetic-simple-rarity ${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               <div class="cosmetic-simple-info">
                 <div class="cosmetic-simple-name">${cosmetic.name}</div>
-                <div class="cosmetic-simple-rarity">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
                 <div class="cosmetic-simple-cost">
                   ${cosmetic.cost > 0 ? `${cosmetic.cost}p` : ''}
-                  ${cosmetic.coin_cost > 0 ? `${cosmetic.cost > 0 ? ' + ' : ''}${cosmetic.coin_cost}c` : ''}
+                  ${cosmetic.coin_cost > 0 ? `${cosmetic.cost > 0 ? ' + ' : ''}${cosmetic.coin_cost} 🪙` : ''}
                   ${cosmetic.cost === 0 && cosmetic.coin_cost === 0 ? 'Gratuit' : ''}
                 </div>
               </div>
               <div class="cosmetic-simple-actions">
-                <select class="cosmetic-give-select" data-cosmetic-id="${cosmetic.id}">
-                  <option value="">Donner à...</option>
+                <ha-select label="Donner à..." class="cosmetic-give-select" data-cosmetic-id="${cosmetic.id}">
                   ${children.map(child => `
-                    <option value="${child.id}">${child.name}</option>
+                    <ha-list-item value="${child.id}"> ${child.name}</ha-list-item>
                   `).join('')}
-                </select>
+                </ha-select>
                 <button class="btn btn-sm btn-primary" data-action="give-cosmetic" data-cosmetic-id="${cosmetic.id}">
                   🎁 Donner
                 </button>
@@ -2962,6 +2961,11 @@ class KidsTasksCard extends HTMLElement {
     
     return `
       <style>
+        --rarity-common: #9e9e9e;
+        --rarity-rare: #2196f3;
+        --rarity-epic: #9c27b0;
+        --rarity-legendary: #ff9800;
+        
         :host {
           --custom-tab-color: ${tabColor};
           --custom-header-color: ${headerColor};
@@ -4237,19 +4241,36 @@ class KidsTasksCard extends HTMLElement {
         }
 
         .cosmetic-simple-item.rarity-common {
-          border-left-color: #9e9e9e;
+          border-left-color: var(--rarity-common);
         }
 
         .cosmetic-simple-item.rarity-rare {
-          border-left-color: #2196f3;
+          border-left-color: var(--rarity-rare)
         }
 
         .cosmetic-simple-item.rarity-epic {
-          border-left-color: #9c27b0;
+          border-left-color: var(--rarity-epic);
         }
 
         .cosmetic-simple-item.rarity-legendary {
-          border-left-color: #ff9800;
+          border-left-color: var(-- rarity-legendary);
+        }
+
+        .cosmetic-simple-rarity.rarity-common {
+          background: var(--rarity-common);
+          color: white;
+        }
+        .cosmetic-simple-rarity.rarity-rare {
+          background: var(--rarity-rare);
+          color: white;
+        }
+        .cosmetic-simple-rarity.rarity-epic {
+          background: var(--rarity-epic);
+          color: white;
+        }
+        .cosmetic-simple-rarity.rarity-legendary {
+          background: var(--rarity-legendary);
+          color: white;
         }
 
         .cosmetic-simple-item:hover {
