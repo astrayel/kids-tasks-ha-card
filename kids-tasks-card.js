@@ -2067,8 +2067,7 @@ class KidsTasksCard extends HTMLElement {
       tabs = [
         { id: 'dashboard', label: '📊 Aperçu', icon: '📊' },
         { id: 'children', label: '👶 Enfants', icon: '👶' },
-        { id: 'validation', label: '✅ Validation', icon: '✅' },
-        { id: 'rewards', label: '🎁 Récompenses', icon: '🎁' }
+        { id: 'validation', label: '✅ Validation', icon: '✅' }
       ];
     }
 
@@ -2097,12 +2096,11 @@ class KidsTasksCard extends HTMLElement {
           return this.getTasksView();
       }
     } else {
-      // Carte dashboard : aperçu, enfants, validation, récompenses
+      // Carte dashboard : aperçu, enfants, validation
       switch (this.currentView) {
         case 'dashboard': return this.getDashboardView();
         case 'children': return this.getChildrenView();
         case 'validation': return this.getValidationView();
-        case 'rewards': return this.getRewardsView();
         default: return this.getDashboardView();
       }
     }
