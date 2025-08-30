@@ -2595,7 +2595,16 @@ class KidsTasksCard extends HTMLElement {
   }
 
   renderValidationTask(task, children) {
-    const childName = this.formatAssignedChildren(task);
+    // Pour les validations, afficher l'enfant qui a COMPLÉTÉ la tâche, pas tous les assignés
+    let childName = 'Enfant inconnu';
+    if (task.completed_by) {
+      const child = children.find(c => c.id === task.completed_by);
+      childName = child ? child.name : `Enfant ${task.completed_by}`;
+    } else {
+      // Fallback sur les enfants assignés si completed_by n'est pas disponible
+      childName = this.formatAssignedChildren(task);
+    }
+    
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     // Calculer l'âge de la demande
@@ -2626,8 +2635,9 @@ class KidsTasksCard extends HTMLElement {
           <div class="validation-task-meta">
             <span class="validation-child">${childName}</span>
             <span class="validation-rewards">
-              ${task.points > 0 ? `+${task.points}p` : ''}
-              ${task.coins > 0 ? ` +${task.coins}c` : ''}
+              ${task.points !== 0 ? `${task.points > 0 ? '+' : ''}${task.points}p` : ''}
+              ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}c` : ''}
+              ${task.penalty_points ? ` ${task.penalty_points}p` : ''}
             </span>
             <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
           </div>
@@ -2647,7 +2657,11 @@ class KidsTasksCard extends HTMLElement {
 
   getCosmeticsView() {
     const cosmeticsChildren = this.getChildren();
-    const cosmeticsRewards = this.getRewards().filter(r => r.reward_type === 'cosmetic');
+    const allRewards = this.getRewards();
+    console.log('DEBUG COSMETICS VIEW: All rewards:', allRewards);
+    // Filtrer par cosmetic_data au lieu de reward_type
+    const cosmeticsRewards = allRewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
+    console.log('DEBUG COSMETICS VIEW: Cosmetic rewards found:', cosmeticsRewards);
     
     return `
       <div class="section">
