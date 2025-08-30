@@ -3188,7 +3188,7 @@ class KidsTasksCard extends HTMLElement {
           font-size: 0.8em;
           font-weight: 600;
           text-align: center;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
           z-index: 2;
         }
         
@@ -6084,13 +6084,13 @@ class KidsTasksChildCard extends HTMLElement {
         }
         
         .reward-icon-large {
-          font-size: 1em;
-          margin-bottom: 2px;
+          font-size: 4em;
+          margin-bottom: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 100%;
-          height: 1.2em;
+          width: 64px;
+          height: 64px;
         }
         
         .reward-icon-large ha-icon {
@@ -6151,12 +6151,12 @@ class KidsTasksChildCard extends HTMLElement {
         
         /* Styles pour les cosmétiques */
         .reward-square.cosmetic {
-          background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+          background: linear-gradient(135deg, #ffffffff 0%, #0000006c 100%);
         }
         
         .reward-square.cosmetic.affordable {
-          border-color: #9c27b0;
-          background: linear-gradient(135deg, #f3e5f5 0%, #e8f5e8 100%);
+          border-color: #d49c00ff;
+          background: linear-gradient(135deg, #ffffffff 0%, #0000006c 100%);
         }
         
         .reward-level {
@@ -6301,13 +6301,13 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-icon-large {
-            font-size: 0.9em;
-            margin-bottom: 1px;
+            font-size: 4em;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 1.1em;
           }
           
           .reward-name {
@@ -6347,12 +6347,13 @@ class KidsTasksChildCard extends HTMLElement {
           }
           
           .reward-icon-large {
-            font-size: 0.8em;
+            font-size: 4em;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 1em;
           }
           
           .reward-name {
