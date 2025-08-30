@@ -3182,11 +3182,9 @@ class KidsTasksCard extends HTMLElement {
           background: var(--custom-points-badge-color);
           color: white;
           position: absolute;
-          top: 72px;
-          left: 50%;
-          transform: translateX(-50%);
           padding: 4px 8px;
           border-radius: 12px;
+          width: 64px;
           font-size: 0.8em;
           font-weight: 600;
           text-align: center;
