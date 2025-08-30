@@ -2743,7 +2743,7 @@ class KidsTasksCard extends HTMLElement {
         
         <div class="cosmetics-simple-grid">
           ${cosmeticsRewards.map(cosmetic => `
-            <div class="cosmetic-simple-item" data-cosmetic-id="${cosmetic.id}">
+            <div class="cosmetic-simple-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
               <div class="cosmetic-simple-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
               </div>
@@ -8041,11 +8041,36 @@ class KidsTasksChildCardEditor extends HTMLElement {
         .cosmetic-simple-item {
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px;
-          background: var(--card-background-color, #fff);
-          border: 1px solid var(--divider-color, #e0e0e0);
+          gap: 16px;
+          padding: 16px;
+          margin: 8px 0;
+          background: var(--secondary-background-color, #f8f9fa);
           border-radius: 8px;
+          border-left: 4px solid #ddd;
+          transition: all 0.3s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cosmetic-simple-item.rarity-common {
+          border-left-color: #9e9e9e;
+        }
+
+        .cosmetic-simple-item.rarity-rare {
+          border-left-color: #2196f3;
+        }
+
+        .cosmetic-simple-item.rarity-epic {
+          border-left-color: #9c27b0;
+        }
+
+        .cosmetic-simple-item.rarity-legendary {
+          border-left-color: #ff9800;
+        }
+
+        .cosmetic-simple-item:hover {
+          background: var(--card-background-color, #fff);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+          transform: translateY(-1px);
         }
 
         .cosmetic-simple-preview {
@@ -8076,9 +8101,9 @@ class KidsTasksChildCardEditor extends HTMLElement {
         .cosmetic-simple-actions {
           display: flex;
           flex-direction: row;
-          gap: 8px;
+          gap: 12px;
           align-items: center;
-          min-width: 200px;
+          min-width: 220px;
         }
 
         .cosmetic-give-select {
