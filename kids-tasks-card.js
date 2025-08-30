@@ -4223,6 +4223,41 @@ class KidsTasksCard extends HTMLElement {
           color: var(--primary-text-color, #212121);
         }
         
+        .cosmetic-simple-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px;
+          margin: 8px 0;
+          background: var(--secondary-background-color, #f8f9fa);
+          border-radius: 8px;
+          border-left: 4px solid #ddd;
+          transition: all 0.3s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cosmetic-simple-item.rarity-common {
+          border-left-color: #9e9e9e;
+        }
+
+        .cosmetic-simple-item.rarity-rare {
+          border-left-color: #2196f3;
+        }
+
+        .cosmetic-simple-item.rarity-epic {
+          border-left-color: #9c27b0;
+        }
+
+        .cosmetic-simple-item.rarity-legendary {
+          border-left-color: #ff9800;
+        }
+
+        .cosmetic-simple-item:hover {
+          background: var(--card-background-color, #fff);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+          transform: translateY(-1px);
+        }
+
         .loading {
           display: flex;
           justify-content: center;
