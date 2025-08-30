@@ -2812,7 +2812,7 @@ class KidsTasksCard extends HTMLElement {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview" style="width: 72px; height: 72px; border-radius: 12px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="theme-preview" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -7181,6 +7181,92 @@ class KidsTasksChildCard extends HTMLElement {
     `;
   }
 
+  generatePixelArtAvatarLarge() {
+    // Version large de l'avatar pixel-art pour les modales (96px)
+    return `<svg width="96" height="96" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
+      <!-- Fond -->
+      <rect width="16" height="16" fill="#f0f8ff"/>
+      
+      <!-- Cheveux -->
+      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
+      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
+      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
+      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
+      
+      <!-- Visage -->
+      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
+      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
+      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
+      
+      <!-- Yeux -->
+      <rect x="5" y="6" width="1" height="1" fill="#000"/>
+      <rect x="10" y="6" width="1" height="1" fill="#000"/>
+      
+      <!-- Nez -->
+      <rect x="7" y="7" width="2" height="1" fill="#E6A4A4"/>
+      
+      <!-- Bouche -->
+      <rect x="6" y="8" width="4" height="1" fill="#8B0000"/>
+      <rect x="7" y="9" width="2" height="1" fill="#8B0000"/>
+      
+      <!-- Corps/Torse -->
+      <rect x="5" y="10" width="6" height="4" fill="#4169E1"/>
+      <rect x="4" y="11" width="1" height="2" fill="#4169E1"/>
+      <rect x="11" y="11" width="1" height="2" fill="#4169E1"/>
+      
+      <!-- Bras -->
+      <rect x="3" y="11" width="1" height="3" fill="#FDBCB4"/>
+      <rect x="12" y="11" width="1" height="3" fill="#FDBCB4"/>
+      
+      <!-- Jambes -->
+      <rect x="6" y="14" width="1" height="2" fill="#654321"/>
+      <rect x="9" y="14" width="1" height="2" fill="#654321"/>
+    </svg>`;
+  }
+
+  generatePixelArtAvatar() {
+    // Génère un avatar pixel-art par défaut de style Habitica
+    return `<svg width="54" height="54" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
+      <!-- Fond -->
+      <rect width="16" height="16" fill="#f0f8ff"/>
+      
+      <!-- Cheveux -->
+      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
+      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
+      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
+      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
+      
+      <!-- Visage -->
+      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
+      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
+      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
+      
+      <!-- Yeux -->
+      <rect x="5" y="6" width="1" height="1" fill="#000"/>
+      <rect x="10" y="6" width="1" height="1" fill="#000"/>
+      
+      <!-- Nez -->
+      <rect x="7" y="7" width="2" height="1" fill="#E6A4A4"/>
+      
+      <!-- Bouche -->
+      <rect x="6" y="8" width="4" height="1" fill="#8B0000"/>
+      <rect x="7" y="9" width="2" height="1" fill="#8B0000"/>
+      
+      <!-- Corps/Torse -->
+      <rect x="5" y="10" width="6" height="4" fill="#4169E1"/>
+      <rect x="4" y="11" width="1" height="2" fill="#4169E1"/>
+      <rect x="11" y="11" width="1" height="2" fill="#4169E1"/>
+      
+      <!-- Bras -->
+      <rect x="3" y="11" width="1" height="3" fill="#FDBCB4"/>
+      <rect x="12" y="11" width="1" height="3" fill="#FDBCB4"/>
+      
+      <!-- Jambes -->
+      <rect x="6" y="14" width="1" height="2" fill="#654321"/>
+      <rect x="9" y="14" width="1" height="2" fill="#654321"/>
+    </svg>`;
+  }
+
   generateCosmeticDataFromName(rewardName) {
     // Générer des données cosmétiques basées sur le nom de la récompense
     if (!rewardName) return null;
@@ -7191,7 +7277,10 @@ class KidsTasksChildCard extends HTMLElement {
     if (name.includes('avatar')) {
       return {
         type: 'avatar',
-        catalog_data: { emoji: '👤' }
+        catalog_data: { 
+          pixel_art: true,
+          default_avatar: true
+        }
       };
     }
     
@@ -7249,6 +7338,9 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
+        if (catalogData.pixel_art && catalogData.default_avatar) {
+          return this.generatePixelArtAvatar();
+        }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
         }
@@ -7298,6 +7390,9 @@ class KidsTasksChildCard extends HTMLElement {
     
     switch (cosmeticType) {
       case 'avatar':
+        if (catalogData.pixel_art && catalogData.default_avatar) {
+          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
+        }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
         }
