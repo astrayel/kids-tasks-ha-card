@@ -2746,7 +2746,7 @@ class KidsTasksCard extends HTMLElement {
             <div class="cosmetic-simple-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
               <div class="cosmetic-simple-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
-                 <div class="cosmetic-simple-rarity ${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
+                 <div class="cosmetic-simple-rarity rarity-${cosmetic.cosmetic_data?.rarity || 'common'}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               </div>
               <div class="cosmetic-simple-info">
                 <div class="cosmetic-simple-name">${cosmetic.name}</div>
