@@ -2684,8 +2684,25 @@ class KidsTasksCard extends HTMLElement {
       });
     });
     
-    // Filtrer par cosmetic_data au lieu de reward_type
-    const cosmeticsRewards = allRewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
+    // Filtrer par cosmetic_data au lieu de reward_type - essayons différents critères
+    const cosmeticsRewards = allRewards.filter(r => {
+      // Critères de détection plus permissifs
+      const hasCosmetic = !!(r.cosmetic_data || r.reward_type === 'cosmetic');
+      const hasCosmetic2 = r.name && (
+        r.name.toLowerCase().includes('avatar') ||
+        r.name.toLowerCase().includes('thème') ||
+        r.name.toLowerCase().includes('theme') ||
+        r.name.toLowerCase().includes('background') ||
+        r.name.toLowerCase().includes('outfit') ||
+        r.name.toLowerCase().includes('cosmetic')
+      );
+      
+      if (hasCosmetic2) {
+        console.log('DEBUG: Found potential cosmetic by name:', r.name, 'reward_type:', r.reward_type, 'cosmetic_data:', r.cosmetic_data);
+      }
+      
+      return hasCosmetic || hasCosmetic2;
+    });
     console.log('DEBUG PARENT COSMETICS: Cosmetic rewards found:', cosmeticsRewards.length);
     
     return `
