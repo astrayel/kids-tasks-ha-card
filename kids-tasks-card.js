@@ -2746,8 +2746,8 @@ class KidsTasksCard extends HTMLElement {
             <div class="cosmetic-simple-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
               <div class="cosmetic-simple-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
+                 <div class="cosmetic-simple-rarity ${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               </div>
-              <div class="cosmetic-simple-rarity ${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               <div class="cosmetic-simple-info">
                 <div class="cosmetic-simple-name">${cosmetic.name}</div>
                 <div class="cosmetic-simple-cost">
@@ -4253,6 +4253,18 @@ class KidsTasksCard extends HTMLElement {
 
         .cosmetic-simple-item.rarity-legendary {
           border-left-color: var(-- custom-rarity-legendary);
+        }
+
+        .cosmetic-simple-rarity {
+          position: relative;
+          top: -8px;
+          place-self: center;
+          background-color: var(--custom-rarity-common);
+          border-radius: 0.75em;
+          padding: 2px 8px 2px 8px;
+          font-size: 0.7em;
+          font-weight: bolder;
+          border: 1px dashed #AAAAAA;
         }
 
         .cosmetic-simple-rarity.rarity-common {
