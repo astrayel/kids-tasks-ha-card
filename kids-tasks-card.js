@@ -2788,7 +2788,7 @@ class KidsTasksCard extends HTMLElement {
       case 'avatar':
         if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogItemData.pixel_art);
-          return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 72px; height: 72px; image-rendering: pixelated;" />`;
+          return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 100px; height: 100px; border-radius: 50%; image-rendering: pixelated;" />`;
         }
         if (catalogItemData.emoji) {
           return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
@@ -2804,9 +2804,9 @@ class KidsTasksCard extends HTMLElement {
       case 'outfit':
         if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('outfits', catalogItemData.pixel_art);
-          return `<div style="position: relative; width: 72px; height: 72px;">
+          return `<div style="position: relative; width: 100px; height: 100px; border-radius: 50%;">
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kt-avatar-background); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px;">👤</div>
-            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 72px; height: 72px; image-rendering: pixelated;" />
+            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 100px; height: 100px; border-radius: 50%; image-rendering: pixelated;" />
           </div>`;
         }
         if (catalogItemData.emoji_overlay) {
