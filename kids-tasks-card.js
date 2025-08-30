@@ -2795,7 +2795,7 @@ class KidsTasksCard extends HTMLElement {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
         return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 72px; height: 72px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
