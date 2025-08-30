@@ -4229,6 +4229,7 @@ class KidsTasksCard extends HTMLElement {
         .cosmetic-simple-item {
           display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 16px;
           padding: 16px;
           margin: 8px 0;
