@@ -147,8 +147,6 @@ class KidsTasksCard extends HTMLElement {
     
     // Debug pour les actions cosmétiques (PARENT CARD)
     if (action === 'load-cosmetics-catalog' || action === 'create-cosmetic-rewards' || action === 'activate-cosmetic') {
-      console.log('DEBUG COSMETICS: Click intercepted (PARENT CARD):', action, 'target:', target);
-      console.log('DEBUG COSMETICS: Target datasets (PARENT):', target.dataset);
     }
 
     // Pour les filtres de tâches, passer le filtre à la place de l'ID
@@ -275,7 +273,6 @@ class KidsTasksCard extends HTMLElement {
         break;
         
       case 'load-cosmetics-catalog':
-        console.log('DEBUG COSMETICS: Starting load cosmetics catalog (PARENT CARD)');
         if (!this._hass) {
           console.error('DEBUG COSMETICS: _hass not available in parent card');
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
@@ -284,7 +281,6 @@ class KidsTasksCard extends HTMLElement {
         try {
           this._hass.callService('kids_tasks', 'load_cosmetics_catalog', {})
             .then(() => {
-              console.log('DEBUG COSMETICS: Load catalog service completed successfully (PARENT)');
               this.showNotification('Catalogue cosmétique chargé avec succès ! 📚', 'success');
             })
             .catch(error => {
@@ -299,7 +295,6 @@ class KidsTasksCard extends HTMLElement {
         break;
         
       case 'create-cosmetic-rewards':
-        console.log('DEBUG COSMETICS: Starting create cosmetic rewards (PARENT CARD)');
         if (!this._hass) {
           console.error('DEBUG COSMETICS: _hass not available in parent card');
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
@@ -308,7 +303,6 @@ class KidsTasksCard extends HTMLElement {
         try {
           this._hass.callService('kids_tasks', 'create_cosmetic_rewards', {})
             .then(() => {
-              console.log('DEBUG COSMETICS: Create rewards service completed successfully (PARENT)');
               this.showNotification('Récompenses cosmétiques créées avec succès ! 🎆', 'success');
               // Rafraîchir la vue pour afficher les nouvelles récompenses
               setTimeout(() => this.render(), 1000);
@@ -2862,7 +2856,10 @@ class KidsTasksCard extends HTMLElement {
     
     const catalogItemData = cosmeticItemData.catalog_data || {};
     
-    switch (cosmeticItemData.type) {
+    // Normaliser le type (enlever le 's' final si présent pour 'backgrounds' -> 'background')
+    const cosmeticType = cosmeticItemData.type ? cosmeticItemData.type.replace(/s$/, '') : '';
+    
+    switch (cosmeticType) {
       case 'avatar':
         if (catalogItemData.emoji) {
           return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
@@ -2874,9 +2871,9 @@ class KidsTasksCard extends HTMLElement {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient};"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>`;
+        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       case 'outfit':
         if (catalogItemData.emoji_overlay) {
@@ -2891,10 +2888,7 @@ class KidsTasksCard extends HTMLElement {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview">
-          <div class="theme-color" style="background-color: ${themePrimaryColor};"></div>
-          <div class="theme-color" style="background-color: ${themeSecondaryColor};"></div>
-        </div>`;
+        return `<div class="theme-preview" style="width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -5650,16 +5644,6 @@ class KidsTasksChildCard extends HTMLElement {
 
   // Vérifier si une tâche est active aujourd'hui
   isTaskActiveToday(task) {
-    if (task.name.includes("Khan Academy")) {
-      console.log('DEBUG isTaskActiveToday Khan Academy:', {
-        name: task.name,
-        active: task.active,
-        frequency: task.frequency,
-        weekly_days: task.weekly_days,
-        today: new Date().getDay()
-      });
-    }
-    
     if (!task.active) return false;
     
     const today = new Date();
@@ -5668,22 +5652,12 @@ class KidsTasksChildCard extends HTMLElement {
     const todayName = dayNames[dayOfWeek];
     
     if (task.frequency === 'daily' && task.weekly_days && task.weekly_days.length > 0) {
-      const result = task.weekly_days.includes(todayName);
-      if (task.name.includes("Khan Academy")) {
-        console.log('DEBUG Khan Academy daily with weekly_days:', todayName, task.weekly_days, 'result:', result);
-      }
-      return result;
+      return task.weekly_days.includes(todayName);
     }
     
-    const result = task.frequency === 'daily' || 
+    return task.frequency === 'daily' || 
            (task.frequency === 'weekly' && dayOfWeek === 1) ||
            (task.frequency === 'monthly' && today.getDate() === 1);
-    
-    if (task.name.includes("Khan Academy")) {
-      console.log('DEBUG Khan Academy frequency check:', result, 'frequency:', task.frequency, 'dayOfWeek:', dayOfWeek);
-    }
-    
-    return result;
   }
 
   // Obtenir les tâches par catégorie
@@ -7283,6 +7257,11 @@ class KidsTasksChildCard extends HTMLElement {
   }
 
   renderCosmeticPreview(cosmeticData, rewardName = null) {
+    // Debug temporaire
+    if (rewardName && rewardName.includes('Océan')) {
+      console.log('DEBUG Océan cosmetic data:', cosmeticData);
+    }
+    
     // Si pas de cosmetic_data, essayer de la générer depuis le nom
     if (!cosmeticData && rewardName) {
       cosmeticData = this.generateCosmeticDataFromName(rewardName);
@@ -7294,7 +7273,15 @@ class KidsTasksChildCard extends HTMLElement {
     
     const catalogData = cosmeticData.catalog_data || {};
     
-    switch (cosmeticData.type) {
+    // Normaliser le type (enlever le 's' final si présent pour 'backgrounds' -> 'background')
+    const cosmeticType = cosmeticData.type ? cosmeticData.type.replace(/s$/, '') : '';
+    
+    // Debug temporaire 
+    if (rewardName && rewardName.includes('Océan')) {
+      console.log('DEBUG Océan normalized type:', cosmeticType, 'catalog_data:', catalogData);
+    }
+    
+    switch (cosmeticType) {
       case 'avatar':
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
@@ -7306,7 +7293,7 @@ class KidsTasksChildCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient};"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);"></div>`;
         }
         return '🖼️';
         
@@ -7323,10 +7310,7 @@ class KidsTasksChildCard extends HTMLElement {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview">
-          <div class="theme-color" style="background-color: ${themePrimaryColor};"></div>
-          <div class="theme-color" style="background-color: ${themeSecondaryColor};"></div>
-        </div>`;
+        return `<div class="cosmetic-theme-preview" style="width: 24px; height: 24px; border-radius: 4px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return '🎨';
