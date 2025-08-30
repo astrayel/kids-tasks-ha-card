@@ -151,7 +151,12 @@ class KidsTasksCard extends HTMLElement {
       console.log('DEBUG COSMETICS: Target datasets (PARENT):', target.dataset);
     }
 
-    this.handleAction(action, id);
+    // Pour les filtres de tâches, passer le filtre à la place de l'ID
+    if (action === 'filter-tasks') {
+      this.handleAction(action, target.dataset.filter, event);
+    } else {
+      this.handleAction(action, id, event);
+    }
   }
 
   handleAction(action, id = null) {
@@ -262,9 +267,11 @@ class KidsTasksCard extends HTMLElement {
         }
         break;
       case 'filter-tasks':
-        const filter = event.target.dataset.filter;
-        this.taskFilter = filter;
-        this.render();
+        // Utiliser l'ID passé (qui contient le filtre)
+        if (id) {
+          this.taskFilter = id;
+          this.render();
+        }
         break;
         
       case 'load-cosmetics-catalog':
@@ -4925,7 +4932,12 @@ class KidsTasksChildCard extends HTMLElement {
     const id = target.dataset.id;
     
 
-    this.handleAction(action, id);
+    // Pour les filtres de récompenses, passer le filtre à la place de l'ID
+    if (action === 'filter-rewards') {
+      this.handleAction(action, target.dataset.filter, event);
+    } else {
+      this.handleAction(action, id, event);
+    }
   }
 
   handleAction(action, id = null) {
@@ -4958,6 +4970,12 @@ class KidsTasksChildCard extends HTMLElement {
             task_id: id,
           });
           this.showNotification('Tâche validée ! ✅', 'success');
+          break;
+          
+        case 'filter-rewards':
+          // Utiliser l'ID passé (qui contient le filtre) au lieu de l'événement
+          this.rewardsFilter = id;
+          this.render();
           break;
           
         case 'show_reward_detail':
@@ -6115,6 +6133,97 @@ class KidsTasksChildCard extends HTMLElement {
           font-weight: bold;
         }
         
+        /* Styles pour les filtres de récompenses */
+        .rewards-filters {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+          padding: 6px 12px;
+          background: var(--secondary-background-color, #f5f5f5);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 16px;
+          font-size: 0.8em;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: var(--secondary-text-color, #666);
+        }
+        
+        .filter-btn.active {
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          border-color: var(--primary-color, #3f51b5);
+        }
+        
+        .filter-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Styles pour les cosmétiques */
+        .reward-square.cosmetic {
+          background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        }
+        
+        .reward-square.cosmetic.affordable {
+          border-color: #9c27b0;
+          background: linear-gradient(135deg, #f3e5f5 0%, #e8f5e8 100%);
+        }
+        
+        .reward-level {
+          font-size: 0.6em;
+          background: var(--primary-color, #3f51b5);
+          color: white;
+          padding: 1px 4px;
+          border-radius: 8px;
+          margin-top: 2px;
+        }
+        
+        /* Styles pour les previews cosmétiques */
+        .cosmetic-avatar-preview {
+          font-size: 1.2em;
+        }
+        
+        .cosmetic-pixel-art-preview {
+          width: 20px;
+          height: 20px;
+          image-rendering: pixelated;
+        }
+        
+        .cosmetic-background-preview {
+          width: 20px;
+          height: 12px;
+          border-radius: 3px;
+          border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .cosmetic-outfit-preview {
+          position: relative;
+          font-size: 1em;
+        }
+        
+        .cosmetic-outfit-preview .outfit-overlay {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          font-size: 0.6em;
+        }
+        
+        .cosmetic-theme-preview {
+          display: flex;
+          gap: 2px;
+        }
+        
+        .theme-color {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.3);
+        }
+
         /* États vides */
         .empty-state {
           text-align: center;
@@ -6982,8 +7091,33 @@ class KidsTasksChildCard extends HTMLElement {
 
     const child = this.getChild();
     const childCoins = child ? child.coins || 0 : 0;
-    const affordableRewards = rewards.filter(r => r.cost <= childPoints && r.coin_cost <= childCoins);
-    const expensiveRewards = rewards.filter(r => r.cost > childPoints || r.coin_cost > childCoins);
+    const childLevel = child ? child.level || 1 : 1;
+    
+    // Séparer les récompenses normales des cosmétiques
+    const regularRewards = rewards.filter(r => !r.cosmetic_data && r.reward_type !== 'cosmetic');
+    const cosmeticRewards = rewards.filter(r => r.cosmetic_data || r.reward_type === 'cosmetic');
+    
+    // Filtrer par niveau minimum
+    const availableRegularRewards = regularRewards.filter(r => (r.min_level || 1) <= childLevel);
+    const availableCosmeticRewards = cosmeticRewards.filter(r => (r.min_level || 1) <= childLevel);
+    
+    const currentFilter = this.rewardsFilter || 'all';
+    let displayRewards = [];
+    
+    switch (currentFilter) {
+      case 'regular':
+        displayRewards = availableRegularRewards;
+        break;
+      case 'cosmetics':
+        displayRewards = availableCosmeticRewards;
+        break;
+      default:
+        displayRewards = [...availableRegularRewards, ...availableCosmeticRewards];
+        break;
+    }
+    
+    const affordableRewards = displayRewards.filter(r => r.cost <= childPoints && r.coin_cost <= childCoins);
+    const expensiveRewards = displayRewards.filter(r => r.cost > childPoints || r.coin_cost > childCoins);
 
     // Helper function to get currency class
     const getCurrencyClass = (reward) => {
@@ -6993,27 +7127,99 @@ class KidsTasksChildCard extends HTMLElement {
     };
 
     return `
+      <!-- Filtres des récompenses -->
+      <div class="rewards-filters">
+        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" 
+                data-action="filter-rewards" data-filter="all">
+          Toutes (${displayRewards.length})
+        </button>
+        <button class="filter-btn ${currentFilter === 'regular' ? 'active' : ''}" 
+                data-action="filter-rewards" data-filter="regular">
+          Récompenses (${availableRegularRewards.length})
+        </button>
+        <button class="filter-btn ${currentFilter === 'cosmetics' ? 'active' : ''}" 
+                data-action="filter-rewards" data-filter="cosmetics">
+          Cosmétiques (${availableCosmeticRewards.length})
+        </button>
+      </div>
+      
       <div class="rewards-grid">
         ${affordableRewards.map(reward => `
-          <div class="reward-square affordable ${getCurrencyClass(reward)}" 
+          <div class="reward-square affordable ${getCurrencyClass(reward)} ${reward.cosmetic_data ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon-large">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+            <div class="reward-icon-large">
+              ${reward.cosmetic_data ? this.renderCosmeticPreview(reward.cosmetic_data) : this.safeGetCategoryIcon(reward, '🎁')}
+            </div>
             <div class="reward-name">${reward.name}</div>
-            <div class="reward-price">${reward.cost}${reward.coin_cost > 0 ? ` + ${reward.coin_cost}c` : ''}</div>
+            <div class="reward-price">
+              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}c` : ''}
+              ${reward.cost === 0 && reward.coin_cost === 0 ? 'Gratuit' : ''}
+            </div>
+            ${reward.min_level && reward.min_level > 1 ? `<div class="reward-level">Niveau ${reward.min_level}+</div>` : ''}
           </div>
         `).join('')}
         ${expensiveRewards.map(reward => `
-          <div class="reward-square ${getCurrencyClass(reward)}" 
+          <div class="reward-square ${getCurrencyClass(reward)} ${reward.cosmetic_data ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon-large" style="opacity: 0.5">${this.safeGetCategoryIcon(reward, '🎁')}</div>
+            <div class="reward-icon-large" style="opacity: 0.5">
+              ${reward.cosmetic_data ? this.renderCosmeticPreview(reward.cosmetic_data) : this.safeGetCategoryIcon(reward, '🎁')}
+            </div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
-            <div class="reward-price" style="opacity: 0.5">${reward.cost}${reward.coin_cost > 0 ? ` + ${reward.coin_cost}c` : ''}</div>
+            <div class="reward-price" style="opacity: 0.5">
+              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}c` : ''}
+              ${reward.cost === 0 && reward.coin_cost === 0 ? 'Gratuit' : ''}
+            </div>
+            ${reward.min_level && reward.min_level > 1 ? `<div class="reward-level" style="opacity: 0.5">Niveau ${reward.min_level}+</div>` : ''}
           </div>
         `).join('')}
       </div>
     `;
+  }
+
+  renderCosmeticPreview(cosmeticData) {
+    if (!cosmeticData) return '🎨';
+    
+    const catalogData = cosmeticData.catalog_data || {};
+    
+    switch (cosmeticData.type) {
+      case 'avatar':
+        if (catalogData.emoji) {
+          return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
+        }
+        if (catalogData.pixel_art) {
+          return `<img class="cosmetic-pixel-art-preview" src="${catalogData.pixel_art}" alt="${catalogData.name}" />`;
+        }
+        return '👤';
+        
+      case 'background':
+        if (catalogData.css_gradient) {
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient};"></div>`;
+        }
+        return '🖼️';
+        
+      case 'outfit':
+        if (catalogData.emoji_overlay) {
+          return `<div class="cosmetic-outfit-preview">
+            <span class="base-avatar">👤</span>
+            <span class="outfit-overlay">${catalogData.emoji_overlay}</span>
+          </div>`;
+        }
+        return '👕';
+        
+      case 'theme':
+        const themeCssVars = catalogData.css_variables || {};
+        const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
+        const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
+        return `<div class="cosmetic-theme-preview">
+          <div class="theme-color" style="background-color: ${themePrimaryColor};"></div>
+          <div class="theme-color" style="background-color: ${themeSecondaryColor};"></div>
+        </div>`;
+        
+      default:
+        return '🎨';
+    }
   }
 
   // Méthodes pour le modal des récompenses
