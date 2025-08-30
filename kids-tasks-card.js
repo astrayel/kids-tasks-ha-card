@@ -3296,12 +3296,16 @@ class KidsTasksCard extends HTMLElement {
         .level-badge {
           background: var(--custom-points-badge-color);
           color: white;
-          padding: 4px 6px;
-          border-radius: 10px;
-          font-weight: bold;
-          font-size: 0.5em;
-          margin: 0px 0px 0px 4px;
-          height: 20px
+          position: absolute;
+          top: 72px;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 600;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          z-index: 2;
         }
         
         .progress-bar {
