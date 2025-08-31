@@ -812,6 +812,14 @@ class KidsTasksBaseCard extends HTMLElement {
         flex-wrap: wrap;
       }
 
+    /* Header avec avatar et jauges */
+      .header {
+        background: linear-gradient(135deg, var(--header-color) 0%, var(--secondary-color) 100%);
+        color: var(--header-text-color);
+        padding: 20px;
+        position: relative;
+      }
+
       .header-content {
         display: flex;
         gap: 16px;
@@ -6323,15 +6331,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0,0,0,0.1));
           overflow: hidden;
           max-width: 100%;
-          position: relative;
-        }
-        
-        
-        /* Header avec avatar et jauges */
-        .header {
-          background: linear-gradient(135deg, var(--header-color) 0%, var(--secondary-color) 100%);
-          color: var(--header-text-color);
-          padding: 20px;
           position: relative;
         }
         
