@@ -3598,7 +3598,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }
     
     if (!cosmeticItemData) {
-      return `<div class="generic-preview">🎨</div>`;
+      return `<div class=" generic-preview">🎨</div>`;
     }
     
     const catalogItemData = cosmeticItemData.catalog_data || {};
