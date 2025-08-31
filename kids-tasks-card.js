@@ -780,18 +780,18 @@ class KidsTasksBaseCard extends HTMLElement {
         flex-wrap: wrap;
       }
 
+      .header-content {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
       /* === RESPONSIVE MOBILE POUR HEADERS === */
       @media (max-width: 600px) {
         .header {
           padding: var(--kt-space-lg);
         }
-        
-        .header-content {
-          flex-direction: row;
-          align-items: flex-start;
-          gap: 16px;
-        }
-        
+                
         .avatar-section {
           flex-direction: column;
           align-items: center;
@@ -6302,12 +6302,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: var(--header-text-color);
           padding: 20px;
           position: relative;
-        }
-        
-        .header-content {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 12px;
         }
         
         .avatar-section {
