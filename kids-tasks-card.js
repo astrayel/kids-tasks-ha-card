@@ -124,15 +124,12 @@ class KidsTasksBaseCard extends HTMLElement {
       return child.avatar || '👶';
     } else if (avatarType === 'url' && child.avatar_data) {
       const size = context === 'large' ? '4em' : '3em';
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'inline' && child.avatar_data) {
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
     } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
       if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
         const size = context === 'large' ? '4em' : '3em';
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
       }
     }
     return child.avatar || '👶';
@@ -169,15 +166,15 @@ class KidsTasksBaseCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 40px; height: 40px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         }
-        return `<div class="cosmetic-background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="cosmetic-background-preview" style="background: var(--kt-gradient-neutral); width: 40px; height: 40px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       case 'outfit':
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('outfits', catalogData.pixel_art);
           return `<div style="position: relative; width: 54px; height: 54px;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <div class="avatar-placeholder" style="background: var(--kt-avatar-background);">👤</div>
             <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 54px; height: 54px; image-rendering: pixelated;" />
           </div>`;
         }
@@ -192,7 +189,7 @@ class KidsTasksBaseCard extends HTMLElement {
       case 'theme':
         const themeCssVars = catalogData.css_variables || {};
         const primaryColor = themeCssVars['--kt-primary'] || '#3f51b5';
-        return `<div class="cosmetic-theme-preview" style="background: ${primaryColor}; width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="cosmetic-theme-preview" style="background: ${primaryColor}; width: 40px; height: 40px; border-radius: var(--kt-radius-sm); border: 2px solid var(--kt-cosmetic-border);"></div>`;
         
       default:
         return '🎨';
@@ -217,7 +214,7 @@ class KidsTasksBaseCard extends HTMLElement {
     if (name.includes('fond') || name.includes('background') || name.includes('thème')) {
       return {
         type: 'background',
-        catalog_data: { css_gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }
+        catalog_data: { css_gradient: 'var(--kt-gradient-neutral)' }
       };
     }
     
@@ -279,12 +276,25 @@ class KidsTasksBaseCard extends HTMLElement {
         --kt-cosmetic-border: rgba(0,0,0,0.1);
         --kt-cosmetic-background: rgba(255,255,255,0.1);
         
+        /* Gradients réutilisables */
+        --kt-gradient-primary: linear-gradient(135deg, var(--primary-color, #1976d2), var(--accent-color, #ff4081));
+        --kt-gradient-success: linear-gradient(135deg, #4CAF50, #8BC34A);
+        --kt-gradient-neutral: var(--kt-gradient-neutral);
+        --kt-gradient-avatar: var(--kt-avatar-background);
+        
         /* Espacements standardisés */
         --kt-space-xs: 4px;
         --kt-space-sm: 8px;
         --kt-space-md: 12px;
         --kt-space-lg: 16px;
         --kt-space-xl: 24px;
+        
+        /* Rayons de courbure standardisés */
+        --kt-radius-sm: 8px;
+        --kt-radius-md: 12px;
+        --kt-radius-lg: 16px;
+        --kt-radius-xl: 20px;
+        --kt-radius-round: 50%;
         
         /* Transitions communes */
         --kt-transition-fast: 0.2s ease;
@@ -342,7 +352,7 @@ class KidsTasksBaseCard extends HTMLElement {
         padding: var(--kt-space-sm) var(--kt-space-lg);
         border: 2px solid var(--divider-color, #e0e0e0);
         background: var(--card-background-color, #fff);
-        border-radius: 20px;
+        border-radius: var(--kt-radius-xl);
         cursor: pointer;
         transition: all var(--kt-transition-fast);
         font-size: var(--kt-font-size-sm);
@@ -423,12 +433,49 @@ class KidsTasksBaseCard extends HTMLElement {
       
       /* Base level badge styles */
       .level-badge {
-        border-radius: 13px;
+        border-radius: var(--kt-radius-md);
         font-size: 0.8em;
         font-weight: 600;
         text-align: center;
         z-index: 2;
       }
+
+      /* Classes utilitaires pour styles inline répétitifs */
+      .avatar-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-sm);
+        font-size: 24px;
+      }
+      
+      .avatar-placeholder-large {
+        border-radius: var(--kt-radius-md);
+        font-size: 32px;
+      }
+      
+      .secondary-text {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+      }
+      
+      .center-flex {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      /* Classes utilitaires pour espacements */
+      .p-xs { padding: var(--kt-space-xs); }
+      .p-sm { padding: var(--kt-space-sm); }
+      .p-md { padding: var(--kt-space-md); }
+      .p-lg { padding: var(--kt-space-lg); }
+      .p-xl { padding: var(--kt-space-xl); }
 
       /* Tâches */      
       .task-top-row {
@@ -627,7 +674,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .cosmetic-background-preview {
-        border-radius: 50%;
+        border-radius: var(--kt-radius-round);
         border: 1px solid var(--kt-cosmetic-border);
       }
       
@@ -722,6 +769,125 @@ class KidsTasksBaseCard extends HTMLElement {
         margin: var(--kt-space-lg) 0;
         flex-wrap: wrap;
       }
+
+      /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
+      
+      .child-card.unified {
+        position: relative;
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-radius-lg);
+        box-shadow: 0 2px 4px var(--kt-shadow-light);
+        overflow: hidden;
+        transition: all var(--kt-transition-fast);
+        margin-bottom: var(--kt-space-md);
+      }
+      
+      .child-card.unified:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--kt-shadow-medium);
+      }
+      
+      .child-border {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--kt-primary);
+      }
+      
+      .drag-handle {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary-text-color);
+        cursor: grab;
+        font-size: 1.2em;
+        z-index: 1;
+      }
+      
+      .drag-handle:active {
+        cursor: grabbing;
+      }
+      
+      .unified-header {
+        background: linear-gradient(135deg, var(--kt-gradient-primary));
+        color: white;
+        padding: var(--kt-space-lg);
+        position: relative;
+      }
+      
+      .unified-header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-lg);
+      }
+      
+      .unified-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 60px;
+      }
+      
+      .unified-avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .unified-avatar {
+        font-size: 2.5em;
+        margin-bottom: var(--kt-space-xs);
+        border-radius: var(--kt-radius-round);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+      }
+      
+      .unified-avatar img {
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: var(--kt-radius-round) !important;
+      }
+      
+      .unified-level-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 8px;
+        border-radius: var(--kt-radius-md);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+      }
+      
+      .unified-info-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .unified-child-name {
+        font-size: 1.2em;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .unified-gauges-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-xs);
+      }
     `;
   }
 
@@ -810,6 +976,155 @@ class KidsTasksBaseCard extends HTMLElement {
     }
     
     return gaugesHtml;
+  }
+
+  // Fonctions communes dupliquées - déplacées ici pour éviter redondance
+  
+  formatAssignedChildren(task) {
+    const childrenNames = this.getAssignedChildrenNames(task);
+    if (childrenNames.length === 0) return 'Non assigné';
+    if (childrenNames.length === 1) return childrenNames[0];
+    return childrenNames.join(', ');
+  }
+  
+  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
+    try {
+      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
+        return this.getCategoryIcon(categoryOrItem);
+      }
+    } catch (error) {
+      console.warn('Error in getCategoryIcon:', error);
+    }
+    return fallback;
+  }
+  
+  renderIcon(iconData) {
+    if (!iconData) return '📋';
+    
+    // Si c'est une URL (commence par http:// ou https://)
+    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
+      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    }
+    
+    // Si c'est une icône MDI (commence par mdi:)
+    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
+      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
+    }
+    
+    // Sinon, traiter comme un emoji ou texte simple
+    return iconData.toString();
+  }
+  
+  isToday(dateString) {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  }
+  
+  getStatusLabel(status) {
+    const labels = {
+      'todo': 'À faire',
+      'in_progress': 'En cours', 
+      'completed': 'Terminé',
+      'pending_validation': 'En attente',
+      'validated': 'Validé',
+      'failed': 'Échoué'
+    };
+    return labels[status] || status;
+  }
+  
+  // Version unifiée de getChildren - utilisée par les deux cartes
+  getChildren() {
+    if (!this._hass) return [];
+    const children = [];
+    
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.attributes && entity.state !== 'unavailable') {
+          children.push({
+            id: entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
+            name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
+            points: parseInt(entity.state) || 0,
+            coins: parseInt(entity.attributes.coins) || 0,
+            level: entity.attributes.level || 1,
+            // Attributs supplémentaires pour compatibilité avec carte parent
+            state: entity.state,
+            attributes: entity.attributes,
+            avatar: entity.attributes.avatar || '👶',
+            avatar_type: entity.attributes.avatar_type || 'emoji',
+            avatar_data: entity.attributes.avatar_data,
+            person_entity_id: entity.attributes.person_entity_id,
+            card_gradient_start: entity.attributes.card_gradient_start,
+            card_gradient_end: entity.attributes.card_gradient_end
+          });
+        }
+      }
+    });
+    
+    return children;
+  }
+
+  // Méthode unifiée pour afficher les enfants, basée sur le style de la carte enfant
+  renderUnifiedChildCard(child, showActions = false, showDragHandle = false) {
+    // Protection contre les enfants undefined/null
+    if (!child) {
+      return '<div class="child-card unified"><div class="error">Erreur: enfant non trouvé</div></div>';
+    }
+    
+    try {
+      const name = child.name || 'Enfant sans nom';
+      const points = child.points || 0;
+      const coins = child.coins || 0;
+      const level = child.level || 1;
+      const progress = ((points % 100) / 100) * 100;
+      const pointsToNext = (100 - (points % 100));
+      
+      // Calculer les statistiques comme la carte enfant
+      const stats = {
+        level: level,
+        points: points,
+        coins: coins,
+        progress: progress,
+        pointsToNext: pointsToNext
+      };
+
+      return `
+        <div class="child-card unified" data-child-id="${child.id || 'unknown'}">
+          ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
+          ${showActions ? '<div class="child-border"></div>' : ''}
+          
+          <!-- Header unifié inspiré de la carte enfant -->
+          <div class="unified-header">
+            <div class="unified-header-content">
+              <div class="unified-avatar-section">
+                <div class="unified-avatar-container">
+                  <div class="unified-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                  <div class="unified-level-badge">Niveau ${level}</div>
+                </div>
+              </div>
+              
+              <div class="unified-info-section">
+                <div class="unified-child-name">${name}</div>
+                <div class="unified-gauges-section">
+                  ${this.renderGauges(stats, true)}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          ${showActions ? `
+            <div class="task-actions">
+              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    } catch (error) {
+      console.error('Erreur dans renderUnifiedChildCard:', error, 'Child data:', child);
+      return `<div class="child-card unified"><div class="error">Erreur rendu: ${error.message}</div></div>`;
+    }
   }
 
   getStyles() {
@@ -1424,8 +1739,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       avatar = form.querySelector('[name="avatar"]').value;
     } else if (avatar_type === 'url') {
       avatar_data = form.querySelector('[name="avatar_url"]').value;
-    } else if (avatar_type === 'inline') {
-      avatar_data = form.querySelector('[name="avatar_inline"]').value;
     }
     
     const serviceData = {
@@ -1754,9 +2067,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         /* Styles pour la section des jours de la semaine */
         .weekly-days-section, .children-section {
           margin-bottom: 20px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           background: var(--secondary-background-color, #fafafa);
         }
         
@@ -1842,9 +2155,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
           margin-bottom: 8px; 
         }
         .avatar-option {
-          padding: 8px;
+          padding: var(--kt-space-sm);
           border: 2px solid var(--divider-color);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           background: var(--secondary-background-color);
           cursor: pointer;
           font-size: 1.5em;
@@ -1921,7 +2234,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           value="${isEdit ? child.avatar_type || 'emoji' : 'emoji'}">
           <ha-list-item value="emoji">Emoji</ha-list-item>
           <ha-list-item value="url">URL d'image</ha-list-item>
-          <ha-list-item value="inline">Image inline (base64)</ha-list-item>
           ${persons.length > 0 ? '<ha-list-item value="person_entity">Photo de la personne liée</ha-list-item>' : ''}
         </ha-select>
 
@@ -1948,14 +2260,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             </ha-textfield>
           </div>
 
-          <div id="inline-config" style="display: ${isEdit && child.avatar_type === 'inline' ? 'block' : 'none'};">
-            <label class="form-label">Image base64 (sans le préfixe data:image)</label>
-            <ha-textarea
-              name="avatar_inline"
-              value="${isEdit && child.avatar_type === 'inline' ? child.avatar_data || '' : ''}"
-              placeholder="iVBORw0KGgoAAAANSUhEUgAA...">
-            </ha-textarea>
-          </div>
         </div>
 
         <div class="form-row">
@@ -2070,7 +2374,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           label="Icône personnalisée (optionnel)"
           name="icon"
           value="${isEdit ? task.icon || '' : ''}"
-          placeholder="Ex: 🧹, mdi:broom, https://example.com/icon.png, data:image/png;base64,iVBOR...">
+          placeholder="Ex: 🧹, mdi:broom, https://example.com/icon.png">
         </ha-textfield>
 
         <div class="form-row">
@@ -2324,7 +2628,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           label="Icône personnalisée (optionnel)"
           name="icon"
           value="${isEdit ? reward.icon || '' : ''}"
-          placeholder="Ex: 🎮, mdi:gamepad, https://example.com/icon.png, data:image/png;base64,iVBOR...">
+          placeholder="Ex: 🎮, mdi:gamepad, https://example.com/icon.png">
         </ha-textfield>
         
         <div class="form-row">
@@ -2720,13 +3024,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     });
   }
 
-  // Utilitaires
-  isToday(dateString) {
-    if (!dateString) return false;
-    const date = new Date(dateString);
-    const today = new Date();
-    return date.toDateString() === today.toDateString();
-  }
+  // Utilitaires - isToday déplacée vers KidsTasksBaseCard
 
   getChildName(childId, children = null) {
     if (!children) children = this.getChildren();
@@ -2744,24 +3042,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }).filter(name => name);
   }
   
-  formatAssignedChildren(task) {
-    const childrenNames = this.getAssignedChildrenNames(task);
-    if (childrenNames.length === 0) return 'Non assigné';
-    if (childrenNames.length === 1) return childrenNames[0];
-    return childrenNames.join(', ');
-  }
-
-  getStatusLabel(status) {
-    const labels = {
-      'todo': 'À faire',
-      'in_progress': 'En cours', 
-      'completed': 'Terminé',
-      'pending_validation': 'En attente',
-      'validated': 'Validé',
-      'failed': 'Échoué'
-    };
-    return labels[status] || status;
-  }
+  // formatAssignedChildren et getStatusLabel déplacées vers KidsTasksBaseCard
 
   getCategoryLabel(category) {
     // Récupérer les labels depuis l'intégration
@@ -2905,12 +3186,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
           ${children.map((child, index) => {
             try {
               console.log(`Rendu enfant ${index}:`, child);
-              const result = this.renderChildCard(child);
+              const result = this.renderUnifiedChildCard(child, false, false);
               console.log(`Rendu enfant ${index} réussi`);
               return result;
             } catch (error) {
               console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
-              return `<div class="child-card"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
+              return `<div class="child-card unified"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
             }
           }).join('')}
         </div>
@@ -2944,12 +3225,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
             ${children.map((child, index) => {
               try {
                 console.log(`Rendu enfant gestion ${index}:`, child);
-                const result = this.renderChildCard(child, true);
+                const result = this.renderUnifiedChildCard(child, true, true);
                 console.log(`Rendu enfant gestion ${index} réussi`);
                 return result;
               } catch (error) {
                 console.error(`Erreur lors du rendu de l'enfant gestion ${index}:`, error, child);
-                return `<div class="child-card"><div class="error">Erreur enfant gestion ${index}: ${error.message}</div></div>`;
+                return `<div class="child-card unified"><div class="error">Erreur enfant gestion ${index}: ${error.message}</div></div>`;
               }
             }).join('')}
           </div>
@@ -3106,78 +3387,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     `;
   }
 
-  renderChildCard(child, showActions = false) {
-    // Protection contre les enfants undefined/null
-    if (!child) {
-      return '<div class="child-card"><div class="error">Erreur: enfant non trouvé</div></div>';
-    }
-    
-    try {
-      const name = child.name || 'Enfant sans nom';
-      const points = child.points || 0;
-      const coins = child.coins || 0;
-      const level = child.level || 1;
-      
-      // Calculer les tâches et stats de manière sûre
-      let completedToday = 0;
-      let todayTasks = 0;
-      let stats = null;
-      
-      try {
-        const tasks = this.getTasks();
-        const childTasks = tasks.filter(task => 
-          task.assigned_child_ids && task.assigned_child_ids.includes(child.id)
-        );
-        completedToday = this.getChildCompletedToday(child.id, tasks).length;
-        todayTasks = this.getChildTasksToday(child.id, tasks).length;
-        
-        // Calculer les stats pour les jauges (mode parent)
-        if (showActions) {
-          stats = this.calculateChildStats(child, childTasks);
-        }
-      } catch (taskError) {
-        console.warn('Erreur lors du calcul des tâches:', taskError);
-      }
-      
-      // Utiliser getEffectiveAvatar
-      const avatar = this.getEffectiveAvatar(child, 'large');
-      
-      return `
-        <div class="child-card ${showActions ? 'management-mode' : ''}" ${showActions ? `draggable="true" data-child-id="${child.id || 'unknown'}"` : ''}>
-          ${showActions ? `
-            <div class="drag-handle" title="Glisser pour réorganiser">⋮⋮</div>
-            <button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer">×</button>
-          ` : ''}
-          <div class="child-avatar">${avatar}</div>
-          <div class="level-badge">Niveau ${level}</div>
-          <div class="child-info">
-            <div class='child-wrapper'><div class="child-name">${name}</div></div>
-            ${showActions && stats ? `
-              <div class="child-gauges-compact">
-                ${this.renderGauges(stats, true, true, completedToday, todayTasks)}
-              </div>
-            ` : `
-              <div class="child-stats">
-                ${points} points • ${coins} coins • Niveau ${level}<br>
-                ${completedToday}/${todayTasks} tâches aujourd'hui
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${child.progress || 0}%"></div>
-                </div>
-              </div>
-            `}
-          </div>
-          ${showActions ? `
-            <div class="task-actions">
-              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    } catch (error) {
-      console.error('Erreur dans renderChildCard:', error, 'Child data:', child);
-      return `<div class="child-card"><div class="error">Erreur rendu: ${error.message}</div></div>`;
-    }
-  }
 
   calculateChildStats(child, tasks) {
     const totalPoints = child.points || 0;
@@ -3251,7 +3460,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="empty-state">
             <div class="empty-state-icon">✅</div>
             <p>Aucune tâche en attente de validation</p>
-            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Les tâches complétées par les enfants apparaîtront ici.</p>
+            <p class="secondary-text">Les tâches complétées par les enfants apparaîtront ici.</p>
           </div>
         `}
       </div>
@@ -3345,7 +3554,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="empty-state">
             <div class="empty-state-icon">🎨</div>
             <p>Aucun cosmétique disponible</p>
-            <p style="font-size: 0.9em; color: var(--secondary-text-color);">Chargez le catalogue et créez les récompenses pour voir les cosmétiques.</p>
+            <p class="secondary-text">Chargez le catalogue et créez les récompenses pour voir les cosmétiques.</p>
           </div>
         </div>
       `;
@@ -3416,7 +3625,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       case 'avatar':
         if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogItemData.pixel_art);
-          return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 100px; height: 100px; border-radius: 50%; image-rendering: pixelated;" />`;
+          return `<img class="pixel-art-preview" src="${imageUrl}" alt="${catalogItemData.name}" style="width: 100px; height: 100px; border-radius: var(--kt-radius-round); image-rendering: pixelated;" />`;
         }
         if (catalogItemData.emoji) {
           return `<div class="avatar-preview">${catalogItemData.emoji}</div>`;
@@ -3425,16 +3634,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         }
-        return `<div class="background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="background-preview" style="background: var(--kt-gradient-neutral); width: 100px; height: 100px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       case 'outfit':
         if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('outfits', catalogItemData.pixel_art);
-          return `<div style="position: relative; width: 100px; height: 100px; border-radius: 50%;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kt-avatar-background); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px;">👤</div>
-            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 100px; height: 100px; border-radius: 50%; image-rendering: pixelated;" />
+          return `<div style="position: relative; width: 100px; height: 100px; border-radius: var(--kt-radius-round);">
+            <div class="avatar-placeholder avatar-placeholder-large" style="background: var(--kt-avatar-background);">👤</div>
+            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 100px; height: 100px; border-radius: var(--kt-radius-round); image-rendering: pixelated;" />
           </div>`;
         }
         if (catalogItemData.emoji_overlay) {
@@ -3449,7 +3658,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         const themeCssVars = catalogItemData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="theme-preview" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="theme-preview" style="width: 100px; height: 100px; border-radius: var(--kt-radius-round); background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       default:
         return `<div class="generic-preview">🎨</div>`;
@@ -3526,7 +3735,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .nav-tab {
           flex: 1;
-          padding: 12px 8px;
+          padding: var(--kt-space-md) 8px;
           background: none;
           border: none;
           color: white;
@@ -3564,9 +3773,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .stat-card {
-          padding: 16px;
+          padding: var(--kt-space-lg);
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border-left: 4px solid var(--custom-dashboard-secondary);
           display: flex;
           flex-direction: column;
@@ -3599,30 +3808,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
           word-wrap: break-word;
         }
         
-        .child-card {
-          display: flex;
-          flex-direction: row;
-          align-items: flex-start;
-          padding: 8px;
-          margin: 8px 0;
-          background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
-          border-left: 4px solid var(--custom-dashboard-secondary);
-          transition: all 0.3s;
-          position: relative;
-          min-height: 160px;
-          height: 160px;
-        }
         
         .reward-card {
           border-left-color: var(--custom-dashboard-primary, #6b73ff);
           display: flex;
           flex-direction: row;
           align-items: flex-start;
-          padding: 8px;
+          padding: var(--kt-space-sm);
           margin: 8px 0;
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border-left: 4px solid var(--custom-dashboard-secondary);
           transition: all 0.3s;
           position: relative;
@@ -3659,7 +3854,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             var(--primary-color, #03a9f4) 0%, 
             rgba(3, 169, 244, 0.3) 50%, 
             var(--primary-color, #03a9f4) 100%);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           z-index: 100;
           opacity: 0.8;
           animation: pulse-insert 1s infinite alternate;
@@ -3680,7 +3875,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             var(--primary-color, #03a9f4) 0%, 
             rgba(3, 169, 244, 0.3) 50%, 
             var(--primary-color, #03a9f4) 100%);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           z-index: 100;
           opacity: 0.8;
           animation: pulse-insert 1s infinite alternate;
@@ -3723,7 +3918,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .child-avatar img {
           width: 3em !important;
           height: 3em !important;
-          border-radius: 50% !important;
+          border-radius: var(--kt-radius-round) !important;
           object-fit: cover !important;
           border: 2px solid var(--kt-cosmetic-background);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -3746,7 +3941,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .reward-icon img {
           width: 3em !important;
           height: 3em !important;
-          border-radius: 50% !important;
+          border-radius: var(--kt-radius-round) !important;
           object-fit: cover !important;
           border: 2px solid var(--kt-cosmetic-background);
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -3794,16 +3989,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           margin-bottom: 8px;
         }
         
-        .level-badge {
-          background: var(--custom-points-badge-color);
-          color: white;
-          position: absolute;
-          width: 64px;
-          top: 128px;
-          left: 32px;
-          padding: 4px 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
-        }
         
         .progress-bar {
           width: 120px;
@@ -3896,7 +4081,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .task-item {
           display: flex;
           align-items: center;
-          padding: 8px 12px;
+          padding: var(--kt-space-sm) 12px;
           background: var(--secondary-background-color, #fafafa);
           border-radius: 6px;
           border-left: 3px solid #ddd;
@@ -3943,7 +4128,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .task-meta-compact span {
           background: rgba(0,0,0,0.05);
           padding: 1px 6px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
         }
         
         .task-rewards-compact {
@@ -3957,7 +4142,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: var(--kt-success);
           color: white;
           padding: 2px 6px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
         }
@@ -3966,7 +4151,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: #9C27B0;
           color: white;
           padding: 2px 6px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
         }
@@ -3975,7 +4160,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: var(--kt-error);
           color: white;
           padding: 2px 6px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
         }
@@ -3987,7 +4172,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .btn-sm {
-          padding: 4px 8px;
+          padding: var(--kt-space-xs) 8px;
           font-size: 0.75em;
           border-radius: 4px;
         }
@@ -4002,7 +4187,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .reward-item {
           display: flex;
           align-items: center;
-          padding: 8px 12px;
+          padding: var(--kt-space-sm) 12px;
           background: var(--secondary-background-color, #fafafa);
           border-radius: 6px;
           border-left: 3px solid #4CAF50;
@@ -4054,7 +4239,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .btn-icon-compact {
           background: transparent;
           border: none;
-          padding: 4px;
+          padding: var(--kt-space-xs);
           font-size: 0.85em;
           cursor: pointer;
           border-radius: 4px;
@@ -4081,9 +4266,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .validation-task-item {
           display: flex;
           align-items: center;
-          padding: 12px;
+          padding: var(--kt-space-md);
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border-left: 4px solid #ff5722;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           transition: all 0.3s ease;
@@ -4132,7 +4317,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         /* Base badge styles */
         .validation-child, .validation-rewards, .validation-category, .badge, .cosmetic-rarity {
           padding: 2px 8px;
-          border-radius: 12px;
+          border-radius: var(--kt-radius-md);
           font-weight: 600;
         }
         
@@ -4167,10 +4352,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .btn-validation {
-          padding: 8px 16px;
+          padding: var(--kt-space-sm) 16px;
           font-size: 0.85em;
           font-weight: 600;
-          border-radius: 20px;
+          border-radius: var(--kt-radius-xl);
           transition: all 0.3s ease;
           cursor: pointer;
         }
@@ -4185,7 +4370,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .validation-task-item {
             flex-direction: column;
             align-items: stretch;
-            padding: 16px;
+            padding: var(--kt-space-lg);
           }
           
           .validation-task-icon {
@@ -4224,7 +4409,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           .btn-validation {
             flex: 1;
-            padding: 12px 16px;
+            padding: var(--kt-space-md) 16px;
             font-size: 0.9em;
             min-width: 120px;
           }
@@ -4326,7 +4511,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border: none;
           background: var(--kt-error);
           color: white;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           cursor: pointer;
           font-size: 16px;
           font-weight: bold;
@@ -4391,9 +4576,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         /* Styles pour la section des jours de la semaine avec cadre */
         .weekly-days-section, .children-section {
           margin-bottom: 20px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           background: var(--secondary-background-color, #fafafa);
         }
         
@@ -4436,8 +4621,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         
         .task-status {
-          padding: 4px 8px;
-          border-radius: 16px;
+          padding: var(--kt-space-xs) 8px;
+          border-radius: var(--kt-radius-lg);
           font-size: 0.75em;
           font-weight: bold;
           text-transform: uppercase;
@@ -4458,7 +4643,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .form-input, .form-select, .form-textarea {
           width: 100%;
-          padding: 8px 12px;
+          padding: var(--kt-space-sm) 12px;
           border: 1px solid var(--divider-color, #e0e0e0);
           border-radius: 4px;
           background: var(--card-background-color, white);
@@ -4496,7 +4681,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .modal-content {
           background: var(--card-background-color, white);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           padding: 0;
           max-width: 500px;
           width: 90%;
@@ -4519,9 +4704,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .modal-title { margin: 0; font-size: 1.2em; color: var(--primary-text-color, #212121); }
-        .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+        .modal-body { padding: var(--kt-space-xl); max-height: 60vh; overflow-y: auto; }
         .modal-footer {
-          padding: 16px 24px;
+          padding: var(--kt-space-lg) 24px;
           border-top: 1px solid var(--divider-color, #e0e0e0);
           background: var(--secondary-background-color, #fafafa);
           display: flex;
@@ -4541,7 +4726,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           transition: all 0.3s;
         }
         
@@ -4562,9 +4747,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .avatar-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .avatar-option {
-          padding: 8px;
+          padding: var(--kt-space-sm);
           border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           background: var(--secondary-background-color, #fafafa);
           cursor: pointer;
           font-size: 1.5em;
@@ -4579,9 +4764,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .reward-claim { text-align: center; }
         .reward-info {
           margin-bottom: 24px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
         }
         .reward-info h3 {
           margin: 0 0 8px 0;
@@ -4593,10 +4778,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           margin: 8px 0;
           background: var(--secondary-background-color, #f8f9fa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border-left: 4px solid #ddd;
           transition: all 0.3s;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -4669,13 +4854,13 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         /* Téléphone */
         @media (max-width: 768px) {
-          .content { padding: 16px; }
-          .nav-tab { font-size: 11px; padding: 8px 4px; }
+          .content { padding: var(--kt-space-lg); }
+          .nav-tab { font-size: 11px; padding: var(--kt-space-sm) 4px; }
           .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
           .modal-content { width: 95%; margin: 0 auto; }
-          .modal-body { padding: 16px; }
+          .modal-body { padding: var(--kt-space-lg); }
           
           .task-actions {
             /* position, display, flex-direction, justify-content, right, bottom inherited from non-responsive definition */
@@ -4684,7 +4869,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           .task-actions .btn {
             min-width: 70px;
-            padding: 8px 12px;
           }
           
           /* Styles enfants - disposition horizontale forcée */
@@ -4737,7 +4921,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           /* Styles supplémentaires pour les cartes individuelles */
           .header {
-            padding: 16px;
+            padding: var(--kt-space-lg);
           }
           
           .rewards-grid {
@@ -4783,15 +4967,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
       return child.avatar || '👶';
     } else if (avatarType === 'url' && child.avatar_data) {
       const size = context === 'large' ? '4em' : '3em';
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'inline' && child.avatar_data) {
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
     } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
       if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
         const size = context === 'large' ? '4em' : '3em';
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
       }
     }
     return child.avatar || '👶';
@@ -4806,50 +4987,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return `${baseUrl}/${cosmeticType}/${fileName}`;
   }
 
-  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
-    try {
-      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
-        return this.getCategoryIcon(categoryOrItem);
-      }
-    } catch (error) {
-      console.warn('Error in getCategoryIcon:', error);
-    }
-    return fallback;
-  }
-
-  renderIcon(iconData) {
-    if (!iconData) return '📋';
-    
-    // Si c'est une URL (commence par http:// ou https://)
-    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une image inline base64 (commence par data:image/)
-    if (typeof iconData === 'string' && iconData.startsWith('data:image/')) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est du base64 sans préfixe (pour compatibilité)
-    if (typeof iconData === 'string' && this.isBase64 && this.isBase64(iconData)) {
-      return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une icône MDI (commence par mdi:)
-    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
-      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
-    }
-    
-    // Sinon, traiter comme un emoji ou texte simple
-    return iconData.toString();
-  }
-
-  isBase64(str) {
-    if (!str || typeof str !== 'string') return false;
-    // Vérifier que c'est une chaîne base64 valide (caractères base64 + longueur raisonnable pour une image)
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    return str.length > 100 && str.length % 4 === 0 && base64Regex.test(str);
-  }
+  // safeGetCategoryIcon et renderIcon déplacées vers KidsTasksBaseCard
 
   getCategoryIcon(categoryOrItem) {
     // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
@@ -4937,14 +5075,14 @@ class KidsTasksBaseCardEditor extends HTMLElement {
   getCommonEditorStyles() {
     return `
       .config-container {
-        padding: 16px;
+        padding: var(--kt-space-lg);
         max-width: 600px;
       }
       .config-section {
         margin-bottom: 24px;
         border: 1px solid var(--divider-color, #e0e0e0);
-        border-radius: 8px;
-        padding: 16px;
+        border-radius: var(--kt-radius-sm);
+        padding: var(--kt-space-lg);
         background: var(--card-background-color, #fff);
       }
       .section-title {
@@ -4975,7 +5113,7 @@ class KidsTasksBaseCardEditor extends HTMLElement {
       .config-item input[type="number"], 
       .config-item select {
         width: 100%;
-        padding: 8px;
+        padding: var(--kt-space-sm);
         border: 1px solid var(--divider-color, #ccc);
         border-radius: 4px;
         background: var(--card-background-color, #fff);
@@ -5010,9 +5148,9 @@ class KidsTasksBaseCardEditor extends HTMLElement {
       }
       .preview-header {
         margin-top: 16px;
-        padding: 16px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #4CAF50, #8BC34A);
+        padding: var(--kt-space-lg);
+        border-radius: var(--kt-radius-md);
+        background: var(--kt-gradient-success);
         color: white;
         display: flex;
         align-items: center;
@@ -5027,7 +5165,7 @@ class KidsTasksBaseCardEditor extends HTMLElement {
         align-items: center;
         justify-content: center;
         background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
+        border-radius: var(--kt-radius-round);
       }
       .preview-name {
         font-size: 1.2em;
@@ -5036,8 +5174,8 @@ class KidsTasksBaseCardEditor extends HTMLElement {
       }
       .preview-level {
         background: rgba(255, 255, 255, 0.2);
-        padding: 4px 12px;
-        border-radius: 20px;
+        padding: var(--kt-space-xs) 12px;
+        border-radius: var(--kt-radius-xl);
         font-size: 0.9em;
         font-weight: 500;
       }
@@ -5111,8 +5249,8 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
         .preview-card {
           background: linear-gradient(135deg, var(--primary-color, #1976d2), var(--accent-color, #ff4081));
           color: white;
-          padding: 12px;
-          border-radius: 8px;
+          padding: var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
           text-align: center;
           margin-top: 8px;
           font-weight: 500;
@@ -5736,10 +5874,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       position: fixed;
       top: 20px;
       right: 20px;
-      padding: 12px 20px;
+      padding: var(--kt-space-md) 20px;
       background: ${type === 'error' ? 'var(--kt-notification-error)' : type === 'success' ? 'var(--kt-notification-success)' : 'var(--kt-notification-info)'};
       color: white;
-      border-radius: 8px;
+      border-radius: var(--kt-radius-sm);
       z-index: 10000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       font-family: var(--paper-font-body1_-_font-family, sans-serif);
@@ -6004,51 +6142,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     };
   }
 
-  // Méthodes d'icônes (copiées de KidsTasksCard pour la compatibilité)
-  safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
-    try {
-      if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
-        return this.getCategoryIcon(categoryOrItem);
-      }
-    } catch (error) {
-      console.warn('Error in getCategoryIcon:', error);
-    }
-    return fallback;
-  }
-
-  renderIcon(iconData) {
-    if (!iconData) return '📋';
-    
-    // Si c'est une URL (commence par http:// ou https://)
-    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une image inline base64 (commence par data:image/)
-    if (typeof iconData === 'string' && iconData.startsWith('data:image/')) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est du base64 sans préfixe (pour compatibilité)
-    if (typeof iconData === 'string' && this.isBase64 && this.isBase64(iconData)) {
-      return `<img src="data:image/png;base64,${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
-    }
-    
-    // Si c'est une icône MDI (commence par mdi:)
-    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
-      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
-    }
-    
-    // Sinon, traiter comme un emoji ou texte simple
-    return iconData.toString();
-  }
-
-  isBase64(str) {
-    if (!str || typeof str !== 'string') return false;
-    // Vérifier que c'est une chaîne base64 valide (caractères base64 + longueur raisonnable pour une image)
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    return str.length > 100 && str.length % 4 === 0 && base64Regex.test(str);
-  }
+  // Méthodes d'icônes maintenant héritées de KidsTasksBaseCard
 
   getCategoryIcon(categoryOrItem) {
     // Si c'est un objet (task/reward), vérifier d'abord l'icône personnalisée
@@ -6213,7 +6307,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .kidstask-card {
           background: var(--card-background-color, #fff);
-          border-radius: 16px;
+          border-radius: var(--kt-radius-lg);
           box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0,0,0,0.1));
           overflow: hidden;
           max-width: 100%;
@@ -6259,7 +6353,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .avatar {
           font-size: 3em;
           margin-bottom: 8px;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           background: var(--kt-cosmetic-background);
           width: 80px;
           height: 80px;
@@ -6272,7 +6366,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .avatar img {
           width: 80px !important;
           height: 80px !important;
-          border-radius: 50% !important;
+          border-radius: var(--kt-radius-round) !important;
         }
         
         .child-name-header {
@@ -6291,8 +6385,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           transform: translateX(-50%);
           background: var(--primary-color, #3f51b5);
           color: white;
-          padding: 4px 8px;
+          padding: var(--kt-space-xs) 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .level-badge {
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          padding: var(--kt-space-xs) 12px;
+          min-width: 60px;
         }
         
         .cosmetic-avatar-placeholder {
@@ -6300,7 +6401,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           width: 40px;
           height: 40px;
           border: 2px dashed rgba(255,255,255,0.3);
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -6308,12 +6409,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: rgba(255,255,255,0.6);
         }
         
-        .level-badge {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          padding: 4px 12px;
-          min-width: 60px;
-        }
         
         .gauges-section {
           flex: 1;
@@ -6388,7 +6483,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .tab {
           flex: 1;
-          padding: 16px 12px;
+          padding: var(--kt-space-lg) 12px;
           border: none;
           background: transparent;
           color: var(--secondary-text-color, #757575);
@@ -6443,7 +6538,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .btn-task {
           padding: 10px 16px;
           border: none;
-          border-radius: 20px;
+          border-radius: var(--kt-radius-xl);
           font-size: 0.85em;
           font-weight: bold;
           cursor: pointer;
@@ -6560,7 +6655,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background: var(--primary-color, #3f51b5);
           color: white;
           padding: 1px 4px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           margin-top: 2px;
         }
         
@@ -6602,7 +6697,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .theme-color {
           width: 8px;
           height: 8px;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           border: 1px solid rgba(255,255,255,0.3);
         }
 
@@ -6632,7 +6727,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         /* Responsive mobile */
         @media (max-width: 600px) {
           .header {
-            padding: 16px;
+            padding: var(--kt-space-lg);
           }
           
           .header-content {
@@ -6670,7 +6765,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           }
           
           .reward-square {
-            padding: 4px;
+            padding: var(--kt-space-xs);
             border-radius: 4px;
           }
           
@@ -6712,7 +6807,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           }
           
           .btn-compact {
-            padding: 4px 8px;
+            padding: var(--kt-space-xs) 8px;
             font-size: 0.75em;
             min-width: 60px;
           }
@@ -6758,7 +6853,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           justify-content: center;
           width: 40px;
           height: 40px;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           font-size: 1.2em;
           flex-shrink: 0;
         }
@@ -6800,8 +6895,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           display: flex;
           align-items: center;
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
-          padding: 8px 12px;
+          border-radius: var(--kt-radius-sm);
+          padding: var(--kt-space-sm) 12px;
           border: 1px solid var(--divider-color, #e0e0e0);
           min-height: 48px;
           gap: 12px;
@@ -6858,7 +6953,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: white;
           border: none;
           padding: 6px 12px;
-          border-radius: 16px;
+          border-radius: var(--kt-radius-lg);
           font-size: 0.8em;
           font-weight: 500;
           cursor: pointer;
@@ -6886,8 +6981,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         /* Indicateurs de statut pour les tâches */
         .status {
           font-size: 0.8em;
-          padding: 4px 8px;
-          border-radius: 12px;
+          padding: var(--kt-space-xs) 8px;
+          border-radius: var(--kt-radius-md);
           font-weight: 500;
           text-align: center;
         }
@@ -6922,8 +7017,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .reward-modal-content {
           background: var(--card-background-color, #fff);
-          border-radius: 16px;
-          padding: 24px;
+          border-radius: var(--kt-radius-lg);
+          padding: var(--kt-space-xl);
           max-width: 400px;
           width: 90%;
           max-height: 80vh;
@@ -6943,7 +7038,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: var(--secondary-text-color, #757575);
           width: 32px;
           height: 32px;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -7001,9 +7096,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         .btn-modal {
-          padding: 12px 24px;
+          padding: var(--kt-space-md) 24px;
           border: none;
-          border-radius: 20px;
+          border-radius: var(--kt-radius-xl);
           font-weight: bold;
           cursor: pointer;
           transition: all 0.2s;
@@ -7506,7 +7601,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     
     // Arrière-plans
     if (name.includes('background') || name.includes('coucher') || name.includes('océan')) {
-      let gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      let gradient = 'var(--kt-gradient-neutral)';
       
       if (name.includes('coucher') || name.includes('sunset')) {
         gradient = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)';
@@ -7551,7 +7646,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: 8px; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: var(--kt-radius-sm); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         }
         return '🖼️';
         
@@ -7559,7 +7654,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('outfits', catalogData.pixel_art);
           return `<div style="position: relative; width: 54px; height: 54px;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <div class="avatar-placeholder" style="background: var(--kt-avatar-background);">👤</div>
             <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 54px; height: 54px; image-rendering: pixelated;" />
           </div>`;
         }
@@ -7575,7 +7670,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview" style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="cosmetic-theme-preview" style="width: 54px; height: 54px; border-radius: var(--kt-radius-sm); background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 1px solid var(--kt-cosmetic-border);"></div>`;
         
       default:
         return '🎨';
@@ -7599,7 +7694,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       case 'avatar':
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
-          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
+          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: var(--kt-radius-lg); border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
@@ -7608,7 +7703,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview-large" style="background: ${catalogData.css_gradient}; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="cosmetic-background-preview-large" style="background: ${catalogData.css_gradient}; width: 100px; height: 100px; border-radius: var(--kt-radius-lg); border: 2px solid rgba(0,0,0,0.1);"></div>`;
         }
         return '🖼️';
         
@@ -7625,7 +7720,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         const themeCssVars = catalogData.css_variables || {};
         const themePrimaryColor = themeCssVars['--primary-color'] || '#667eea';
         const themeSecondaryColor = themeCssVars['--secondary-color'] || '#764ba2';
-        return `<div class="cosmetic-theme-preview-large" style="width: 100px; height: 100px; border-radius: 16px; background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 2px solid rgba(0,0,0,0.1);"></div>`;
+        return `<div class="cosmetic-theme-preview-large" style="width: 100px; height: 100px; border-radius: var(--kt-radius-lg); background: linear-gradient(135deg, ${themePrimaryColor} 0%, ${themeSecondaryColor} 100%); border: 2px solid rgba(0,0,0,0.1);"></div>`;
         
       default:
         return '🎨';
@@ -7663,8 +7758,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       }
       .reward-modal-content {
         background: var(--card-background-color, #fff);
-        border-radius: 16px;
-        padding: 24px;
+        border-radius: var(--kt-radius-lg);
+        padding: var(--kt-space-xl);
         max-width: 400px;
         width: 90%;
         max-height: 80vh;
@@ -7683,7 +7778,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         color: #757575;
         width: 32px;
         height: 32px;
-        border-radius: 50%;
+        border-radius: var(--kt-radius-round);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -7990,7 +8085,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
       
       <style>
         .card-config {
-          padding: 16px;
+          padding: var(--kt-space-lg);
         }
         .config-row {
           display: flex;
@@ -8008,7 +8103,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         }
         .config-item input[type="text"], .config-item select {
           width: 100%;
-          padding: 8px;
+          padding: var(--kt-space-sm);
           border: 1px solid var(--divider-color, #ccc);
           border-radius: 4px;
           background: var(--card-background-color, #fff);
@@ -8034,9 +8129,9 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         }
         .config-section {
           margin-top: 24px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           background: var(--card-background-color, #fff);
         }
         .config-section h3 {
@@ -8049,9 +8144,9 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         }
         .preview-header {
           margin-top: 16px;
-          padding: 16px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #4CAF50, #8BC34A);
+          padding: var(--kt-space-lg);
+          border-radius: var(--kt-radius-md);
+          background: var(--kt-gradient-success);
           color: white;
           display: flex;
           align-items: center;
@@ -8066,7 +8161,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           align-items: center;
           justify-content: center;
           background: rgba(255, 255, 255, 0.2);
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
         }
         .preview-name {
           font-size: 1.2em;
@@ -8075,8 +8170,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         }
         .preview-level {
           background: rgba(255, 255, 255, 0.2);
-          padding: 4px 12px;
-          border-radius: 20px;
+          padding: var(--kt-space-xs) 12px;
+          border-radius: var(--kt-radius-xl);
           font-size: 0.9em;
           font-weight: 500;
         }
@@ -8094,10 +8189,10 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 12px 16px;
+          padding: var(--kt-space-md) 16px;
           background: var(--card-background-color, white);
           border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: 12px;
+          border-radius: var(--kt-radius-md);
           cursor: pointer;
           transition: all 0.2s;
           min-width: 120px;
@@ -8150,8 +8245,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         
         .cosmetic-category {
           background: var(--card-background-color, white);
-          border-radius: 16px;
-          padding: 24px;
+          border-radius: var(--kt-radius-lg);
+          padding: var(--kt-space-xl);
           border: 1px solid var(--divider-color, #e0e0e0);
         }
         
@@ -8171,8 +8266,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .cosmetic-category-header .active-indicator {
           background: var(--success-color, #4caf50);
           color: white;
-          padding: 4px 12px;
-          border-radius: 20px;
+          padding: var(--kt-space-xs) 12px;
+          border-radius: var(--kt-radius-xl);
           font-size: 0.8em;
           font-weight: 500;
           margin-left: auto;
@@ -8181,8 +8276,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .cosmetic-category {
           margin-bottom: 32px;
           background: var(--secondary-background-color, #fafafa);
-          border-radius: 12px;
-          padding: 24px;
+          border-radius: var(--kt-radius-md);
+          padding: var(--kt-space-xl);
           border: 1px solid var(--divider-color, #e0e0e0);
         }
         
@@ -8205,7 +8300,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           flex-direction: column;
           background: var(--card-background-color, white);
           border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: 16px;
+          border-radius: var(--kt-radius-lg);
           padding: 20px;
           transition: all 0.3s ease;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -8246,7 +8341,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           align-items: center;
           height: 80px;
           margin-bottom: 16px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           position: relative;
         }
 
@@ -8261,10 +8356,10 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           display: flex;
           align-items: center;
           gap: 16px;
-          padding: 16px;
+          padding: var(--kt-space-lg);
           margin: 8px 0;
           background: var(--secondary-background-color, #f8f9fa);
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border-left: 4px solid #ddd;
           transition: all 0.3s;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -8326,7 +8421,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         }
 
         .cosmetic-give-select {
-          padding: 4px 8px;
+          padding: var(--kt-space-xs) 8px;
           border: 1px solid var(--divider-color, #e0e0e0);
           border-radius: 4px;
           background: var(--card-background-color, #fff);
@@ -8348,7 +8443,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .background-preview {
           width: 60px;
           height: 40px;
-          border-radius: 8px;
+          border-radius: var(--kt-radius-sm);
           border: 2px solid rgba(255,255,255,0.8);
         }
         
@@ -8377,7 +8472,7 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .theme-color {
           width: 24px;
           height: 24px;
-          border-radius: 50%;
+          border-radius: var(--kt-radius-round);
           border: 2px solid rgba(255,255,255,0.8);
         }
         
@@ -8458,8 +8553,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .cost-points {
           background: var(--kt-info);
           color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
+          padding: var(--kt-space-xs) 8px;
+          border-radius: var(--kt-radius-md);
           font-size: 0.8em;
           font-weight: 500;
         }
@@ -8467,8 +8562,8 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .cost-coins {
           background: var(--kt-warning);
           color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
+          padding: var(--kt-space-xs) 8px;
+          border-radius: var(--kt-radius-md);
           font-size: 0.8em;
           font-weight: 500;
         }
