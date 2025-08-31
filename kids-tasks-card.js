@@ -863,6 +863,15 @@ class KidsTasksBaseCard extends HTMLElement {
           font-size: 0.75em;
           min-width: 60px;
         }
+        
+        /* Force les jauges à prendre toute la largeur */
+        .gauge {
+          width: 100%;
+        }
+        
+        .gauge-bar {
+          width: 100%;
+        }
       }
 
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
