@@ -325,7 +325,9 @@ class KidsTasksBaseCard extends HTMLElement {
         gap: var(--kt-space-xs);
       }
       
-      .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px var(--kt-shadow-medium); }
+      .btn:hover, .hover-lift:hover { transform: translateY(-1px); box-shadow: 0 2px 4px var(--kt-shadow-medium); }
+      .hover-card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+      .flex-content { flex: 1; min-width: 0; }
       .btn:active { transform: translateY(0); }
       .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
       
@@ -427,10 +429,7 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-bottom: var(--kt-space-sm);
       }
       
-      .task-main {
-          flex: 1;
-          min-width: 0;
-      }
+      .task-main { /* flex-content utility class */ }
 
       .task-info { flex: 1; }
       
@@ -729,6 +728,81 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   // Assemblage final de tous les styles
+  // Méthode commune pour générer les jauges
+  renderGauges(stats, compact = false, includeCoins = false, completedToday, totalTasksToday) {
+    if (!stats) return '';
+    
+    const gaugeClass = compact ? 'gauge-compact' : 'gauge';
+    const labelClass = compact ? 'gauge-label-compact' : 'gauge-label';
+    const textClass = compact ? 'gauge-text-compact' : 'gauge-text';
+    const barClass = compact ? 'gauge-bar-compact' : 'gauge-bar';
+    const useHeader = !compact; // La version non-compacte utilise gauge-header
+    
+    // Utiliser les valeurs passées ou celles dans stats
+    const completed = completedToday !== undefined ? completedToday : (stats.completedTasks || stats.completedToday || 0);
+    const total = totalTasksToday !== undefined ? totalTasksToday : (stats.totalTasksToday || 0);
+    
+    const renderGauge = (label, text, fillClass, width, barExtra = '') => {
+      if (useHeader) {
+        return `
+          <div class="${gaugeClass}">
+            <div class="gauge-header">
+              <div class="${labelClass}">${label}</div>
+              <div class="${textClass}">${text}</div>
+            </div>
+            <div class="${barClass}${barExtra}">
+              <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="${gaugeClass}">
+            <div class="${labelClass}">${label}</div>
+            <div class="${textClass}">${text}</div>
+            <div class="${barClass}">
+              <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
+            </div>
+          </div>
+        `;
+      }
+    };
+    
+    let gaugesHtml = renderGauge(
+      'Points totaux', 
+      stats.totalPoints, 
+      'total-points', 
+      Math.min((stats.totalPoints / 500) * 100, 100)
+    );
+    
+    gaugesHtml += renderGauge(
+      `Niveau ${stats.level}`, 
+      `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`, 
+      'level-progress', 
+      stats.pointsInCurrentLevel,
+      useHeader ? ' circular' : ''
+    );
+    
+    gaugesHtml += renderGauge(
+      'Tâches', 
+      `${completed}/${total}`, 
+      'tasks-progress', 
+      total > 0 ? (completed / total) * 100 : 0
+    );
+    
+    // Ajouter la jauge des coins si demandée
+    if (includeCoins && stats.coins !== undefined) {
+      gaugesHtml += renderGauge(
+        'Coins', 
+        stats.coins, 
+        'coins-progress', 
+        Math.min(stats.coins, 100)
+      );
+    }
+    
+    return gaugesHtml;
+  }
+
   getStyles() {
     return `<style>
       ${this.getGlobalVariables()}
@@ -2977,9 +3051,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     return `
-      <div class="task-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
+      <div class="task-item hover-card ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
         <div class="task-icon">${taskIcon}</div>
-        <div class="task-main">
+        <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
           <div class="task-meta-compact">
             <span class="assigned-child">${childName}</span>
@@ -3071,34 +3145,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             <div class='child-wrapper'><div class="child-name">${name}</div></div>
             ${showActions && stats ? `
               <div class="child-gauges-compact">
-                <div class="gauge-compact">
-                  <div class="gauge-label-compact">Points totaux</div>
-                  <div class="gauge-text-compact">${points}</div>
-                  <div class="gauge-bar-compact">
-                    <div class="gauge-fill total-points" style="width: ${Math.min((points / 500) * 100, 100)}%"></div>
-                  </div>
-                </div>
-                <div class="gauge-compact">
-                  <div class="gauge-label-compact">Niveau ${level}</div>
-                  <div class="gauge-text-compact">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
-                  <div class="gauge-bar-compact">
-                    <div class="gauge-fill level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
-                  </div>
-                </div>
-                <div class="gauge-compact">
-                  <div class="gauge-label-compact">Tâches</div>
-                  <div class="gauge-text-compact">${completedToday}/${todayTasks}</div>
-                  <div class="gauge-bar-compact">
-                    <div class="gauge-fill tasks-progress" style="width: ${todayTasks > 0 ? (completedToday / todayTasks) * 100 : 0}%"></div>
-                  </div>
-                </div>
-                <div class="gauge-compact">
-                  <div class="gauge-label-compact">Coins</div>
-                  <div class="gauge-text-compact">${coins}</div>
-                  <div class="gauge-bar-compact">
-                    <div class="gauge-fill coins-progress" style="width: ${Math.min(coins, 100)}%"></div>
-                  </div>
-                </div>
+                ${this.renderGauges(stats, true, true, completedToday, todayTasks)}
               </div>
             ` : `
               <div class="child-stats">
@@ -3156,7 +3203,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
     
     return `
-      <div class="reward-item">
+      <div class="reward-item hover-card">
         <div class="reward-icon-compact">${rewardIcon}</div>
         <div class="reward-main-compact">
           <div class="reward-name-compact">${reward.name}</div>
@@ -3235,7 +3282,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return `
       <div class="validation-task-item">
         <div class="validation-task-icon">${taskIcon}</div>
-        <div class="validation-task-content">
+        <div class="validation-task-content flex-content">
           <div class="validation-task-header">
             <div class="validation-task-title">${task.name}</div>
             <div class="validation-task-age">${ageText}</div>
@@ -3742,16 +3789,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: var(--custom-points-badge-color);
           color: white;
           position: absolute;
-          padding: 4px 8px;
-          border-radius: 12px;
           width: 64px;
           top: 128px;
           left: 32px;
-          font-size: 0.8em;
-          font-weight: 600;
-          text-align: center;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
-          z-index: 2;
         }
         
         .progress-bar {
@@ -3853,10 +3894,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           min-height: 50px;
         }
         
-        .task-item:hover {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          transform: translateY(-1px);
-        }
+        /* Task hover effect handled by hover-card utility class */
         
         .task-item.inactive {
           opacity: 0.6;
@@ -3962,10 +4000,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           min-height: 50px;
         }
         
-        .reward-item:hover {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          transform: translateY(-1px);
-        }
+        /* Reward hover effect handled by hover-card utility class */
         
         .reward-icon-compact {
           font-size: 1.2em;
@@ -4055,10 +4090,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           flex-shrink: 0;
         }
         
-        .validation-task-content {
-          flex: 1;
-          min-width: 0;
-        }
+        .validation-task-content { /* flex-content utility class */ }
         
         .validation-task-header {
           display: flex;
@@ -4087,27 +4119,37 @@ class KidsTasksCard extends KidsTasksBaseCard {
           flex-wrap: wrap;
         }
         
-        .validation-child {
-          background: var(--kt-info);
-          color: white;
+        /* Base badge styles */
+        .validation-child, .validation-rewards, .validation-category, .badge, .cosmetic-rarity {
           padding: 2px 8px;
           border-radius: 12px;
           font-weight: 600;
+        }
+        
+        /* Base level badge styles */
+        .level-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8em;
+          font-weight: 600;
+          text-align: center;
+          z-index: 2;
+        }
+        
+        .validation-child {
+          background: var(--kt-info);
+          color: white;
         }
         
         .validation-rewards {
           background: #4caf50;
           color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-weight: 600;
         }
         
         .validation-category {
           background: rgba(0,0,0,0.1);
-          padding: 2px 8px;
-          border-radius: 12px;
           color: var(--secondary-text-color, #757575);
+          font-weight: normal;
         }
         
         .validation-task-description {
@@ -4208,8 +4250,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .badge {
           background: var(--primary-color, #3f51b5);
           color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
           font-size: 0.8em;
           font-weight: bold;
           margin-left: 8px;
@@ -5875,47 +5915,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             </div>
             `}
             
-            ${this.config.show_progress ? `<div class="gauges-section">` : ''}
-              <div class="gauge">
-                <div class="gauge-header">
-                  <div class="gauge-label">Points totaux</div>
-                  <div class="gauge-text">${stats.totalPoints}</div>
-                </div>
-                <div class="gauge-bar">
-                  <div class="gauge-fill total-points" style="width: ${Math.min((stats.totalPoints / 500) * 100, 100)}%"></div>
-                </div>
-              </div>
-              
-              <div class="gauge">
-                <div class="gauge-header">
-                  <div class="gauge-label">Niveau ${stats.level}</div>
-                  <div class="gauge-text">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
-                </div>
-                <div class="gauge-bar circular">
-                  <div class="gauge-fill level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
-                </div>
-              </div>
-              
-              <div class="gauge">
-                <div class="gauge-header">
-                  <div class="gauge-label">Tâches</div>
-                  <div class="gauge-text">${stats.completedTasks}/${stats.totalTasksToday}</div>
-                </div>
-                <div class="gauge-bar">
-                  <div class="gauge-fill tasks-progress" style="width: ${stats.totalTasksToday > 0 ? (stats.completedTasks / stats.totalTasksToday) * 100 : 0}%"></div>
-                </div>
-              </div>
-              
-              <div class="gauge">
-                <div class="gauge-header">
-                  <div class="gauge-label">Coins</div>
-                  <div class="gauge-text">${child.coins || 0}</div>
-                </div>
-                <div class="gauge-bar">
-                  <div class="gauge-fill coins-progress" style="width: ${Math.min((child.coins || 0), 100)}%"></div>
-                </div>
-              </div>
-            ${this.config.show_progress ? '</div>' : ''}
+            ${this.config.show_progress ? `<div class="gauges-section">
+                ${(() => {
+                  stats.coins = child.coins || 0; // Ajouter les coins aux stats
+                  return this.renderGauges(stats, false, true);
+                })()}
+              </div>` : ''}
           </div>
         </div>
 
@@ -6286,12 +6291,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           transform: translateX(-50%);
           background: var(--primary-color, #3f51b5);
           color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.8em;
-          font-weight: 600;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          z-index: 2;
         }
         
         .cosmetic-avatar-placeholder {
@@ -6311,10 +6311,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px);
           padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 0.8em;
           font-weight: bold;
-          text-align: center;
           min-width: 60px;
         }
         
@@ -6702,36 +6699,25 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           /* .reward-name responsive styles inherited */
           
           /* .reward-price responsive styles inherited */
+          
+          /* Tasks responsive styles */
+          .task {
+            padding: 6px 8px;
+            gap: 8px;
+            min-height: 44px;
+          }
+          
+          .task-name {
+            font-size: 0.9em;
+          }
+          
+          .btn-compact {
+            padding: 4px 8px;
+            font-size: 0.75em;
+            min-width: 60px;
+          }
         }
         
-        @media (max-width: 320px) {
-          /* .rewards-grid responsive styles covered by 400px breakpoint */
-          
-          /* .reward-square responsive styles covered by 400px breakpoint */
-          
-          .reward-square.points-only {
-            border-left: 2px solid #4caf50;
-          }
-          
-          .reward-square.coins-only {
-            border-left: 2px solid #ffc107;
-          }
-          
-          .reward-square.dual-currency {
-            border-left: 2px solid #9c27b0;
-          }
-          
-          /* .reward-icon-large responsive styles covered by 400px breakpoint */
-          
-          .reward-name {
-            font-size: 1em;
-            line-height: 1.1;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-          }
-          
-          /* .reward-price responsive styles inherited */
-        }
         
         /* Styles pour l'onglet historique */
         
@@ -6918,24 +6904,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           border: 1px solid #4caf50;
         }
         
-        /* Responsive pour tâches compactes */
-        @media (max-width: 400px) {
-          .task {
-            padding: 6px 8px;
-            gap: 8px;
-            min-height: 44px;
-          }
-          
-          .task-name {
-            font-size: 0.9em;
-          }
-          
-          .btn-compact {
-            padding: 4px 8px;
-            font-size: 0.75em;
-            min-width: 60px;
-          }
-        }
         
         /* Modal de détail des récompenses */
         .reward-modal {
@@ -7114,7 +7082,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           return `
             <div class="task ${task.status} ${delayClass}">
               <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-              <div class="task-main">
+              <div class="task-main flex-content">
                 <div class="task-name">${task.name}</div>
                 <div class="task-points">
                   ${this.config && this.config.child_id ? `
@@ -7189,7 +7157,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               ${completedTasks.map(task => `
                 <div class="task completed ${isChildCard ? 'success-border' : ''}">
                   <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-main">
+                  <div class="task-main flex-content">
                     <div class="task-name-row">
                       <div class="task-name">${task.name}</div>
                       ${task.last_validated_at ? `<div class="task-validation-compact" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
@@ -7219,7 +7187,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               ${missedTasks.map(task => `
                 <div class="task missed">
                   <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-main">
+                  <div class="task-main flex-content">
                     <div class="task-name">${task.name}</div>
                     <div class="task-points">
                       -<span class="points-lost">${task.penalty_points ? task.penalty_points : Math.floor(task.points / 2)}</span> points
@@ -7338,7 +7306,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return `
       <div class="task ${childStatus} ${delayClass}">
         <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-        <div class="task-main">
+        <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
           <div class="task-points">
             ${this.config && this.config.child_id ? `
@@ -7765,15 +7733,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         display: flex;
         gap: 12px;
         justify-content: center;
-      }
-      .btn-modal {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 1em;
       }
       .btn-modal-purchase {
         background: #4CAF50;
@@ -8446,8 +8405,6 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         
         .cosmetic-rarity {
           display: inline-block;
-          padding: 2px 8px;
-          border-radius: 12px;
           font-size: 0.8em;
           font-weight: 500;
           margin-bottom: 8px;
