@@ -4837,8 +4837,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
           }
         }
         
-        /* Téléphone */ 
+        /* Téléphone */
         @media (max-width: 768px) {
+          /*.content { padding: var(--kt-space-lg); }
+          .nav-tab { font-size: 11px; padding: var(--kt-space-sm) 4px; }
+          .form-row { flex-direction: column; }
+          .grid-2, .grid-3 { grid-template-columns: 1fr; }
+          .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+          .modal-content { width: 95%; margin: 0 auto; }
+          .modal-body { padding: var(--kt-space-lg); }*/
+          
           .task-actions {
             /* position, display, flex-direction, justify-content, right, bottom inherited from non-responsive definition */
             min-width: auto;
@@ -4850,9 +4858,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           /* Styles enfants - disposition horizontale forcée */
           .child-card, .reward-card {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: flex-start !important;
             min-height: 120px;
             height: auto;
             padding: 6px;
