@@ -1,19 +1,12 @@
 // Interface graphique complète pour Kids Tasks Manager
 // Version fonctionnelle avec formulaires modaux et services Home Assistant
 
-class KidsTasksCard extends HTMLElement {
+// Classe de base commune pour éliminer la duplication de code
+class KidsTasksBaseCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.currentView = 'dashboard';
     this._initialized = false;
-  }
-
-  setConfig(config) {
-    this.config = config || {};
-    this.title = config.title || 'Gestionnaire de Tâches Enfants';
-    this.showNavigation = config.show_navigation !== false;
-    this.mode = config.mode || 'dashboard'; // 'dashboard' ou 'config'
   }
 
   set hass(hass) {
@@ -26,6 +19,258 @@ class KidsTasksCard extends HTMLElement {
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
       this.render();
     }
+  }
+
+  handleClick(event) {
+    const target = event.target.closest('[data-action]');
+    if (!target) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const action = target.dataset.action;
+    const id = target.dataset.id;
+
+    // Pour les filtres de récompenses, passer le filtre à la place de l'ID
+    if (action === 'filter-rewards') {
+      this.handleAction(action, target.dataset.filter, event);
+    } else {
+      this.handleAction(action, id, event);
+    }
+  }
+
+  // Méthode abstraite à implémenter dans les classes filles
+  handleAction(action, id = null, event = null) {
+    throw new Error('handleAction must be implemented by subclass');
+  }
+
+  // Méthode abstraite à implémenter dans les classes filles
+  render() {
+    throw new Error('render must be implemented by subclass');
+  }
+
+  // Méthode abstraite à implémenter dans les classes filles
+  shouldUpdate(oldHass, newHass) {
+    throw new Error('shouldUpdate must be implemented by subclass');
+  }
+
+  showModal(content, title = '') {
+    const dialog = document.createElement('ha-dialog');
+    dialog.setAttribute('open', '');
+    dialog.setAttribute('hide-actions', '');
+    
+    if (title) {
+      dialog.setAttribute('heading', title);
+    }
+
+    dialog.innerHTML = `
+      <div slot="content">
+        ${content}
+      </div>
+    `;
+
+    dialog._cardInstance = this;
+    document.body.appendChild(dialog);
+
+    dialog.addEventListener('closed', () => {
+      this.closeModal(dialog);
+    });
+
+    return dialog;
+  }
+
+  closeModal(dialog) {
+    if (dialog && dialog.parentNode) {
+      dialog.parentNode.removeChild(dialog);
+    }
+  }
+
+  showNotification(message, type = 'info') {
+    if (!this._hass) return;
+
+    let icon = '💭';
+    let title = 'Information';
+    
+    switch (type) {
+      case 'success':
+        icon = '✅';
+        title = 'Succès';
+        break;
+      case 'error':
+        icon = '❌';
+        title = 'Erreur';
+        break;
+      case 'warning':
+        icon = '⚠️';
+        title = 'Attention';
+        break;
+      default:
+        icon = 'ℹ️';
+        title = 'Information';
+    }
+
+    this._hass.callService('persistent_notification', 'create', {
+      message: message,
+      title: `${icon} Kids Tasks - ${title}`,
+      notification_id: `kids_tasks_${Date.now()}`
+    });
+  }
+
+  getEffectiveAvatar(child, context = 'normal') {
+    if (!child) {
+      return '👶';
+    }
+    
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
+      return child.avatar || '👶';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'inline' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        const size = context === 'large' ? '4em' : '3em';
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
+      }
+    }
+    return child.avatar || '👶';
+  }
+
+  getCosmeticImagePath(cosmeticType, fileName) {
+    if (!fileName || !cosmeticType) return null;
+    const baseUrl = '/local/community/kids_tasks/cosmetics';
+    return `${baseUrl}/${cosmeticType}/${fileName}`;
+  }
+
+  renderCosmeticPreview(cosmeticData, rewardName = null) {
+    if (!cosmeticData && rewardName) {
+      cosmeticData = this.generateCosmeticDataFromName(rewardName);
+    }
+    
+    if (!cosmeticData) {
+      return '🎨';
+    }
+    
+    const catalogData = cosmeticData.catalog_data || {};
+    const cosmeticType = cosmeticData.type ? cosmeticData.type.replace(/s$/, '') : '';
+    
+    switch (cosmeticType) {
+      case 'avatar':
+        if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
+          return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
+        }
+        if (catalogData.default_avatar) {
+          return this.generatePixelArtAvatar();
+        }
+        if (catalogData.emoji) {
+          return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
+        }
+        return '👤';
+        
+      case 'background':
+        if (catalogData.css_gradient) {
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        }
+        return `<div class="cosmetic-background-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        
+      case 'outfit':
+        if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
+          const imageUrl = this.getCosmeticImagePath('outfits', catalogData.pixel_art);
+          return `<div style="position: relative; width: 54px; height: 54px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+            <img src="${imageUrl}" alt="Outfit" style="position: absolute; top: 0; left: 0; width: 54px; height: 54px; image-rendering: pixelated;" />
+          </div>`;
+        }
+        if (catalogData.emoji_overlay) {
+          return `<div class="cosmetic-outfit-preview">
+            <span class="base-avatar">👤</span>
+            <span class="outfit-overlay">${catalogData.emoji_overlay}</span>
+          </div>`;
+        }
+        return '👕';
+        
+      case 'theme':
+        const themeCssVars = catalogData.css_variables || {};
+        const primaryColor = themeCssVars['--kt-primary'] || '#3f51b5';
+        return `<div class="cosmetic-theme-preview" style="background: ${primaryColor}; width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--kt-cosmetic-border);"></div>`;
+        
+      default:
+        return '🎨';
+    }
+  }
+
+  // Méthode héritée - peut être surchargée dans les classes filles
+  generateCosmeticDataFromName(rewardName) {
+    if (!rewardName) return null;
+    
+    const name = rewardName.toLowerCase();
+    
+    // Avatars
+    if (name.includes('avatar') || name.includes('personnage')) {
+      return {
+        type: 'avatar',
+        catalog_data: { emoji: '👤', default_avatar: true }
+      };
+    }
+    
+    // Backgrounds
+    if (name.includes('fond') || name.includes('background') || name.includes('thème')) {
+      return {
+        type: 'background',
+        catalog_data: { css_gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }
+      };
+    }
+    
+    // Outfits
+    if (name.includes('tenue') || name.includes('vêtement') || name.includes('costume')) {
+      return {
+        type: 'outfit',
+        catalog_data: { emoji_overlay: '👕' }
+      };
+    }
+    
+    return null;
+  }
+
+  generatePixelArtAvatar() {
+    return `<svg width="54" height="54" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
+      <rect width="16" height="16" fill="#f0f8ff"/>
+      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
+      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
+      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
+      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
+      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
+      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
+      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
+      <rect x="6" y="6" width="1" height="1" fill="#000"/>
+      <rect x="9" y="6" width="1" height="1" fill="#000"/>
+      <rect x="7" y="8" width="2" height="1" fill="#000"/>
+      <rect x="4" y="10" width="8" height="4" fill="#FF0000"/>
+      <rect x="3" y="11" width="1" height="2" fill="#FF0000"/>
+      <rect x="12" y="11" width="1" height="2" fill="#FF0000"/>
+      <rect x="2" y="14" width="4" height="2" fill="#8B4513"/>
+      <rect x="10" y="14" width="4" height="2" fill="#8B4513"/>
+    </svg>`;
+  }
+}
+
+class KidsTasksCard extends KidsTasksBaseCard {
+  constructor() {
+    super();
+    this.currentView = 'dashboard';
+  }
+
+  setConfig(config) {
+    this.config = config || {};
+    this.title = config.title || 'Gestionnaire de Tâches Enfants';
+    this.showNavigation = config.show_navigation !== false;
+    this.mode = config.mode || 'dashboard'; // 'dashboard' ou 'config'
   }
 
   shouldUpdate(oldHass, newHass) {
@@ -136,22 +381,17 @@ class KidsTasksCard extends HTMLElement {
   }
 
   handleClick(event) {
+    // Logique spécifique pour les filtres de tâches
     const target = event.target.closest('[data-action]');
-    if (!target) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const action = target.dataset.action;
-    const id = target.dataset.id;
-    
-
-    // Pour les filtres de tâches, passer le filtre à la place de l'ID
-    if (action === 'filter-tasks') {
-      this.handleAction(action, target.dataset.filter, event);
-    } else {
-      this.handleAction(action, id, event);
+    if (target && target.dataset.action === 'filter-tasks') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.handleAction('filter-tasks', target.dataset.filter, event);
+      return;
     }
+    
+    // Déléguer à la classe de base pour le reste
+    super.handleClick(event);
   }
 
   handleAction(action, id = null) {
@@ -1644,30 +1884,6 @@ class KidsTasksCard extends HTMLElement {
     this.showModal(content, 'Échanger une récompense');
   }
 
-  showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      background: ${type === 'error' ? 'var(--kt-notification-error)' : type === 'success' ? 'var(--kt-notification-success)' : 'var(--kt-notification-info)'};
-      color: white;
-      border-radius: 4px;
-      z-index: 10000;
-      box-shadow: 0 2px 8px var(--kt-shadow-medium);
-      font-family: var(--paper-font-body1_-_font-family, sans-serif);
-    `;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 3000);
-  }
 
   // === RÉCUPÉRATION DES DONNÉES ===
 
@@ -4940,11 +5156,9 @@ window.customCards.push({
 // Carte individuelle pour chaque enfant
 // Permet à chaque enfant de suivre ses propres progrès et tâches
 
-class KidsTasksChildCard extends HTMLElement {
+class KidsTasksChildCard extends KidsTasksBaseCard {
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this._initialized = false;
     this._refreshInterval = null;
   }
 
@@ -4988,35 +5202,18 @@ class KidsTasksChildCard extends HTMLElement {
     }
   }
 
-  set hass(hass) {
-    const oldHass = this._hass;
-    this._hass = hass;
-    if (!this._initialized && hass) {
-      this._initialized = true;
-      this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
-      this.render();
-    } else if (hass && this.shouldUpdate(oldHass, hass)) {
-      this.render();
-    }
-  }
-
   handleClick(event) {
+    // Logique spécifique pour les filtres de récompenses dans la carte enfant
     const target = event.target.closest('[data-action]');
-    if (!target) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const action = target.dataset.action;
-    const id = target.dataset.id;
-    
-
-    // Pour les filtres de récompenses, passer le filtre à la place de l'ID
-    if (action === 'filter-rewards') {
-      this.handleAction(action, target.dataset.filter, event);
-    } else {
-      this.handleAction(action, id, event);
+    if (target && target.dataset.action === 'filter-rewards') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.handleAction('filter-rewards', target.dataset.filter, event);
+      return;
     }
+    
+    // Déléguer à la classe de base pour le reste
+    super.handleClick(event);
   }
 
   handleAction(action, id = null) {
@@ -5076,33 +5273,6 @@ class KidsTasksChildCard extends HTMLElement {
       console.error('Action échouée:', error);
       this.showNotification('Erreur: ' + error.message, 'error');
     }
-  }
-
-
-  // Méthode pour résoudre l'avatar effectif
-  getEffectiveAvatar(child, context = 'normal') {
-    if (!child) {
-      return '👶';
-    }
-    
-    const avatarType = child.avatar_type || 'emoji';
-    
-    if (avatarType === 'emoji') {
-      return child.avatar || '👶';
-    } else if (avatarType === 'url' && child.avatar_data) {
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'inline' && child.avatar_data) {
-      const size = context === 'large' ? '4em' : '3em';
-      return `<img src="data:image/png;base64,${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
-      const personEntity = this._hass.states[child.person_entity_id];
-      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
-        const size = context === 'large' ? '4em' : '3em';
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: 50%; object-fit: cover;">`;
-      }
-    }
-    return child.avatar || '👶';
   }
 
   // Récupérer les données de l'enfant spécifique
