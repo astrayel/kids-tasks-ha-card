@@ -427,14 +427,12 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-bottom: var(--kt-space-sm);
       }
       
-      .task-info { flex: 1; }
-      
-      .task-name {
-        font-weight: 600;
-        color: var(--primary-text-color, #212121);
-        margin-bottom: var(--kt-space-xs);
-        line-height: 1.3;
+      .task-main {
+          flex: 1;
+          min-width: 0;
       }
+
+      .task-info { flex: 1; }
       
       .task-meta {
         display: flex;
@@ -1645,6 +1643,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
           display: none;
         }
         
+        .children-grid {
+          display: flex
+          flex-direction: column;          
+        }
+
         .child-checkbox {
           display: flex;
           align-items: center;
@@ -2310,58 +2313,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     this.showModal(content, isEdit ? 'Modifier la récompense' : 'Créer une récompense');
   }
 
-  showClaimRewardForm(rewardId) {
-    const reward = this.getRewardById(rewardId);
-    const children = this.getChildren();
-
-    if (!reward) {
-      this.showNotification('Récompense non trouvée', 'error');
-      return;
-    }
-
-    const content = `
-      <div class="reward-info" style="text-align: center; margin-bottom: 24px; padding: 16px; background: var(--secondary-background-color); border-radius: 8px;">
-        <h3 style="margin: 0 0 8px 0; color: var(--primary-text-color);">${this.safeGetCategoryIcon(reward, '🎁')} ${reward.name}</h3>
-        <p style="margin: 4px 0;"><strong>Coût:</strong> ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''}</p>
-        <p style="margin: 4px 0;"><strong>Catégorie:</strong> ${this.getCategoryLabel(reward.category)}</p>
-        ${reward.description ? `<p style="margin: 8px 0 0 0;">${reward.description}</p>` : ''}
-        ${reward.remaining_quantity !== null ? `<p style="margin: 4px 0;"><strong>Stock restant:</strong> ${reward.remaining_quantity}</p>` : ''}
-      </div>
-      
-      <form>
-        <input type="hidden" name="reward_id" value="${reward.id}">
-        
-        <ha-select
-          label="Sélectionner l'enfant *"
-          name="child_id"
-          required>
-          <ha-list-item value="">Choisir un enfant...</ha-list-item>
-          ${children.map(child => `
-            <ha-list-item value="${child.id}" ${(child.points < reward.cost || child.coins < reward.coin_cost) ? 'disabled' : ''}>
-              ${child.name} (${child.points} points, ${child.coins} coins) ${(child.points >= reward.cost && child.coins >= reward.coin_cost) ? '' : '- Pas assez de monnaie'}
-            </ha-list-item>
-          `).join('')}
-        </ha-select>
-        
-        <div class="dialog-actions">
-          <ha-button
-            slot="secondaryAction"
-            onclick="this.closest('ha-dialog').close()">
-            Annuler
-          </ha-button>
-          <ha-button
-            slot="primaryAction"
-            raised
-            onclick="this.closest('ha-dialog')._cardInstance.submitClaimForm(this.closest('ha-dialog'))">
-            Échanger
-          </ha-button>
-        </div>
-      </form>
-    `;
-
-    this.showModal(content, 'Échanger une récompense');
-  }
-
   getChildren() {
     const children = [];
     const entities = this._hass.states;
@@ -2956,7 +2907,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </div>
         
         ${tasks.length > 0 ? `
-          <div class="task-list-compact">
+          <div class="task-list">
             ${tasks.map(task => this.renderTaskItem(task, children)).join('')}
           </div>
         ` : `
@@ -3027,9 +2978,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     return `
       <div class="task-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
-        <div class="task-icon-compact">${taskIcon}</div>
-        <div class="task-main-compact">
-          <div class="task-name-compact">${task.name}</div>
+        <div class="task-icon">${taskIcon}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
           <div class="task-meta-compact">
             <span class="assigned-child">${childName}</span>
             <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
@@ -3199,32 +3150,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       completedTasks: completedTasks.length,
       totalTasksToday: activeTasks.length + completedTasks.length
     };
-  }
-
-  renderRewardCard(reward, showActions = false) {
-    return `
-      <div class="reward-card">
-        ${showActions ? `
-          <button class="btn-close" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">×</button>
-        ` : ''}
-        <div class="reward-icon">${this.safeGetCategoryIcon(reward, '🎁')}</div>
-        <div class="reward-info">
-          <div class="reward-name">${reward.name}</div>
-          <div class="reward-stats">
-            ${reward.cost} points${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
-            ${reward.remaining_quantity !== null ? `<br>${reward.remaining_quantity} restant(s)` : ''}
-            ${reward.description ? `<br>${reward.description}` : ''}
-          </div>
-        </div>
-        <div class="task-actions">
-          ${showActions ? `
-            <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
-          ` : `
-            <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
-          `}
-        </div>
-      </div>
-    `;
   }
 
   renderRewardItemCompact(reward) {
@@ -3790,32 +3715,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           margin-bottom: 8px;
         }
 
-        .task-icon {
-          font-size: 2em;
-          margin-right: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 2.5em;
-          min-height: 2.5em;
-          flex-shrink: 0;
-        }
-        
-        .task-icon img {
-          width: 2.5em !important;
-          height: 2.5em !important;
-          border-radius: 8px !important;
-          object-fit: cover !important;
-          border: 2px solid var(--kt-cosmetic-background);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          flex-shrink: 0;
-        }
-        
-        .task-icon ha-icon {
-          width: 2.5em !important;
-          height: 2.5em !important;
-          color: var(--primary-color, #3f51b5);
-        }
         .child-info { 
           flex: 1; 
           display: flex;
@@ -3935,7 +3834,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
         
         /* Styles pour l'affichage compact des tâches */
-        .task-list-compact {
+        .task-list {
           display: flex;
           flex-direction: column;
           gap: 4px;
@@ -3976,18 +3875,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: #fff3e0;
         }
         
-        .task-icon-compact {
-          font-size: 1.2em;
-          margin-right: 12px;
-          flex-shrink: 0;
-        }
-        
-        .task-main-compact {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        .task-name-compact {
+        .task-name {
           font-weight: 600;
           color: var(--primary-text-color, #212121);
           font-size: 0.9em;
@@ -4771,23 +4659,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             font-size: 2em !important;
             margin-right: 12px !important;
             flex-shrink: 0;
-          }
-          
-          .task-icon {
-            font-size: 1.5em !important;
-            margin-right: 12px !important;
-            min-width: 2em !important;
-            min-height: 2em !important;
-          }
-          
-          .task-icon img {
-            width: 2em !important;
-            height: 2em !important;
-          }
-          
-          .task-icon ha-icon {
-            width: 2em !important;
-            height: 2em !important;
           }
           
           .reward-icon {
@@ -5981,7 +5852,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
       
-      <div class="habitica-card">
+      <div class="kidstask-card">
         <!-- Header avec avatar et jauges -->
         <div class="header">
           <div class="header-content">
@@ -6327,13 +6198,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   // Couche 4: Styles spécifiques à KidsTasksChildCard
   getSpecificStyles() {
     return `
-      /* Layout principal enfant - style Habitica */
+      /* Layout principal enfant */
       :host {
         display: block;
         font-family: var(--kt-font-family);
         }
         
-        .habitica-card {
+        .kidstask-card {
           background: var(--card-background-color, #fff);
           border-radius: 16px;
           box-shadow: var(--ha-card-box-shadow, 0 4px 12px rgba(0,0,0,0.1));
@@ -6559,34 +6430,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           min-height: 400px;
         }
         
-        /* Tâches */
-        .task-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-                
-        .task-icon {
-          font-size: 1.5em;
-          min-width: 40px;
-          text-align: center;
-        }
-        
+        /* Tâches */    
         .task-info {
           flex: 1;
-        }
-        
-        .task-name {
-          font-weight: bold;
-          color: var(--primary-text-color, #212121);
-          margin-bottom: 4px;
-        }
-        
-        /* .task-meta fully inherited from parent card definition */
-        
-        .task-points {
-          font-weight: bold;
-          color: var(--primary-color);
         }
         
         .task-deadline {
@@ -6937,16 +6783,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background: rgba(244, 67, 54, 0.1);
         }
         
-        .task-points.earned {
-          color: var(--success-color, #4CAF50);
-          font-weight: bold;
-        }
-        
-        .task-points.penalty {
-          color: var(--error-color, #f44336);
-          font-weight: bold;
-        }
-        
         .completion-date, .validation-date, .penalty-date {
           font-size: 0.8em;
           color: var(--secondary-text-color, #757575);
@@ -6966,7 +6802,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         /* Styles pour les tâches compactes */
-        .task-list-compact {
+        .task-list {
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -7002,34 +6838,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
         }
         
-        .task-icon-compact {
-          font-size: 1.5em;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        
-        .task-icon-compact img {
-          width: 32px !important;
-          height: 32px !important;
-          object-fit: cover;
-          border-radius: 4px;
-        }
-        
-        .task-icon-compact ha-icon {
-          width: 32px !important;
-          height: 32px !important;
-        }
-        
-        .task-main-compact {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        .task-name-compact {
+        .task-name {
           font-weight: 500;
           color: var(--primary-text-color, #212121);
           font-size: 1em;
@@ -7040,14 +6849,14 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           white-space: nowrap;
         }
         
-        .task-name-row-compact {
+        .task-name-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 8px;
         }
         
-        .task-points-compact {
+        .task-points {
           font-size: 0.85em;
           font-weight: 500;
         }
@@ -7087,7 +6896,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         /* Indicateurs de statut pour les tâches */
-        .status-indicator {
+        .status {
           font-size: 0.8em;
           padding: 4px 8px;
           border-radius: 12px;
@@ -7095,13 +6904,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           text-align: center;
         }
         
-        .status-indicator.pending {
+        .status.pending {
           background-color: #fff3e0;
           color: #f57c00;
           border: 1px solid #ffcc02;
         }
         
-        .status-indicator.completed {
+        .status.completed {
           background-color: #e8f5e8;
           color: #2e7d32;
           border: 1px solid #4caf50;
@@ -7115,23 +6924,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             min-height: 44px;
           }
           
-          .task-icon-compact {
-            width: 28px;
-            height: 28px;
-            font-size: 1.3em;
-          }
-          
-          .task-icon-compact img {
-            width: 28px !important;
-            height: 28px !important;
-          }
-          
-          .task-icon-compact ha-icon {
-            width: 28px !important;
-            height: 28px !important;
-          }
-          
-          .task-name-compact {
+          .task-name {
             font-size: 0.9em;
           }
           
@@ -7304,7 +7097,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
 
     return `
-      <div class="task-list-compact">
+      <div class="task-list">
         ${tasks.map(task => {
           // Déterminer la classe de retard
           let delayClass = '';
@@ -7318,10 +7111,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           
           return `
             <div class="task ${task.status} ${delayClass}">
-              <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
-              <div class="task-main-compact">
-                <div class="task-name-compact">${task.name}</div>
-                <div class="task-points-compact">
+              <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+              <div class="task-main">
+                <div class="task-name">${task.name}</div>
+                <div class="task-points">
                   ${this.config && this.config.child_id ? `
                     ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
                     ${task.penalty_points > 0 ? `<div><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span></div>` : ''}
@@ -7338,14 +7131,14 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                           data-id="${task.id}">Terminé</button>
                 ` : task.status === 'pending_validation' ? `
                   ${this.config && this.config.child_id ? `
-                    <span class="status-indicator pending">En attente de validation</span>
+                    <span class="status pending">En attente de validation</span>
                   ` : `
                     <button class="btn-compact btn-validate" 
                             data-action="validate_task"
                             data-id="${task.id}">Validation</button>
                   `}
                 ` : `
-                  <span class="status-indicator completed">✓ Validée</span>
+                  <span class="status completed">✓ Validée</span>
                 `}
               </div>
             </div>
@@ -7390,16 +7183,16 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                 <span class="section-title">Tâches réussies (${completedTasks.length})</span>
               </div>
             ` : ''}
-            <div class="task-list-compact">
+            <div class="task-list">
               ${completedTasks.map(task => `
                 <div class="task completed ${isChildCard ? 'success-border' : ''}">
-                  <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-main-compact">
-                    <div class="task-name-row-compact">
-                      <div class="task-name-compact">${task.name}</div>
+                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-main">
+                    <div class="task-name-row">
+                      <div class="task-name">${task.name}</div>
                       ${task.last_validated_at ? `<div class="task-validation-compact" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
-                    <div class="task-points-compact">
+                    <div class="task-points">
                       ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
                       ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
                       ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
@@ -7420,13 +7213,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               <span class="section-icon">❌</span>
               <span class="section-title">Tâches manquées (${missedTasks.length})</span>
             </div>
-            <div class="task-list-compact">
+            <div class="task-list">
               ${missedTasks.map(task => `
                 <div class="task missed">
-                  <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
-                  <div class="task-main-compact">
-                    <div class="task-name-compact">${task.name}</div>
-                    <div class="task-points-compact">
+                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="task-main">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-points">
                       -<span class="points-lost">${task.penalty_points ? task.penalty_points : Math.floor(task.points / 2)}</span> points
                       ${task.penalty_applied_at ? ` • Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
@@ -7514,7 +7307,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
 
     return `
-      <div class="task-list-compact">
+      <div class="task-list">
         ${bonusTasks.map(task => this.renderBonusTaskCard(task)).join('')}
       </div>
     `;
@@ -7542,10 +7335,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     return `
       <div class="task ${childStatus} ${delayClass}">
-        <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
-        <div class="task-main-compact">
-          <div class="task-name-compact">${task.name}</div>
-          <div class="task-points-compact">
+        <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-points">
             ${this.config && this.config.child_id ? `
               ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
               ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
@@ -7561,14 +7354,14 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                     data-id="${task.id}">Terminé</button>
           ` : childStatus === 'pending_validation' ? `
             ${this.config && this.config.child_id ? `
-              <span class="status-indicator pending">En attente de validation</span>
+              <span class="status pending">En attente de validation</span>
             ` : `
               <button class="btn-compact btn-validate" 
                       data-action="validate_task"
                       data-id="${task.id}">Validation</button>
             `}
           ` : `
-            <span class="status-indicator completed">✓ Validée</span>
+            <span class="status completed">✓ Validée</span>
             ${childStatus === 'validated' ? `
               <button class="btn-compact btn-complete" 
                       data-action="complete_task" 
