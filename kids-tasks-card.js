@@ -803,6 +803,39 @@ class KidsTasksBaseCard extends HTMLElement {
           height: 60px;
           font-size: 2.2em;
         }
+        
+        .task-actions {
+          align-self: flex-end;
+        }
+        
+        .rewards-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+        }
+      }
+      
+      @media (max-width: 400px) {
+        .rewards-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 4px;
+        }
+        
+        .reward-square {
+          padding: var(--kt-space-xs);
+          border-radius: 4px;
+        }
+        
+        .reward-square.points-only {
+          border-left: 3px solid #4caf50;
+        }
+        
+        .reward-square.coins-only {
+          border-left: 3px solid #ffc107;
+        }
+        
+        .reward-square.mixed {
+          border-left: 3px solid #9c27b0;
+        }
       }
 
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
@@ -6561,72 +6594,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           opacity: 0.7;
         }
         
-        /* Responsive mobile */
-        @media (max-width: 600px) {
-          .task-actions {
-            align-self: flex-end;
-          }
-          
-          .rewards-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-          }
-        }
-        
-        @media (max-width: 400px) {
-          .rewards-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-          }
-          
-          .reward-square {
-            padding: var(--kt-space-xs);
-            border-radius: 4px;
-          }
-          
-          .reward-square.points-only {
-            border-left: 3px solid #4caf50;
-          }
-          
-          .reward-square.coins-only {
-            border-left: 3px solid #ffc107;
-          }
-          
-          .reward-square.dual-currency {
-            border-left: 3px solid #9c27b0;
-          }
-          
-          .reward-icon-large {
-            font-size: 4em;
-            width: 64px;
-            height: 64px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          
-          /* .reward-name responsive styles inherited */
-          
-          /* .reward-price responsive styles inherited */
-          
-          /* Tasks responsive styles */
-          .task {
-            padding: 6px 8px;
-            gap: 8px;
-            min-height: 44px;
-          }
-          
-          .task-name {
-            font-size: 0.9em;
-          }
-          
-          .btn-compact {
-            padding: var(--kt-space-xs) 8px;
-            font-size: 0.75em;
-            min-width: 60px;
-          }
-        }
         
         
         /* Styles pour l'onglet historique */
