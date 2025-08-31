@@ -2934,7 +2934,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       ${pendingTasks.length > 0 ? `
         <div class="section">
           <h2>Tâches à valider (${pendingTasks.length})</h2>
-          ${pendingTasks.map(task => this.renderTaskItemCompact(task, children, true)).join('')}
+          ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
         </div>
       ` : ''}
     `;
