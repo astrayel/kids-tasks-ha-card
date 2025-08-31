@@ -1,7 +1,4 @@
 // Interface graphique complète pour Kids Tasks Manager
-// Version fonctionnelle avec formulaires modaux et services Home Assistant
-
-// Classe de base commune pour éliminer la duplication de code
 class KidsTasksBaseCard extends HTMLElement {
   constructor() {
     super();
@@ -165,9 +162,6 @@ class KidsTasksBaseCard extends HTMLElement {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
           return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
         }
-        if (catalogData.default_avatar) {
-          return this.generatePixelArtAvatar();
-        }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
         }
@@ -238,29 +232,7 @@ class KidsTasksBaseCard extends HTMLElement {
     return null;
   }
 
-  generatePixelArtAvatar() {
-    return `<svg width="54" height="54" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
-      <rect width="16" height="16" fill="#f0f8ff"/>
-      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
-      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
-      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
-      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
-      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
-      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
-      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
-      <rect x="6" y="6" width="1" height="1" fill="#000"/>
-      <rect x="9" y="6" width="1" height="1" fill="#000"/>
-      <rect x="7" y="8" width="2" height="1" fill="#000"/>
-      <rect x="4" y="10" width="8" height="4" fill="#FF0000"/>
-      <rect x="3" y="11" width="1" height="2" fill="#FF0000"/>
-      <rect x="12" y="11" width="1" height="2" fill="#FF0000"/>
-      <rect x="2" y="14" width="4" height="2" fill="#8B4513"/>
-      <rect x="10" y="14" width="4" height="2" fill="#8B4513"/>
-    </svg>`;
-  }
-
   // === SYSTÈME DE STYLES CSS FACTORISÉ ===
-
   // Couche 1: Variables CSS globales unifiées
   getGlobalVariables() {
     return `
@@ -364,6 +336,30 @@ class KidsTasksBaseCard extends HTMLElement {
       .btn-warning { background: var(--kt-warning); color: white; }
       .btn-info { background: var(--kt-info); color: white; }
       
+      .filter-btn {
+        padding: 6px 12px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        background: var(--card-background-color, white);
+        border-radius: 16px;
+        font-size: 0.8em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .filter-btn:hover {
+        background: var(--primary-color, #3f51b5);
+        color: white;
+        border-color: var(--primary-color, #3f51b5);
+      }
+      
+      .filter-btn.active {
+        background: var(--primary-color, #3f51b5);
+        color: white;
+        border-color: var(--primary-color, #3f51b5);
+        font-weight: 600;
+      }
+
       /* Cartes et conteneurs */
       .card-base {
         background: var(--card-background-color, #fff);
@@ -424,8 +420,6 @@ class KidsTasksBaseCard extends HTMLElement {
         justify-content: flex-end;
         margin-top: var(--kt-space-xl);
       }
-      
-      /* === COMPOSANTS MÉTIER === */
       
       /* Tâches */
       .task-item {
@@ -1781,10 +1775,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             flex-direction: column;
             gap: 16px;
           }
-          
-          
-          
-          
+           
           .dialog-actions {
             flex-direction: column-reverse;
             gap: 8px;
@@ -2414,9 +2405,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     this.showModal(content, 'Échanger une récompense');
   }
 
-
-  // === RÉCUPÉRATION DES DONNÉES ===
-
   getChildren() {
     const children = [];
     const entities = this._hass.states;
@@ -2946,7 +2934,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       ${pendingTasks.length > 0 ? `
         <div class="section">
           <h2>Tâches à valider (${pendingTasks.length})</h2>
-          ${pendingTasks.map(task => this.renderTaskItem(task, children, true)).join('')}
+          ${pendingTasks.map(task => this.renderTaskItemCompact(task, children, true)).join('')}
         </div>
       ` : ''}
     `;
@@ -3179,28 +3167,28 @@ class KidsTasksCard extends KidsTasksBaseCard {
                   <div class="gauge-label-compact">Points totaux</div>
                   <div class="gauge-text-compact">${points}</div>
                   <div class="gauge-bar-compact">
-                    <div class="gauge-fill-compact total-points" style="width: ${Math.min((points / 500) * 100, 100)}%"></div>
+                    <div class="gauge-fill total-points" style="width: ${Math.min((points / 500) * 100, 100)}%"></div>
                   </div>
                 </div>
                 <div class="gauge-compact">
                   <div class="gauge-label-compact">Niveau ${level}</div>
                   <div class="gauge-text-compact">${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}</div>
                   <div class="gauge-bar-compact">
-                    <div class="gauge-fill-compact level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
+                    <div class="gauge-fill level-progress" style="width: ${stats.pointsInCurrentLevel}%"></div>
                   </div>
                 </div>
                 <div class="gauge-compact">
                   <div class="gauge-label-compact">Tâches</div>
                   <div class="gauge-text-compact">${completedToday}/${todayTasks}</div>
                   <div class="gauge-bar-compact">
-                    <div class="gauge-fill-compact tasks-progress" style="width: ${todayTasks > 0 ? (completedToday / todayTasks) * 100 : 0}%"></div>
+                    <div class="gauge-fill tasks-progress" style="width: ${todayTasks > 0 ? (completedToday / todayTasks) * 100 : 0}%"></div>
                   </div>
                 </div>
                 <div class="gauge-compact">
                   <div class="gauge-label-compact">Coins</div>
                   <div class="gauge-text-compact">${coins}</div>
                   <div class="gauge-bar-compact">
-                    <div class="gauge-fill-compact coins-progress" style="width: ${Math.min(coins, 100)}%"></div>
+                    <div class="gauge-fill coins-progress" style="width: ${Math.min(coins, 100)}%"></div>
                   </div>
                 </div>
               </div>
@@ -3329,7 +3317,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
     
     return `
-      <div class="reward-item-compact">
+      <div class="reward-item">
         <div class="reward-icon-compact">${rewardIcon}</div>
         <div class="reward-main-compact">
           <div class="reward-name-compact">${reward.name}</div>
@@ -3514,7 +3502,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     `;
   }
 
-
   renderCosmeticItemPreview(cosmeticItemData, rewardName = null) {
     // Si pas de cosmetic_data, essayer de la générer depuis le nom
     if (!cosmeticItemData && rewardName) {
@@ -3616,12 +3603,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         --custom-progress-bar-color: ${progressBarColor};
         --custom-points-badge-color: ${pointsBadgeColor};
         --custom-icon-color: ${iconColor};
-        
-        /* Compatibility with old variables */
-        --custom-rarity-common: var(--kt-rarity-common);
-        --custom-rarity-rare: var(--kt-rarity-rare);
-        --custom-rarity-epic: var(--kt-rarity-epic);
-        --custom-rarity-legendary: var(--kt-rarity-legendary);
       }
     `;
   }
@@ -4018,24 +3999,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           transition: width 0.6s ease;
         }
         
-        .gauge-fill-compact.total-points {
-          background: linear-gradient(90deg, #ffd700, #ffed4a);
-        }
-        
-        .gauge-fill-compact.level-progress {
-          background: linear-gradient(90deg, #4facfe, #00f2fe);
-        }
-        
-        .gauge-fill-compact.tasks-progress {
-          background: linear-gradient(90deg, #43e97b, #38f9d7);
-        }
-        
-        .gauge-fill-compact.coins-progress {
-          background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7);
-        }
-        
         /* .task-item styles inherited from base class */
-        
         .task-top-row {
           display: flex;
           align-items: center;
@@ -4062,30 +4026,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           gap: 8px;
           margin-bottom: 16px;
           flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-          padding: 6px 12px;
-          border: 1px solid var(--divider-color, #e0e0e0);
-          background: var(--card-background-color, white);
-          border-radius: 16px;
-          font-size: 0.8em;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: var(--secondary-text-color, #757575);
-        }
-        
-        .filter-btn:hover {
-          background: var(--primary-color, #3f51b5);
-          color: white;
-          border-color: var(--primary-color, #3f51b5);
-        }
-        
-        .filter-btn.active {
-          background: var(--primary-color, #3f51b5);
-          color: white;
-          border-color: var(--primary-color, #3f51b5);
-          font-weight: 600;
         }
         
         /* Styles pour l'affichage compact des tâches */
@@ -4215,7 +4155,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           gap: 8px;
         }
         
-        .reward-item-compact {
+        .reward-item {
           display: flex;
           align-items: center;
           padding: 8px 12px;
@@ -4226,7 +4166,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           min-height: 50px;
         }
         
-        .reward-item-compact:hover {
+        .reward-item:hover {
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
           transform: translateY(-1px);
         }
@@ -4701,8 +4641,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         /* .form-row inherited from base class */
         .form-row .form-group { flex: 1; }
         
-        /* .dialog-actions défini dans showModal() et classe de base */
-        
         .modal {
           position: fixed;
           top: 0;
@@ -4829,7 +4767,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
 
         .cosmetic-simple-item.rarity-common {
-          border-left-color: var(--custom-rarity-common);
+          border-left-color: var(--kt-rarity-common);
         }
 
         .cosmetic-simple-item.rarity-rare {
@@ -4851,7 +4789,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
 
         .cosmetic-simple-rarity.rarity-common {
-          background: var(--custom-rarity-common);
+          background: var(--kt-rarity-common);
           color: white;
         }
         .cosmetic-simple-rarity.rarity-rare {
@@ -5698,10 +5636,6 @@ window.customCards.push({
 // =====================================================
 // CARTE INDIVIDUELLE POUR ENFANTS
 // =====================================================
-
-// Carte individuelle pour chaque enfant
-// Permet à chaque enfant de suivre ses propres progrès et tâches
-
 class KidsTasksChildCard extends KidsTasksBaseCard {
   constructor() {
     super();
@@ -7923,92 +7857,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     `;
   }
 
-  generatePixelArtAvatarLarge() {
-    // Version large de l'avatar pixel-art pour les modales (96px)
-    return `<svg width="96" height="96" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
-      <!-- Fond -->
-      <rect width="16" height="16" fill="#f0f8ff"/>
-      
-      <!-- Cheveux -->
-      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
-      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
-      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
-      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
-      
-      <!-- Visage -->
-      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
-      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
-      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
-      
-      <!-- Yeux -->
-      <rect x="5" y="6" width="1" height="1" fill="#000"/>
-      <rect x="10" y="6" width="1" height="1" fill="#000"/>
-      
-      <!-- Nez -->
-      <rect x="7" y="7" width="2" height="1" fill="#E6A4A4"/>
-      
-      <!-- Bouche -->
-      <rect x="6" y="8" width="4" height="1" fill="#8B0000"/>
-      <rect x="7" y="9" width="2" height="1" fill="#8B0000"/>
-      
-      <!-- Corps/Torse -->
-      <rect x="5" y="10" width="6" height="4" fill="#4169E1"/>
-      <rect x="4" y="11" width="1" height="2" fill="#4169E1"/>
-      <rect x="11" y="11" width="1" height="2" fill="#4169E1"/>
-      
-      <!-- Bras -->
-      <rect x="3" y="11" width="1" height="3" fill="#FDBCB4"/>
-      <rect x="12" y="11" width="1" height="3" fill="#FDBCB4"/>
-      
-      <!-- Jambes -->
-      <rect x="6" y="14" width="1" height="2" fill="#654321"/>
-      <rect x="9" y="14" width="1" height="2" fill="#654321"/>
-    </svg>`;
-  }
-
-  generatePixelArtAvatar() {
-    // Génère un avatar pixel-art par défaut de style Habitica
-    return `<svg width="54" height="54" viewBox="0 0 16 16" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
-      <!-- Fond -->
-      <rect width="16" height="16" fill="#f0f8ff"/>
-      
-      <!-- Cheveux -->
-      <rect x="4" y="2" width="8" height="2" fill="#8B4513"/>
-      <rect x="3" y="3" width="10" height="1" fill="#8B4513"/>
-      <rect x="2" y="4" width="2" height="1" fill="#8B4513"/>
-      <rect x="12" y="4" width="2" height="1" fill="#8B4513"/>
-      
-      <!-- Visage -->
-      <rect x="4" y="4" width="8" height="6" fill="#FDBCB4"/>
-      <rect x="3" y="5" width="1" height="4" fill="#FDBCB4"/>
-      <rect x="12" y="5" width="1" height="4" fill="#FDBCB4"/>
-      
-      <!-- Yeux -->
-      <rect x="5" y="6" width="1" height="1" fill="#000"/>
-      <rect x="10" y="6" width="1" height="1" fill="#000"/>
-      
-      <!-- Nez -->
-      <rect x="7" y="7" width="2" height="1" fill="#E6A4A4"/>
-      
-      <!-- Bouche -->
-      <rect x="6" y="8" width="4" height="1" fill="#8B0000"/>
-      <rect x="7" y="9" width="2" height="1" fill="#8B0000"/>
-      
-      <!-- Corps/Torse -->
-      <rect x="5" y="10" width="6" height="4" fill="#4169E1"/>
-      <rect x="4" y="11" width="1" height="2" fill="#4169E1"/>
-      <rect x="11" y="11" width="1" height="2" fill="#4169E1"/>
-      
-      <!-- Bras -->
-      <rect x="3" y="11" width="1" height="3" fill="#FDBCB4"/>
-      <rect x="12" y="11" width="1" height="3" fill="#FDBCB4"/>
-      
-      <!-- Jambes -->
-      <rect x="6" y="14" width="1" height="2" fill="#654321"/>
-      <rect x="9" y="14" width="1" height="2" fill="#654321"/>
-    </svg>`;
-  }
-
   getCosmeticImagePath(cosmeticType, fileName) {
     // Construire le chemin vers l'image cosmétique
     if (!fileName || !cosmeticType) return null;
@@ -8092,10 +7940,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
           return `<img class="cosmetic-pixel-art-preview" src="${imageUrl}" alt="Avatar" style="width: 54px; height: 54px; image-rendering: pixelated;" />`;
         }
-        // Fallback pour l'ancien système (default_avatar = true)
-        if (catalogData.default_avatar) {
-          return this.generatePixelArtAvatar();
-        }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview">${catalogData.emoji}</div>`;
         }
@@ -8152,10 +7996,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
           const imageUrl = this.getCosmeticImagePath('avatars', catalogData.pixel_art);
           return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;"><img src="${imageUrl}" alt="Avatar" style="width: 96px; height: 96px; image-rendering: pixelated;" /></div>`;
-        }
-        // Fallback pour l'ancien système (default_avatar = true)
-        if (catalogData.default_avatar) {
-          return `<div style="display: flex; justify-content: center; width: 100px; height: 100px; border-radius: 16px; border: 2px solid rgba(0,0,0,0.1); background: #f9f9f9; align-items: center;">${this.generatePixelArtAvatarLarge()}</div>`;
         }
         if (catalogData.emoji) {
           return `<div class="cosmetic-avatar-preview-large">${catalogData.emoji}</div>`;
