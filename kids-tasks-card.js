@@ -714,6 +714,13 @@ class KidsTasksBaseCard extends HTMLElement {
         font-size: 3em;
       }
       
+      .avatar-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 80px;
+        }
+
       .pixel-art-preview {
         max-width: 64px;
         max-height: 64px;
@@ -790,19 +797,6 @@ class KidsTasksBaseCard extends HTMLElement {
       @media (max-width: 600px) {
         .header {
           padding: var(--kt-space-lg);
-        }
-                
-        .avatar-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 80px;
-        }
-        
-        .avatar {
-          width: 60px;
-          height: 60px;
-          font-size: 2.2em;
         }
         
         .task-actions {
