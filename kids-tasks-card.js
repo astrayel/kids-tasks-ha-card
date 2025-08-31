@@ -954,7 +954,7 @@ class KidsTasksBaseCard extends HTMLElement {
       `Niveau ${stats.level}`, 
       `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`, 
       'level-progress', 
-      stats.pointsInCurrentLevel,
+      (stats.pointsInCurrentLevel / stats.pointsToNextLevel) * 100,
       useHeader ? ' circular' : ''
     );
     
@@ -1082,12 +1082,21 @@ class KidsTasksBaseCard extends HTMLElement {
       const pointsToNext = (100 - (points % 100));
       
       // Calculer les statistiques comme la carte enfant
+      const pointsInCurrentLevel = points % 100;
+      const pointsToNextLevel = 100;
+      const totalPoints = points;
+      
       const stats = {
         level: level,
         points: points,
         coins: coins,
         progress: progress,
-        pointsToNext: pointsToNext
+        pointsToNext: pointsToNext,
+        totalPoints: totalPoints,
+        pointsInCurrentLevel: pointsInCurrentLevel,
+        pointsToNextLevel: pointsToNextLevel,
+        completedTasks: 0,
+        totalTasksToday: 0
       };
 
       return `
@@ -1108,7 +1117,7 @@ class KidsTasksBaseCard extends HTMLElement {
               <div class="unified-info-section">
                 <div class="unified-child-name">${name}</div>
                 <div class="unified-gauges-section">
-                  ${this.renderGauges(stats, true)}
+                  ${this.renderGauges(stats, true, true)}
                 </div>
               </div>
             </div>
@@ -4038,15 +4047,15 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .gauge-bar-compact {
-          height: 4px;
+          height: 8px;
           background: var(--divider-color, #e0e0e0);
-          border-radius: 2px;
+          border-radius: 4px;
           overflow: hidden;
         }
         
         .gauge-fill-compact {
           height: 100%;
-          border-radius: 2px;
+          border-radius: 4px;
           transition: width 0.6s ease;
         }
         
