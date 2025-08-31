@@ -3745,6 +3745,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           padding: 4px 8px;
           border-radius: 12px;
           width: 64px;
+          top: 128px;
+          left: 32px;
           font-size: 0.8em;
           font-weight: 600;
           text-align: center;
