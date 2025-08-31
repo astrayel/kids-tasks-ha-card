@@ -1174,6 +1174,7 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showActions ? '<div class="child-border"></div>' : ''}
           
           <!-- Header avec le style de la carte enfant -->
+          <div class="child-border"></div>
           <div class="header">
             <div class="header-content">
               <div class="avatar-section">
