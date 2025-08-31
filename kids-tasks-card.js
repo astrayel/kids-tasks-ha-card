@@ -337,27 +337,25 @@ class KidsTasksBaseCard extends HTMLElement {
       .btn-info { background: var(--kt-info); color: white; }
       
       .filter-btn {
-        padding: 6px 12px;
-        border: 1px solid var(--divider-color, #e0e0e0);
-        background: var(--card-background-color, white);
-        border-radius: 16px;
-        font-size: 0.8em;
+        padding: var(--kt-space-sm) var(--kt-space-lg);
+        border: 2px solid var(--divider-color, #e0e0e0);
+        background: var(--card-background-color, #fff);
+        border-radius: 20px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        color: var(--secondary-text-color, #757575);
+        transition: all var(--kt-transition-fast);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 500;
       }
       
       .filter-btn:hover {
-        background: var(--primary-color, #3f51b5);
-        color: white;
-        border-color: var(--primary-color, #3f51b5);
+        border-color: var(--kt-primary);
+        background: rgba(63, 81, 181, 0.05);
       }
       
       .filter-btn.active {
-        background: var(--primary-color, #3f51b5);
+        border-color: var(--kt-primary);
+        background: var(--kt-primary);
         color: white;
-        border-color: var(--primary-color, #3f51b5);
-        font-weight: 600;
       }
 
       /* Cartes et conteneurs */
@@ -421,26 +419,7 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-top: var(--kt-space-xl);
       }
       
-      /* Tâches */
-      .task-item {
-        display: flex;
-        flex-direction: column;
-        padding: var(--kt-space-md);
-        margin: var(--kt-space-sm) 0;
-        background: var(--secondary-background-color, #fafafa);
-        border-radius: var(--kt-space-sm);
-        border-left: 4px solid #ddd;
-        transition: all var(--kt-transition-medium);
-        position: relative;
-      }
-      
-      .task-item:hover { box-shadow: 0 1px 4px var(--kt-shadow-light); }
-      .task-item.pending_validation { border-left-color: var(--kt-status-pending); background: #fff3e0; }
-      .task-item.validated { border-left-color: var(--kt-status-validated); }
-      .task-item.todo { border-left-color: var(--kt-status-todo); }
-      .task-item.in_progress { border-left-color: var(--kt-status-progress); }
-      .task-item.failed { border-left-color: var(--kt-status-failed); }
-      
+      /* Tâches */      
       .task-top-row {
         display: flex;
         align-items: center;
@@ -736,28 +715,6 @@ class KidsTasksBaseCard extends HTMLElement {
         gap: var(--kt-space-sm);
         margin: var(--kt-space-lg) 0;
         flex-wrap: wrap;
-      }
-      
-      .filter-btn {
-        padding: var(--kt-space-sm) var(--kt-space-lg);
-        border: 2px solid var(--divider-color, #e0e0e0);
-        background: var(--card-background-color, #fff);
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all var(--kt-transition-fast);
-        font-size: var(--kt-font-size-sm);
-        font-weight: 500;
-      }
-      
-      .filter-btn:hover {
-        border-color: var(--kt-primary);
-        background: rgba(63, 81, 181, 0.05);
-      }
-      
-      .filter-btn.active {
-        border-color: var(--kt-primary);
-        background: var(--kt-primary);
-        color: white;
       }
     `;
   }
@@ -2991,7 +2948,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </h2>
         
         <!-- Filtres pour les tâches -->
-        <div class="task-filters">
+        <div class="filters">
           <button class="filter-btn ${currentFilter === 'active' ? 'active' : ''}" data-action="filter-tasks" data-filter="active">Actives</button>
           <button class="filter-btn ${currentFilter === 'inactive' ? 'active' : ''}" data-action="filter-tasks" data-filter="inactive">Désactivées</button>
           <button class="filter-btn ${currentFilter === 'out-of-period' ? 'active' : ''}" data-action="filter-tasks" data-filter="out-of-period">Hors période</button>
@@ -3000,7 +2957,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         ${tasks.length > 0 ? `
           <div class="task-list-compact">
-            ${tasks.map(task => this.renderTaskItemCompact(task, children)).join('')}
+            ${tasks.map(task => this.renderTaskItem(task, children)).join('')}
           </div>
         ` : `
           <div class="empty-state">
@@ -3064,12 +3021,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return labels[filter] || '';
   }
 
-  renderTaskItemCompact(task, children) {
+  renderTaskItem(task, children) {
     const childName = this.formatAssignedChildren(task);
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     return `
-      <div class="task-item-compact ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
+      <div class="task-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
         <div class="task-icon-compact">${taskIcon}</div>
         <div class="task-main-compact">
           <div class="task-name-compact">${task.name}</div>
@@ -3242,49 +3199,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       completedTasks: completedTasks.length,
       totalTasksToday: activeTasks.length + completedTasks.length
     };
-  }
-
-  renderTaskItem(task, children, showValidation = false, showManagement = false) {
-    const childName = this.formatAssignedChildren(task);
-    
-    const taskIcon = this.safeGetCategoryIcon(task, '📋');
-    
-    return `
-      <div class="task-item ${task.status}">
-        <div class="task-top-row">
-          <div class="task-title">${task.name}</div>
-          <div class="task-status status-${task.status}">${this.getStatusLabel(task.status)}</div>
-          ${showManagement ? `
-            <button class="btn-close" data-action="remove-task" data-id="${task.id}" title="Supprimer">×</button>
-          ` : ''}
-        </div>
-        <div class="task-main-row">
-          <div class="task-icon">${taskIcon}</div>
-          <div class="task-content">
-            <div class="task-meta">
-              ${childName}
-              ${task.points > 0 ? `<br><span style="color: var(--kt-points-color); font-weight: bold;">+${task.points} points</span>` : ''}
-              ${task.penalty_points > 0 ? `<br><span style="color: var(--kt-penalty-color); font-weight: bold;">-${task.penalty_points} points</span>` : ''}
-              ${task.coins > 0 ? `<br><span style="color: var(--kt-coins-color); font-weight: bold;">+${task.coins} coins</span>` : ''}
-              ${task.description ? `<br>${task.description}` : ''}
-              <br>${this.getCategoryLabel(task.category)} • ${this.getFrequencyLabel(task.frequency)}
-              ${task.deadline_time ? `<br>🕐 Deadline: ${task.deadline_time}` : ''}
-              ${task.deadline_passed && task.status === 'todo' ? `<br><span style="color: var(--kt-error);">⏰ Heure limite dépassée</span>` : ''}
-            </div>
-          </div>
-          <div class="task-actions">
-            ${showValidation && task.status === 'pending_validation' ? `
-              <button class="btn btn-success btn-icon validate-btn" data-action="validate-task" data-id="${task.id}">Valider</button>
-              <button class="btn btn-danger btn-icon reject-btn" data-action="reject-task" data-id="${task.id}">Rejeter</button>
-            ` : showManagement ? `
-              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
-            ` : `
-              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-task" data-id="${task.id}">Modifier</button>
-            `}
-          </div>
-        </div>
-      </div>
-    `;
   }
 
   renderRewardCard(reward, showActions = false) {
@@ -4020,14 +3934,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
         
-        /* Styles pour les filtres de tâches */
-        .task-filters {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-        
         /* Styles pour l'affichage compact des tâches */
         .task-list-compact {
           display: flex;
@@ -4035,7 +3941,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           gap: 4px;
         }
         
-        .task-item-compact {
+        .task-item {
           display: flex;
           align-items: center;
           padding: 8px 12px;
@@ -4046,26 +3952,26 @@ class KidsTasksCard extends KidsTasksBaseCard {
           min-height: 50px;
         }
         
-        .task-item-compact:hover {
+        .task-item:hover {
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
           transform: translateY(-1px);
         }
         
-        .task-item-compact.inactive {
+        .task-item.inactive {
           opacity: 0.6;
           border-left-color: #ccc;
         }
         
-        .task-item-compact.out-of-period {
+        .task-item.out-of-period {
           border-left-color: var(--kt-warning);
           background: #fff8e1;
         }
         
-        .task-item-compact.validated {
+        .task-item.validated {
           border-left-color: var(--kt-success);
         }
         
-        .task-item-compact.pending_validation {
+        .task-item.pending_validation {
           border-left-color: var(--kt-status-pending);
           background: #fff3e0;
         }
@@ -6659,34 +6565,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           flex-direction: column;
           gap: 12px;
         }
-        
-        .task-item {
-          background: var(--secondary-background-color, #f8f9fa);
-          border-radius: 12px;
-          padding: 16px;
-          border-left: 4px solid #ddd;
-          transition: all 0.3s;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        
-        .task-item.todo {
-          border-left-color: var(--info-color);
-          background: #e3f2fd;
-        }
-        
-        .task-item.pending_validation {
-          border-left-color: var(--warning-color);
-          background: #fff3e0;
-        }
-        
-        .task-item.validated,
-        .task-item.completed {
-          border-left-color: var(--success-color);
-          background: var(--secondary-background-color, #f8f9fa);
-        }
-        
+                
         .task-icon {
           font-size: 1.5em;
           min-width: 40px;
@@ -6821,36 +6700,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           font-weight: bold;
         }
         
-        /* Styles pour les filtres de récompenses */
-        .rewards-filters {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 12px;
-          flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-          padding: 6px 12px;
-          background: var(--secondary-background-color, #f5f5f5);
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 16px;
-          font-size: 0.8em;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: var(--secondary-text-color, #666);
-        }
-        
-        .filter-btn.active {
-          background: var(--primary-color, #3f51b5);
-          color: white;
-          border-color: var(--primary-color, #3f51b5);
-        }
-        
-        .filter-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
         /* Styles pour les cosmétiques */
         .reward-square.cosmetic {
           background: linear-gradient(135deg, #ffffffff 0%, #0000006c 100%);
@@ -6958,15 +6807,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             height: 60px;
             font-size: 2.2em;
           }
-          
-          /* .content responsive padding handled by parent card media query */
-          
-          .task-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-          
+
           .task-actions {
             align-self: flex-end;
           }
@@ -7131,7 +6972,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           gap: 8px;
         }
         
-        .task-compact {
+        .task {
           display: flex;
           align-items: center;
           background: var(--secondary-background-color, #fafafa);
@@ -7144,20 +6985,20 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         /* Liserets colorés selon le statut de retard */
-        .task-compact.on-time, points-earned {
+        .task.on-time, points-earned {
           border-left: 4px solid #4caf50; /* Vert pour à l'heure */
         }
         
-        .task-compact.pending {
+        .task.pending {
           border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
         }
         
-        .task-compact.delayed, points-lost {
+        .task.delayed, points-lost {
           border-left: 4px solid #f44336; /* Rouge pour en retard */
         }
         
         /* Liseret vert pour les tâches réussies dans la carte enfant */
-        .task-compact.success-border {
+        .task.success-border {
           border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
         }
         
@@ -7268,7 +7109,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         /* Responsive pour tâches compactes */
         @media (max-width: 400px) {
-          .task-compact {
+          .task {
             padding: 6px 8px;
             gap: 8px;
             min-height: 44px;
@@ -7476,7 +7317,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           }
           
           return `
-            <div class="task-compact ${task.status} ${delayClass}">
+            <div class="task ${task.status} ${delayClass}">
               <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
               <div class="task-main-compact">
                 <div class="task-name-compact">${task.name}</div>
@@ -7551,7 +7392,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             ` : ''}
             <div class="task-list-compact">
               ${completedTasks.map(task => `
-                <div class="task-compact completed ${isChildCard ? 'success-border' : ''}">
+                <div class="task completed ${isChildCard ? 'success-border' : ''}">
                   <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main-compact">
                     <div class="task-name-row-compact">
@@ -7581,7 +7422,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             </div>
             <div class="task-list-compact">
               ${missedTasks.map(task => `
-                <div class="task-compact missed">
+                <div class="task missed">
                   <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main-compact">
                     <div class="task-name-compact">${task.name}</div>
@@ -7700,7 +7541,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
 
     return `
-      <div class="task-compact ${childStatus} ${delayClass}">
+      <div class="task ${childStatus} ${delayClass}">
         <div class="task-icon-compact">${this.safeGetCategoryIcon(task, '📋')}</div>
         <div class="task-main-compact">
           <div class="task-name-compact">${task.name}</div>
@@ -7807,7 +7648,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     return `
       <!-- Filtres des récompenses -->
-      <div class="rewards-filters">
+      <div class="filters">
         <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" 
                 data-action="filter-rewards" data-filter="all">
           Toutes (${displayRewards.length})
