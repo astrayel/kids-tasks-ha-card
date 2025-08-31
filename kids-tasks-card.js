@@ -793,9 +793,10 @@ class KidsTasksBaseCard extends HTMLElement {
         }
                 
         .avatar-section {
+          display: flex;
           flex-direction: column;
           align-items: center;
-          min-width: 60px;
+          min-width: 80px;
         }
         
         .avatar {
