@@ -864,13 +864,25 @@ class KidsTasksBaseCard extends HTMLElement {
           min-width: 60px;
         }
         
-        /* Force les jauges à prendre toute la largeur */
-        .gauge {
-          width: 100%;
+        /* Force les containers à prendre toute la largeur */
+        .child-card.unified {
+          width: 100% !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
         }
         
-        .gauge-bar {
-          width: 100%;
+        .child-card.unified .header {
+          width: 100% !important;
+          margin: 0 !important;
+        }
+        
+        .child-card.unified .header-content {
+          width: 100% !important;
+        }
+        
+        .child-card.unified .gauges-section {
+          width: 100% !important;
+          flex: 1 !important;
         }
       }
 
