@@ -4837,7 +4837,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           }
         }
         
-        /* Téléphone */
+        /* Téléphone */ 
         @media (max-width: 768px) {
           .task-actions {
             /* position, display, flex-direction, justify-content, right, bottom inherited from non-responsive definition */
