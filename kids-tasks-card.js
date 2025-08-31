@@ -3792,6 +3792,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           width: 64px;
           top: 128px;
           left: 32px;
+          padding: 4px 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
         }
         
@@ -4128,7 +4129,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         /* Base level badge styles */
         .level-badge {
-          padding: 4px 8px;
           border-radius: 12px;
           font-size: 0.8em;
           font-weight: 600;
@@ -6291,6 +6291,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           transform: translateX(-50%);
           background: var(--primary-color, #3f51b5);
           color: white;
+          padding: 4px 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
@@ -6311,7 +6312,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px);
           padding: 4px 12px;
-          font-weight: bold;
           min-width: 60px;
         }
         
