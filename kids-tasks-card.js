@@ -421,6 +421,15 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-top: var(--kt-space-xl);
       }
       
+      /* Base level badge styles */
+      .level-badge {
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+      }
+
       /* Tâches */      
       .task-top-row {
         display: flex;
@@ -4125,15 +4134,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           padding: 2px 8px;
           border-radius: 12px;
           font-weight: 600;
-        }
-        
-        /* Base level badge styles */
-        .level-badge {
-          border-radius: 12px;
-          font-size: 0.8em;
-          font-weight: 600;
-          text-align: center;
-          z-index: 2;
         }
         
         .validation-child {
