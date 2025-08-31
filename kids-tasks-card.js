@@ -639,6 +639,16 @@ class KidsTasksBaseCard extends HTMLElement {
         opacity: 0.9;
       }
       
+      /* Section de jauges */
+      .gauges-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 80px;
+        justify-content: space-between;
+      }
+      
       /* Stats et métriques */
       .stats-grid {
         display: grid;
@@ -811,83 +821,6 @@ class KidsTasksBaseCard extends HTMLElement {
         cursor: grabbing;
       }
       
-      .unified-header {
-        background: linear-gradient(135deg, var(--kt-gradient-primary));
-        color: white;
-        padding: var(--kt-space-lg);
-        position: relative;
-      }
-      
-      .unified-header-content {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-lg);
-      }
-      
-      .unified-avatar-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 60px;
-      }
-      
-      .unified-avatar-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .unified-avatar {
-        font-size: 2.5em;
-        margin-bottom: var(--kt-space-xs);
-        border-radius: var(--kt-radius-round);
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255,255,255,0.1);
-        border: 2px solid rgba(255,255,255,0.2);
-      }
-      
-      .unified-avatar img {
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: var(--kt-radius-round) !important;
-      }
-      
-      .unified-level-badge {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 8px;
-        border-radius: var(--kt-radius-md);
-        font-size: var(--kt-font-size-sm);
-        font-weight: 600;
-        min-width: 50px;
-        text-align: center;
-      }
-      
-      .unified-info-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .unified-child-name {
-        font-size: 1.2em;
-        font-weight: 700;
-        margin: 0;
-        color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
-      .unified-gauges-section {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-xs);
-      }
     `;
   }
 
@@ -1104,21 +1037,19 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
           ${showActions ? '<div class="child-border"></div>' : ''}
           
-          <!-- Header unifié inspiré de la carte enfant -->
-          <div class="unified-header">
-            <div class="unified-header-content">
-              <div class="unified-avatar-section">
-                <div class="unified-avatar-container">
-                  <div class="unified-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
-                  <div class="unified-level-badge">Niveau ${level}</div>
+          <!-- Header avec le style de la carte enfant -->
+          <div class="header">
+            <div class="header-content">
+              <div class="avatar-section">
+                <div class="child-name-header">${name}</div>
+                <div class="avatar-container">
+                  <div class="avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                  <div class="level-badge">Niveau ${level}</div>
                 </div>
               </div>
               
-              <div class="unified-info-section">
-                <div class="unified-child-name">${name}</div>
-                <div class="unified-gauges-section">
-                  ${this.renderGauges(stats, true, true)}
-                </div>
+              <div class="gauges-section">
+                ${this.renderGauges(stats, false, true)}
               </div>
             </div>
           </div>
@@ -4947,6 +4878,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             align-items: flex-start;
             gap: 8px;
           }
+          
         }
     `;
   }
@@ -6417,72 +6349,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           font-size: 0.7em;
           color: rgba(255,255,255,0.6);
         }
-        
-        
-        .gauges-section {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          min-height: 80px;
-          justify-content: space-between;
-        }
-        
-        .gauge {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        
-        .gauge-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .gauge-label {
-          font-size: 0.75em;
-          opacity: 0.9;
-          font-weight: 500;
-        }
-        
-        .gauge-bar {
-          height: 8px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
-          overflow: hidden;
-          position: relative;
-        }
-        
-        .gauge-fill {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.6s ease;
-        }
-        
-        .total-points {
-          background: linear-gradient(90deg, #ffd700, #ffed4a);
-        }
-        
-        .level-progress {
-          background: linear-gradient(90deg, #4facfe, #00f2fe);
-        }
-        
-        .tasks-progress {
-          background: linear-gradient(90deg, #43e97b, #38f9d7);
-        }
-        
-        .coins-progress {
-          background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7);
-        }
-        
-        .gauge-text {
-          font-size: 0.7em;
-          font-weight: bold;
-          opacity: 0.9;
-        }
-        
-        
         /* Navigation par onglets */
         .tabs {
           display: flex;
