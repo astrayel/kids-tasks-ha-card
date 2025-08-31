@@ -780,6 +780,31 @@ class KidsTasksBaseCard extends HTMLElement {
         flex-wrap: wrap;
       }
 
+      /* === RESPONSIVE MOBILE POUR HEADERS === */
+      @media (max-width: 600px) {
+        .header {
+          padding: var(--kt-space-lg);
+        }
+        
+        .header-content {
+          flex-direction: row;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        
+        .avatar-section {
+          flex-direction: column;
+          align-items: center;
+          min-width: 60px;
+        }
+        
+        .avatar {
+          width: 60px;
+          height: 60px;
+          font-size: 2.2em;
+        }
+      }
+
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
       
       .child-card.unified {
@@ -6538,28 +6563,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         /* Responsive mobile */
         @media (max-width: 600px) {
-          .header {
-            padding: var(--kt-space-lg);
-          }
-          
-          .header-content {
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 16px;
-          }
-          
-          .avatar-section {
-            flex-direction: column;
-            align-items: center;
-            min-width: 60px;
-          }
-          
-          .avatar {
-            width: 60px;
-            height: 60px;
-            font-size: 2.2em;
-          }
-
           .task-actions {
             align-self: flex-end;
           }
