@@ -714,6 +714,32 @@ class KidsTasksBaseCard extends HTMLElement {
         font-size: 3em;
       }
       
+      .avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .avatar {
+        font-size: 3em;
+        margin-bottom: 8px;
+        border-radius: var(--kt-radius-round);
+        background: var(--kt-cosmetic-background);
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px dashed var(--kt-cosmetic-background);
+      }
+      
+      .avatar img {
+        width: 80px !important;
+        height: 80px !important;
+        border-radius: var(--kt-radius-round) !important;
+      }
+
       .avatar-section {
           display: flex;
           flex-direction: column;
@@ -728,7 +754,6 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       /* === NOTIFICATIONS === */
-      
       .notification {
         position: fixed;
         top: 20px;
@@ -879,10 +904,10 @@ class KidsTasksBaseCard extends HTMLElement {
           width: 100% !important;
           flex: 1 !important;
         }
+
       }
 
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
-      
       .child-card.unified {
         position: relative;
         background: var(--card-background-color, #fff);
@@ -898,6 +923,16 @@ class KidsTasksBaseCard extends HTMLElement {
         box-shadow: 0 4px 12px var(--kt-shadow-medium);
       }
       
+      .child-name-header {
+          font-size: 1.3em;
+          font-weight: 700;
+          text-align: center;
+          margin: 0 0 12px 0;
+          color: var(--header-text-color);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+
       .child-border {
         position: absolute;
         left: 0;
@@ -6311,41 +6346,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           flex-direction: column;
           align-items: flex-start;
           min-width: 80px;
-        }
-        
-        .avatar-container {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        
-        .avatar {
-          font-size: 3em;
-          margin-bottom: 8px;
-          border-radius: var(--kt-radius-round);
-          background: var(--kt-cosmetic-background);
-          width: 80px;
-          height: 80px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 3px dashed var(--kt-cosmetic-background);
-        }
-        
-        .avatar img {
-          width: 80px !important;
-          height: 80px !important;
-          border-radius: var(--kt-radius-round) !important;
-        }
-        
-        .child-name-header {
-          font-size: 1.3em;
-          font-weight: 700;
-          text-align: center;
-          margin: 0 0 12px 0;
-          color: var(--header-text-color);
-          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
         .avatar-section .level-badge {
