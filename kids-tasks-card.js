@@ -1245,7 +1245,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         });
         break;
       case 'validate-task':
-        console.log('DEBUG VALIDATION: Parent validating task', id);
         this.callService('kids_tasks', 'validate_task', { task_id: id });
         break;
       case 'reject-task':
@@ -1328,7 +1327,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
       case 'load-cosmetics-catalog':
         if (!this._hass) {
-          console.error('DEBUG COSMETICS: _hass not available in parent card');
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
           return;
         }
@@ -1338,19 +1336,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
               this.showNotification('Catalogue cosmétique chargé avec succès ! 📚', 'success');
             })
             .catch(error => {
-              console.error('DEBUG COSMETICS: Load catalog service failed (PARENT):', error);
               this.showNotification('Erreur lors du chargement du catalogue : ' + error.message, 'error');
             });
           this.showNotification('Chargement du catalogue cosmétique...', 'info');
         } catch (error) {
-          console.error('DEBUG COSMETICS: Load catalog action failed (PARENT):', error);
           this.showNotification('Erreur : ' + error.message, 'error');
         }
         break;
         
       case 'create-cosmetic-rewards':
         if (!this._hass) {
-          console.error('DEBUG COSMETICS: _hass not available in parent card');
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
           return;
         }
@@ -1362,12 +1357,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
               setTimeout(() => this.render(), 1000);
             })
             .catch(error => {
-              console.error('DEBUG COSMETICS: Create rewards service failed (PARENT):', error);
               this.showNotification('Erreur lors de la création des récompenses : ' + error.message, 'error');
             });
           this.showNotification('Création des récompenses cosmétiques...', 'info');
         } catch (error) {
-          console.error('DEBUG COSMETICS: Create rewards action failed (PARENT):', error);
           this.showNotification('Erreur : ' + error.message, 'error');
         }
         break;
@@ -1413,10 +1406,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
         const targetChildId = target.dataset.childId;
         const cosmeticType = target.dataset.cosmeticType;
         const activeCosmeticId = target.dataset.cosmeticId;
-        console.log('DEBUG COSMETICS: Activating cosmetic (PARENT):', { targetChildId, cosmeticType, activeCosmeticId });
         
         if (!this._hass) {
-          console.error('DEBUG COSMETICS: _hass not available for activate cosmetic');
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
           return;
         }
@@ -1447,13 +1438,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const draggableCards = this.shadowRoot.querySelectorAll('.child-card[draggable="true"]');
     const container = this.shadowRoot.querySelector('.children-grid');
     
-    console.log('DEBUG: attachDragEvents called for view:', this.currentView);
-    console.log('DEBUG: Found draggable cards:', draggableCards.length);
-    console.log('DEBUG: Found container:', !!container);
-    
     // Si pas de cartes draggables, pas besoin de continuer
     if (draggableCards.length === 0) {
-      console.log('DEBUG: No draggable cards found, skipping event attachment');
       return;
     }
     
@@ -1492,22 +1478,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
       container.addEventListener('dragenter', this.handleDragEnter.bind(this));
       container.addEventListener('dragover', this.handleDragOver.bind(this));
       container.addEventListener('drop', this.handleDrop.bind(this));
-      console.log('DEBUG: Events attached to container');
-    } else {
-      console.warn('DEBUG: No container found for drag events');
-    }
+    } 
   }
 
   handleDragStart(event) {
-    console.log('DEBUG: handleDragStart called');
     const card = event.target.closest('.child-card');
     if (!card) {
-      console.warn('DEBUG: No card found in dragstart');
       return;
     }
     
     const childId = card.getAttribute('data-child-id');
-    console.log('DEBUG: Dragging child ID:', childId);
     event.dataTransfer.setData('text/plain', childId);
     event.dataTransfer.effectAllowed = 'move';
     
@@ -1516,7 +1496,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   handleDragOver(event) {
-    console.log('DEBUG: handleDragOver called on:', event.target);
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'move';
@@ -1529,11 +1508,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     const card = event.target.closest('.child-card');
     if (!card || card === this.draggedElement) {
-      console.log('DEBUG: dragover - no valid card or same element');
       return;
     }
-    
-    console.log('DEBUG: dragover on card:', card.getAttribute('data-child-id'));
     
     // Ajouter une indication visuelle
     const rect = card.getBoundingClientRect();
@@ -1549,26 +1525,19 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   handleDrop(event) {
-    console.log('DEBUG: handleDrop called on:', event.target);
     event.preventDefault();
     event.stopPropagation();
     
     const draggedChildId = event.dataTransfer.getData('text/plain');
     const dropCard = event.target.closest('.child-card');
     
-    console.log('DEBUG: Drop - dragged ID:', draggedChildId);
-    console.log('DEBUG: Drop - target card:', dropCard?.getAttribute('data-child-id'));
-    console.log('DEBUG: Drop - target element:', event.target);
-    
     if (!dropCard || !draggedChildId) {
-      console.warn('DEBUG: Drop failed - missing card or ID');
       this.cleanupDragStyles();
       return;
     }
     
     const targetChildId = dropCard.getAttribute('data-child-id');
     if (draggedChildId === targetChildId) {
-      console.log('DEBUG: Drop on same element, ignoring');
       this.cleanupDragStyles();
       return;
     }
@@ -1578,7 +1547,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const midY = rect.top + rect.height / 2;
     const dropBefore = event.clientY < midY;
     
-    console.log('DEBUG: Reordering:', draggedChildId, 'to', targetChildId, dropBefore ? 'before' : 'after');
     this.reorderChildren(draggedChildId, targetChildId, dropBefore);
     
     // Nettoyer les classes CSS
@@ -1586,13 +1554,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   handleDragEnd(event) {
-    console.log('DEBUG: handleDragEnd called');
     this.cleanupDragStyles();
     this.draggedElement = null;
   }
 
   handleDragEnter(event) {
-    console.log('DEBUG: handleDragEnter called on:', event.target);
     event.preventDefault();
     event.stopPropagation();
   }
@@ -2644,13 +2610,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const children = [];
     const entities = this._hass.states;
     
-    console.log('DEBUG getChildren: Nombre total d\'entités:', Object.keys(entities).length);
-    
     Object.keys(entities).forEach(entityId => {
       // Chercher UNIQUEMENT les entités avec le nouveau format kidtasks_
       if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
         const pointsEntity = entities[entityId];
-        console.log('DEBUG getChildren: Entité trouvée:', entityId, 'State:', pointsEntity?.state, 'Attributes:', pointsEntity?.attributes);
         
         if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
           const points = parseInt(pointsEntity.state) || 0;
@@ -2661,16 +2624,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           // Extraire l'ID et le nom depuis le nouveau format kidtasks_
           const childId = pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
           const childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
-          
-          console.log('DEBUG getChildren: Enfant ajouté:', {
-            entityId,
-            childId,
-            childName,
-            points,
-            level,
-            state: pointsEntity.state,
-            attributes: pointsEntity.attributes
-          });
           
           children.push({
             id: childId,
@@ -2713,8 +2666,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       // Si aucun n'a d'ordre défini, tri alphabétique
       return a.name.localeCompare(b.name);
     });
-    
-    console.log('DEBUG getChildren: Enfants triés:', sortedChildren.map(c => `${c.name} (${c.id})`));
     
     return sortedChildren;
   }
@@ -2759,16 +2710,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
           let childStatusesSummary = {};
           let pendingValidationChildNames = [];
           
-          console.log('DEBUG FRONTEND: Task', attrs.task_name, 'has child_statuses:', attrs.child_statuses);
-          
           if (attrs.child_statuses) {
             // Nouveau système avec statuts individuels
             for (const [childId, childStatus] of Object.entries(attrs.child_statuses)) {
               childStatusesSummary[childId] = childStatus.status;
-              console.log('DEBUG FRONTEND: Child', childStatus.child_name, 'has status:', childStatus.status);
               if (childStatus.status === 'pending_validation') {
                 pendingValidationChildNames.push(childStatus.child_name || 'Enfant inconnu');
-                console.log('DEBUG FRONTEND: Added to pending list:', childStatus.child_name);
               }
             }
           }
@@ -2776,24 +2723,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
           // Déterminer le nom des enfants en attente pour l'affichage
           let assignedChildName = attrs.assigned_child_name || 'Non assigné';
           
-          console.log('DEBUG FRONTEND: Original assigned_child_name:', assignedChildName);
-          console.log('DEBUG FRONTEND: pendingValidationChildNames:', pendingValidationChildNames);
-          console.log('DEBUG FRONTEND: Task status:', taskEntity.state);
-          
           // Pour les tâches en attente de validation, afficher SEULEMENT les enfants concernés
           if (taskEntity.state === 'pending_validation') {
             if (pendingValidationChildNames.length > 0) {
               assignedChildName = pendingValidationChildNames.join(', ');
-              console.log('DEBUG FRONTEND: Using pending names for validation:', assignedChildName);
             } else {
               // Si aucun enfant n'est en pending_validation, ne pas afficher la tâche
-              console.log('DEBUG FRONTEND: No pending validation children, skipping task');
               // Ne pas ajouter cette tâche à la liste
               assignedChildName = null;
             }
           }
-          
-          console.log('DEBUG FRONTEND: Final assignedChildName:', assignedChildName);
           
           // Ne pas ajouter la tâche si assignedChildName est null
           if (assignedChildName === null) {
@@ -5597,7 +5536,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   handleAction(action, id = null) {
     if (!this._hass) return;
     
-
     try {
       switch (action) {
         case 'switch_tab':
@@ -5619,7 +5557,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           break;
           
         case 'validate_task':
-          console.log('DEBUG VALIDATION: Child card validating task', id);
           this._hass.callService('kids_tasks', 'validate_task', {
             task_id: id,
           });
