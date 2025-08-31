@@ -836,6 +836,33 @@ class KidsTasksBaseCard extends HTMLElement {
         .reward-square.mixed {
           border-left: 3px solid #9c27b0;
         }
+        
+        .reward-icon-large {
+          font-size: 4em;
+          width: 64px;
+          height: 64px;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        /* Tasks responsive styles */
+        .task {
+          padding: 6px 8px;
+          gap: 8px;
+          min-height: 44px;
+        }
+        
+        .task-name {
+          font-size: 0.9em;
+        }
+        
+        .btn-compact {
+          padding: var(--kt-space-xs) 8px;
+          font-size: 0.75em;
+          min-width: 60px;
+        }
       }
 
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
