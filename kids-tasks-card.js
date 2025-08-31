@@ -423,7 +423,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       /* Base level badge styles */
       .level-badge {
-        border-radius: 12px;
+        border-radius: 13px;
         font-size: 0.8em;
         font-weight: 600;
         text-align: center;
