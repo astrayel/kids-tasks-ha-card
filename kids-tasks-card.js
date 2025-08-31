@@ -814,8 +814,8 @@ class KidsTasksBaseCard extends HTMLElement {
 
     /* Header avec avatar et jauges */
       .header {
-        background: linear-gradient(135deg, var(--header-color) 0%, var(--secondary-color) 100%);
-        color: var(--header-text-color);
+        background: linear-gradient(135deg, var(--custom-child-gradient-start, var(--header-color)) 0%, var(--custom-child-gradient-end, var(--secondary-color)) 100%);
+        color: var(--custom-child-text-color, var(--header-text-color));
         padding: 20px;
         position: relative;
       }
@@ -947,7 +947,7 @@ class KidsTasksBaseCard extends HTMLElement {
         top: 0;
         bottom: 0;
         width: 4px;
-        background: var(--kt-primary);
+        background: var(--custom-dashboard-primary, var(--kt-primary));
       }
       
       .drag-handle {
@@ -6353,7 +6353,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           top: 72px;
           left: 50%;
           transform: translateX(-50%);
-          background: var(--primary-color, #3f51b5);
+          background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
           color: white;
           padding: var(--kt-space-xs) 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
