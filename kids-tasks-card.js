@@ -258,6 +258,536 @@ class KidsTasksBaseCard extends HTMLElement {
       <rect x="10" y="14" width="4" height="2" fill="#8B4513"/>
     </svg>`;
   }
+
+  // === SYSTÈME DE STYLES CSS FACTORISÉ ===
+
+  // Couche 1: Variables CSS globales unifiées
+  getGlobalVariables() {
+    return `
+      :host {
+        /* Couleurs système unifiées */
+        --kt-primary: var(--primary-color, #3f51b5);
+        --kt-secondary: var(--accent-color, #ff4081);
+        --kt-success: #4caf50;
+        --kt-warning: #ff9800;
+        --kt-error: #f44336;
+        --kt-info: #2196f3;
+        
+        /* Status unifié */
+        --kt-status-todo: var(--kt-warning);
+        --kt-status-progress: var(--kt-info);
+        --kt-status-pending: #ff5722;
+        --kt-status-validated: var(--kt-success);
+        --kt-status-failed: var(--kt-error);
+        
+        /* Monnaies et points */
+        --kt-points-color: var(--kt-success);
+        --kt-coins-color: #9C27B0;
+        --kt-penalty-color: var(--kt-error);
+        
+        /* Raretés cosmétiques */
+        --kt-rarity-common: #9e9e9e;
+        --kt-rarity-rare: var(--kt-info);
+        --kt-rarity-epic: #9c27b0;
+        --kt-rarity-legendary: var(--kt-warning);
+        
+        /* Notifications */
+        --kt-notification-success: var(--kt-success);
+        --kt-notification-error: var(--kt-error);
+        --kt-notification-info: var(--kt-info);
+        
+        /* Effets visuels */
+        --kt-shadow-light: rgba(0, 0, 0, 0.1);
+        --kt-shadow-medium: rgba(0, 0, 0, 0.2);
+        --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
+        --kt-overlay: rgba(0, 0, 0, 0.5);
+        
+        /* Avatar et cosmétiques */
+        --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+        --kt-cosmetic-border: rgba(0,0,0,0.1);
+        --kt-cosmetic-background: rgba(255,255,255,0.1);
+        
+        /* Espacements standardisés */
+        --kt-space-xs: 4px;
+        --kt-space-sm: 8px;
+        --kt-space-md: 12px;
+        --kt-space-lg: 16px;
+        --kt-space-xl: 24px;
+        
+        /* Transitions communes */
+        --kt-transition-fast: 0.2s ease;
+        --kt-transition-medium: 0.3s ease;
+        --kt-transition-slow: 0.5s ease;
+        
+        /* Polices et tailles */
+        --kt-font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+        --kt-font-size-xs: 0.75em;
+        --kt-font-size-sm: 0.85em;
+        --kt-font-size-md: 1em;
+        --kt-font-size-lg: 1.2em;
+        --kt-font-size-xl: 1.5em;
+      }
+    `;
+  }
+
+  // Couche 2: Styles de base communs
+  getBaseStyles() {
+    return `
+      /* === STYLES DE BASE === */
+      
+      /* Boutons standardisés */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--kt-space-sm) var(--kt-space-lg);
+        border: none;
+        border-radius: var(--kt-space-xs);
+        font-family: var(--kt-font-family);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+        text-decoration: none;
+        min-height: 32px;
+        gap: var(--kt-space-xs);
+      }
+      
+      .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px var(--kt-shadow-medium); }
+      .btn:active { transform: translateY(0); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+      
+      .btn-primary { background: var(--kt-primary); color: white; }
+      .btn-secondary { background: var(--kt-secondary); color: white; }
+      .btn-success { background: var(--kt-success); color: white; }
+      .btn-danger { background: var(--kt-error); color: white; }
+      .btn-warning { background: var(--kt-warning); color: white; }
+      .btn-info { background: var(--kt-info); color: white; }
+      
+      /* Cartes et conteneurs */
+      .card-base {
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-space-md);
+        box-shadow: var(--ha-card-box-shadow, 0 2px 4px var(--kt-shadow-light));
+        padding: var(--kt-space-lg);
+        margin: var(--kt-space-sm) 0;
+        transition: box-shadow var(--kt-transition-medium);
+      }
+      
+      .content {
+        padding: 20px;
+        background: var(--card-background-color, white);
+      }
+      
+      .card-base:hover { box-shadow: 0 4px 12px var(--kt-shadow-medium); }
+      
+      /* Modales */
+      .modal-base {
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-space-md);
+        box-shadow: 0 8px 32px var(--kt-shadow-heavy);
+        padding: var(--kt-space-xl);
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      /* Formulaires */
+      .form-row {
+        display: flex;
+        gap: var(--kt-space-lg);
+        margin-bottom: var(--kt-space-lg);
+        align-items: flex-end;
+      }
+      
+      .form-row > * { flex: 1; }
+      
+      .form-section {
+        margin-bottom: var(--kt-space-xl);
+        padding: var(--kt-space-lg);
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: var(--kt-space-sm);
+        border: 1px solid var(--divider-color, #e0e0e0);
+      }
+      
+      .form-section-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-md);
+        padding-bottom: var(--kt-space-xs);
+        border-bottom: 2px solid var(--kt-primary);
+        color: var(--primary-text-color, #212121);
+      }
+      
+      .dialog-actions {
+        display: flex;
+        gap: var(--kt-space-sm);
+        justify-content: flex-end;
+        margin-top: var(--kt-space-xl);
+      }
+      
+      /* === COMPOSANTS MÉTIER === */
+      
+      /* Tâches */
+      .task-item {
+        display: flex;
+        flex-direction: column;
+        padding: var(--kt-space-md);
+        margin: var(--kt-space-sm) 0;
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: var(--kt-space-sm);
+        border-left: 4px solid #ddd;
+        transition: all var(--kt-transition-medium);
+        position: relative;
+      }
+      
+      .task-item:hover { box-shadow: 0 1px 4px var(--kt-shadow-light); }
+      .task-item.pending_validation { border-left-color: var(--kt-status-pending); background: #fff3e0; }
+      .task-item.validated { border-left-color: var(--kt-status-validated); }
+      .task-item.todo { border-left-color: var(--kt-status-todo); }
+      .task-item.in_progress { border-left-color: var(--kt-status-progress); }
+      .task-item.failed { border-left-color: var(--kt-status-failed); }
+      
+      .task-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--kt-space-sm);
+      }
+      
+      .task-info { flex: 1; }
+      
+      .task-name {
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+        margin-bottom: var(--kt-space-xs);
+        line-height: 1.3;
+      }
+      
+      .task-meta {
+        display: flex;
+        gap: var(--kt-space-md);
+        align-items: center;
+        font-size: var(--kt-font-size-sm);
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .task-description {
+        margin-top: var(--kt-space-sm);
+        padding: var(--kt-space-sm);
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-space-xs);
+        font-size: var(--kt-font-size-sm);
+        color: var(--secondary-text-color, #666);
+        border-left: 3px solid var(--kt-info);
+      }
+      
+      .task-actions {
+        display: flex;
+        gap: var(--kt-space-sm);
+        margin-top: var(--kt-space-sm);
+      }
+      
+      /* Récompenses */
+      .rewards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: var(--kt-space-sm);
+        margin-top: var(--kt-space-lg);
+      }
+      
+      .reward-square {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--kt-space-md);
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-space-sm);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all var(--kt-transition-medium);
+        position: relative;
+        min-height: 120px;
+        text-align: center;
+      }
+      
+      .reward-square:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--kt-shadow-medium);
+      }
+      
+      .reward-square.affordable { border-color: var(--kt-success); }
+      .reward-square.expensive { opacity: 0.6; }
+      
+      .reward-square.cosmetic {
+        background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(0,0,0,0.1) 100%);
+        border-color: var(--kt-rarity-common);
+      }
+      
+      .reward-square.cosmetic.affordable {
+        border-color: var(--kt-coins-color);
+        background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(156,39,176,0.1) 100%);
+      }
+      
+      .reward-icon-large {
+        font-size: 2.5em;
+        margin-bottom: var(--kt-space-sm);
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .reward-name {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+        line-height: 1.2;
+        font-size: var(--kt-font-size-sm);
+      }
+      
+      .reward-price {
+        font-weight: 500;
+        color: var(--kt-points-color);
+        font-size: var(--kt-font-size-sm);
+      }
+      
+      .reward-level {
+        position: absolute;
+        top: var(--kt-space-xs);
+        right: var(--kt-space-xs);
+        background: var(--kt-info);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.7em;
+        font-weight: 500;
+      }
+      
+      .reward-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--kt-space-md);
+        margin: var(--kt-space-lg) 0;
+      }
+      
+      /* Jauges et statistiques */
+      .gauge {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-xs);
+      }
+      
+      .gauge-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .gauge-label {
+        font-size: var(--kt-font-size-xs);
+        opacity: 0.9;
+        font-weight: 500;
+      }
+      
+      .gauge-bar {
+        height: var(--kt-space-sm);
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--kt-space-xs);
+        overflow: hidden;
+        position: relative;
+      }
+      
+      .gauge-fill {
+        height: 100%;
+        border-radius: var(--kt-space-xs);
+        transition: width 0.6s ease;
+      }
+      
+      .gauge-fill.total-points { background: linear-gradient(90deg, #ffd700, #ffed4a); }
+      .gauge-fill.level-progress { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+      .gauge-fill.tasks-progress { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+      .gauge-fill.coins-progress { background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7); }
+      
+      .gauge-text {
+        font-size: var(--kt-font-size-xs);
+        font-weight: bold;
+        opacity: 0.9;
+      }
+      
+      /* Stats et métriques */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--kt-space-lg);
+        margin: var(--kt-space-lg) 0;
+      }
+      
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: var(--kt-space-lg);
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-space-sm);
+        border: 1px solid var(--divider-color, #e0e0e0);
+      }
+      
+      .stat-icon { font-size: 2em; margin-bottom: var(--kt-space-sm); }
+      .stat-number { font-size: 1.8em; font-weight: bold; color: var(--primary-text-color, #212121); }
+      .stat-label { color: var(--secondary-text-color, #757575); font-size: var(--kt-font-size-sm); }
+      
+      /* === COSMÉTIQUES === */
+      
+      /* Aperçus cosmétiques */
+      .cosmetic-avatar-preview { font-size: 1.2em; }
+      
+      .cosmetic-pixel-art-preview {
+        width: 20px;
+        height: 20px;
+        image-rendering: pixelated;
+      }
+      
+      .cosmetic-background-preview {
+        border-radius: 50%;
+        border: 1px solid var(--kt-cosmetic-border);
+      }
+      
+      .cosmetic-outfit-preview {
+        position: relative;
+        display: inline-block;
+      }
+      
+      .cosmetic-outfit-preview .base-avatar {
+        font-size: 1.2em;
+      }
+      
+      .cosmetic-outfit-preview .outfit-overlay {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.8em;
+      }
+      
+      .cosmetic-theme-preview {
+        border-radius: var(--kt-space-sm);
+        border: 2px solid var(--kt-cosmetic-border);
+      }
+      
+      .avatar-preview {
+        font-size: 3em;
+      }
+      
+      .pixel-art-preview {
+        max-width: 64px;
+        max-height: 64px;
+        image-rendering: pixelated;
+      }
+      
+      /* === NOTIFICATIONS === */
+      
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: var(--kt-space-md) var(--kt-space-lg);
+        border-radius: var(--kt-space-xs);
+        z-index: 10000;
+        box-shadow: 0 2px 8px var(--kt-shadow-medium);
+        font-family: var(--kt-font-family);
+        color: white;
+        font-weight: 500;
+      }
+      
+      .notification.success { background: var(--kt-notification-success); }
+      .notification.error { background: var(--kt-notification-error); }
+      .notification.info { background: var(--kt-notification-info); }
+      
+      /* === UTILITAIRES === */
+      
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .section {
+        margin: var(--kt-space-xl) 0;
+      }
+      
+      .section h2 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--kt-space-lg);
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+      }
+      
+      .section-actions {
+        display: flex;
+        gap: var(--kt-space-sm);
+      }
+      
+      .filters {
+        display: flex;
+        gap: var(--kt-space-sm);
+        margin: var(--kt-space-lg) 0;
+        flex-wrap: wrap;
+      }
+      
+      .filter-btn {
+        padding: var(--kt-space-sm) var(--kt-space-lg);
+        border: 2px solid var(--divider-color, #e0e0e0);
+        background: var(--card-background-color, #fff);
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 500;
+      }
+      
+      .filter-btn:hover {
+        border-color: var(--kt-primary);
+        background: rgba(63, 81, 181, 0.05);
+      }
+      
+      .filter-btn.active {
+        border-color: var(--kt-primary);
+        background: var(--kt-primary);
+        color: white;
+      }
+    `;
+  }
+
+  // Couche 3: Styles configurables basés sur la config
+  getConfigurableStyles() {
+    // Cette méthode peut être surchargée dans les classes filles pour gérer les configs spécifiques
+    return '';
+  }
+
+  // Couche 4: Méthode abstraite pour styles spécifiques
+  getSpecificStyles() {
+    throw new Error('getSpecificStyles must be implemented by subclass');
+  }
+
+  // Assemblage final de tous les styles
+  getStyles() {
+    return `<style>
+      ${this.getGlobalVariables()}
+      ${this.getBaseStyles()}
+      ${this.getConfigurableStyles()}
+      ${this.getSpecificStyles()}
+    </style>`;
+  }
 }
 
 class KidsTasksCard extends KidsTasksBaseCard {
@@ -3055,86 +3585,52 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   // Styles CSS identiques au fichier précédent
-  getStyles() {
-    const tabColor = this.config?.tab_color || 'var(--primary-color, #3f51b5)';
-    const headerColor = this.config?.header_color || 'var(--primary-color, #1976d2)';
-    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--primary-color, #3f51b5)';
-    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--accent-color, #ff4081)';
+  // Couche 3: Styles configurables pour KidsTasksCard
+  getConfigurableStyles() {
+    const tabColor = this.config?.tab_color || 'var(--kt-primary)';
+    const headerColor = this.config?.header_color || 'var(--kt-primary)';
+    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--kt-primary)';
+    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--kt-secondary)';
     const childGradientStart = this.config?.child_gradient_start || '#4CAF50';
     const childGradientEnd = this.config?.child_gradient_end || '#8BC34A';
     const childBorderColor = this.config?.child_border_color || '#2E7D32';
     const childTextColor = this.config?.child_text_color || '#ffffff';
     const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
-    const progressBarColor = this.config?.progress_bar_color || '#4CAF50';
-    const pointsBadgeColor = this.config?.points_badge_color || '#FF9800';
+    const progressBarColor = this.config?.progress_bar_color || 'var(--kt-success)';
+    const pointsBadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
     const iconColor = this.config?.icon_color || '#757575';
+
     
     return `
-      <style>
-        :host {
-          /* KidsTask Color Variables */
-          --kt-primary: var(--primary-color, #3f51b5);
-          --kt-secondary: var(--accent-color, #ff4081);
-          --kt-success: #4caf50;
-          --kt-warning: #ff9800;
-          --kt-error: #f44336;
-          --kt-info: #2196f3;
-          
-          /* Status colors */
-          --kt-status-todo: var(--kt-warning);
-          --kt-status-progress: var(--kt-info);
-          --kt-status-pending: #ff5722;
-          --kt-status-validated: var(--kt-success);
-          --kt-status-failed: var(--kt-error);
-          
-          /* Points and coins */
-          --kt-points-color: var(--kt-success);
-          --kt-coins-color: #9C27B0;
-          --kt-penalty-color: var(--kt-error);
-          
-          /* Rarity colors */
-          --kt-rarity-common: #9e9e9e;
-          --kt-rarity-rare: var(--kt-info);
-          --kt-rarity-epic: #9c27b0;
-          --kt-rarity-legendary: var(--kt-warning);
-          
-          /* Notification colors */
-          --kt-notification-success: var(--kt-success);
-          --kt-notification-error: var(--kt-error);
-          --kt-notification-info: var(--kt-info);
-          
-          /* Overlay and shadow colors */
-          --kt-overlay: rgba(0, 0, 0, 0.5);
-          --kt-shadow-light: rgba(0, 0, 0, 0.1);
-          --kt-shadow-medium: rgba(0, 0, 0, 0.2);
-          --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
-          
-          /* Avatar and cosmetic colors */
-          --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-          --kt-cosmetic-border: rgba(0,0,0,0.1);
-          --kt-cosmetic-background: var(--kt-cosmetic-background);
-          
-          /* Configurable colors from config */
-          --custom-tab-color: ${tabColor};
-          --custom-header-color: ${headerColor};
-          --custom-dashboard-primary: ${dashboardPrimary};
-          --custom-dashboard-secondary: ${dashboardSecondary};
-          --custom-child-gradient-start: ${childGradientStart};
-          --custom-child-gradient-end: ${childGradientEnd};
-          --custom-child-border-color: ${childBorderColor};
-          --custom-child-text-color: ${childTextColor};
-          --custom-button-hover-color: ${buttonHoverColor};
-          --custom-progress-bar-color: ${progressBarColor};
-          --custom-points-badge-color: ${pointsBadgeColor};
-          --custom-icon-color: ${iconColor};
-          
-          /* Deprecated - keep for compatibility */
-          --custom-rarity-common: var(--kt-rarity-common);
-          --custom-rarity-rare: var(--kt-rarity-rare);
-          --custom-rarity-epic: var(--kt-rarity-epic);
-          --custom-rarity-legendary: var(--kt-rarity-legendary);
-        }
-        * { box-sizing: border-box; }
+      /* Configurable colors from config */
+      :host {
+        --custom-tab-color: ${tabColor};
+        --custom-header-color: ${headerColor};
+        --custom-dashboard-primary: ${dashboardPrimary};
+        --custom-dashboard-secondary: ${dashboardSecondary};
+        --custom-child-gradient-start: ${childGradientStart};
+        --custom-child-gradient-end: ${childGradientEnd};
+        --custom-child-border-color: ${childBorderColor};
+        --custom-child-text-color: ${childTextColor};
+        --custom-button-hover-color: ${buttonHoverColor};
+        --custom-progress-bar-color: ${progressBarColor};
+        --custom-points-badge-color: ${pointsBadgeColor};
+        --custom-icon-color: ${iconColor};
+        
+        /* Compatibility with old variables */
+        --custom-rarity-common: var(--kt-rarity-common);
+        --custom-rarity-rare: var(--kt-rarity-rare);
+        --custom-rarity-epic: var(--kt-rarity-epic);
+        --custom-rarity-legendary: var(--kt-rarity-legendary);
+      }
+    `;
+  }
+
+  // Couche 4: Styles spécifiques à KidsTasksCard
+  getSpecificStyles() {
+    return `
+      /* Layout principal parent */
+      * { box-sizing: border-box; }
         
         .kids-tasks-manager {
           font-family: var(--paper-font-body1_-_font-family, Roboto, sans-serif);
@@ -3173,7 +3669,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .nav-tab:hover { background: var(--kt-cosmetic-background); }
         .nav-tab.active { background: var(--kt-cosmetic-background); font-weight: bold; }
         
-        .content { padding: 20px; background: var(--card-background-color, white); }
+        /* .content inherited from base class */
         .section { margin-bottom: 24px; }
         .section h2 {
           margin: 0 0 16px 0;
@@ -3538,21 +4034,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           background: linear-gradient(90deg, var(--kt-coins-color), #E1BEE7);
         }
         
-        .task-item {
-          display: flex;
-          flex-direction: column;
-          padding: 12px;
-          margin: 8px 0;
-          background: var(--secondary-background-color, #fafafa);
-          border-radius: 8px;
-          border-left: 4px solid #ddd;
-          transition: all 0.3s;
-          position: relative;
-        }
-        
-        .task-item:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .task-item.pending_validation { border-left-color: var(--kt-status-pending); background: #fff3e0; }
-        .task-item.validated { border-left-color: var(--kt-status-validated); }
+        /* .task-item styles inherited from base class */
         
         .task-top-row {
           display: flex;
@@ -4023,8 +4505,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .task-actions {
+          /* display inherited from base */
           position: absolute;
-          display: flex;
           right: 8px;
           bottom: 8px;
           flex-direction: row;
@@ -4194,53 +4676,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .status-validated { background: var(--kt-status-validated); color: white; }
         .status-failed { background: var(--kt-status-failed); color: white; }
         
-        .btn {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 500;
-          transition: all 0.3s;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 32px;
-          text-decoration: none;
-        }
+        /* Styles de boutons spécifiques à la carte parent (hérite de la base) */
         
-        .btn:hover { 
-          transform: translateY(-1px); 
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-          background: var(--custom-button-hover-color);
-        }
-        .btn:active { transform: translateY(0); }
-        
-        .btn-primary { background: var(--custom-dashboard-primary); color: white; }
-        .btn-success { background: var(--kt-success); color: white; }
-        .btn-danger { background: var(--kt-error); color: white; }
-        .btn-secondary {
-          background: var(--secondary-background-color, #fafafa);
-          color: var(--primary-text-color, #212121);
-          border: 1px solid var(--divider-color, #e0e0e0);
-        }
-        
-        .btn-icon { padding: 6px 12px; font-size: 12px; }
-        .btn-icon::before { margin-right: 4px; font-weight: normal; }
-        .add-btn::before { content: "+ "; }
-        .edit-btn::before { content: "✎ "; }
-        .delete-btn::before { content: "🗑 "; }
-        .validate-btn::before { content: "✓ "; }
-        .reject-btn::before { content: "✗ "; }
-        .claim-btn::before { content: "🎁 "; }
-        
-        .form-group { margin-bottom: 16px; }
-        .form-label {
-          display: block;
-          margin-bottom: 4px;
-          font-weight: 500;
-          color: var(--primary-text-color, #212121);
-        }
+        /* .form-group et .form-label définis dans showModal() */
         
         .form-input, .form-select, .form-textarea {
           width: 100%;
@@ -4260,18 +4698,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .form-textarea { height: 80px; resize: vertical; }
-        .form-row { display: flex; gap: 12px; }
+        /* .form-row inherited from base class */
         .form-row .form-group { flex: 1; }
         
-        /* Styles pour les actions des dialogues */
-        .dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          margin-top: 24px;
-          padding-top: 16px;
-          border-top: 1px solid var(--divider-color, #e0e0e0);
-        }
+        /* .dialog-actions défini dans showModal() et classe de base */
         
         .modal {
           position: fixed;
@@ -4474,13 +4904,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .modal-body { padding: 16px; }
           
           .task-actions {
-            position: absolute;
-            display: flex;
-            flex-direction: row;
-            justify-content: end;
+            /* position, display, flex-direction, justify-content, right, bottom inherited from non-responsive definition */
             min-width: auto;
-            right: 8px;
-            bottom: 8px;
           }
           
           .task-actions .btn {
@@ -4573,7 +4998,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             gap: 8px;
           }
         }
-      </style>
     `;
   }
 
@@ -4705,35 +5129,174 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
 customElements.define('kids-tasks-card', KidsTasksCard);
 
-// Éditeur de configuration pour la carte principale
-class KidsTasksCardEditor extends HTMLElement {
+// Classe de base pour tous les éditeurs de cartes
+class KidsTasksBaseCardEditor extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    this._config = {};
     this._rendered = false;
+    this._hass = null;
   }
 
   setConfig(config) {
-    const configChanged = JSON.stringify(this.config) !== JSON.stringify(config);
-    this.config = config;
+    const configChanged = JSON.stringify(this._config) !== JSON.stringify(config);
+    this._config = Object.assign({}, config);
+    // Maintain compatibility with existing code that uses this.config
+    this.config = this._config;
+    
     if (!this._rendered || configChanged) {
-      this._rendered = false; // Permettre le re-rendu si la config a changé
-      this.render();
-      this._rendered = true;
+      this._rendered = false;
+      if (this._hass) {
+        this.render();
+        this._rendered = true;
+      }
     }
   }
 
   set hass(hass) {
     this._hass = hass;
+    if (!this._rendered) {
+      this.render();
+      this._rendered = true;
+    }
   }
 
-  configChanged(newConfig) {
+  // Méthode abstraite à implémenter par les sous-classes
+  render() {
+    throw new Error('render method must be implemented by subclass');
+  }
+
+  // Méthode commune pour déclencher l'événement config-changed
+  fireConfigChanged(config) {
     const event = new CustomEvent('config-changed', {
-      detail: { config: newConfig },
+      detail: { config: config },
       bubbles: true,
       composed: true,
     });
     this.dispatchEvent(event);
+  }
+
+  // CSS commun pour tous les éditeurs
+  getCommonEditorStyles() {
+    return `
+      .config-container {
+        padding: 16px;
+        max-width: 600px;
+      }
+      .config-section {
+        margin-bottom: 24px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--card-background-color, #fff);
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        color: var(--primary-text-color, #000);
+        border-bottom: 2px solid var(--primary-color, #1976d2);
+        padding-bottom: 4px;
+      }
+      .config-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .config-item {
+        flex: 1;
+        min-width: 200px;
+      }
+      .config-item label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 500;
+        color: var(--primary-text-color, #000);
+      }
+      .config-item input[type="text"], 
+      .config-item input[type="number"], 
+      .config-item select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--divider-color, #ccc);
+        border-radius: 4px;
+        background: var(--card-background-color, #fff);
+        color: var(--primary-text-color, #000);
+        box-sizing: border-box;
+      }
+      .config-item input[type="color"] {
+        width: 100%;
+        height: 40px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        box-sizing: border-box;
+      }
+      .switch-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .switch-row label {
+        cursor: pointer;
+        margin-bottom: 0;
+      }
+      ha-switch {
+        --switch-checked-color: var(--primary-color);
+      }
+      .config-item small {
+        display: block;
+        color: var(--secondary-text-color, #666);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .preview-header {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4CAF50, #8BC34A);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 2px solid #2E7D32;
+      }
+      .preview-avatar { 
+        font-size: 2em;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+      }
+      .preview-name {
+        font-size: 1.2em;
+        font-weight: 600;
+        flex: 1;
+      }
+      .preview-level {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+    `;
+  }
+}
+
+// Éditeur de configuration pour la carte principale
+class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  configChanged(newConfig) {
+    this.fireConfigChanged(newConfig);
     // Force re-render pour appliquer les nouveaux styles
     this.render();
   }
@@ -4742,24 +5305,7 @@ class KidsTasksCardEditor extends HTMLElement {
     
     this.shadowRoot.innerHTML = `
       <style>
-        .config-container {
-          padding: 16px;
-          max-width: 600px;
-        }
-        .config-section {
-          margin-bottom: 24px;
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: 8px;
-          padding: 16px;
-        }
-        .section-title {
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 12px;
-          color: var(--primary-text-color, #000);
-          border-bottom: 2px solid var(--primary-color, #1976d2);
-          padding-bottom: 4px;
-        }
+        ${this.getCommonEditorStyles()}
         .config-row {
           display: flex;
           align-items: center;
@@ -5007,7 +5553,7 @@ class KidsTasksCardEditor extends HTMLElement {
       titleInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, title: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5015,7 +5561,7 @@ class KidsTasksCardEditor extends HTMLElement {
       navSwitch.addEventListener('change', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, show_navigation: ev.target.checked };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5023,7 +5569,7 @@ class KidsTasksCardEditor extends HTMLElement {
       tabColorInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, tab_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5031,7 +5577,7 @@ class KidsTasksCardEditor extends HTMLElement {
       headerColorInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, header_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5039,7 +5585,7 @@ class KidsTasksCardEditor extends HTMLElement {
       dashboardPrimaryInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, dashboard_primary_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5047,7 +5593,7 @@ class KidsTasksCardEditor extends HTMLElement {
       dashboardSecondaryInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, dashboard_secondary_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
 
@@ -5057,7 +5603,7 @@ class KidsTasksCardEditor extends HTMLElement {
         if (!this.config) return;
         this.config = { ...this.config, child_gradient_start: ev.target.value };
         this.updateChildPreview();
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5066,7 +5612,7 @@ class KidsTasksCardEditor extends HTMLElement {
         if (!this.config) return;
         this.config = { ...this.config, child_gradient_end: ev.target.value };
         this.updateChildPreview();
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5075,7 +5621,7 @@ class KidsTasksCardEditor extends HTMLElement {
         if (!this.config) return;
         this.config = { ...this.config, child_border_color: ev.target.value };
         this.updateChildPreview();
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5084,7 +5630,7 @@ class KidsTasksCardEditor extends HTMLElement {
         if (!this.config) return;
         this.config = { ...this.config, child_text_color: ev.target.value };
         this.updateChildPreview();
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
 
@@ -5093,7 +5639,7 @@ class KidsTasksCardEditor extends HTMLElement {
       buttonHoverInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, button_hover_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5101,7 +5647,7 @@ class KidsTasksCardEditor extends HTMLElement {
       progressBarInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, progress_bar_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5109,7 +5655,7 @@ class KidsTasksCardEditor extends HTMLElement {
       pointsBadgeInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, points_badge_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5117,7 +5663,7 @@ class KidsTasksCardEditor extends HTMLElement {
       iconColorInput.addEventListener('input', (ev) => {
         if (!this.config) return;
         this.config = { ...this.config, icon_color: ev.target.value };
-        this.configChanged(this.config);
+        this.fireConfigChanged(this.config);
       });
     }
     
@@ -5907,9 +6453,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   // Générer les styles CSS pour le nouveau design
-  getStyles() {
-    // Utiliser les couleurs de configuration ou les valeurs par défaut
-    // Essayer d'abord avec le préfixe child_, puis sans préfixe
+  // Couche 3: Styles configurables pour KidsTasksChildCard
+  getConfigurableStyles() {
     const gradientStart = this.config?.child_gradient_start || this.config?.gradient_start || '#4CAF50';
     const gradientEnd = this.config?.child_gradient_end || this.config?.gradient_end || '#8BC34A';
     const borderColor = this.config?.child_border_color || this.config?.border_color || '#2E7D32';
@@ -5923,20 +6468,29 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const customTabColor = computedStyle.getPropertyValue('--custom-tab-color').trim() || gradientStart;
     
     return `
-      <style>
-        :host {
-          display: block;
-          font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-          --primary-color: ${customDashboardPrimary};
-          --secondary-color: ${customDashboardSecondary};
-          --header-color: ${customHeaderColor};
-          --tab-color: ${customTabColor};
-          --border-color: ${borderColor};
-          --header-text-color: ${textColor};
-          --success-color: #4caf50;
-          --warning-color: #ff9800;
-          --error-color: #f44336;
-          --info-color: #2196f3;
+      /* Variables configurables pour la carte enfant */
+      :host {
+        --primary-color: ${customDashboardPrimary};
+        --secondary-color: ${customDashboardSecondary};
+        --header-color: ${customHeaderColor};
+        --tab-color: ${customTabColor};
+        --border-color: ${borderColor};
+        --header-text-color: ${textColor};
+        --success-color: var(--kt-success);
+        --warning-color: var(--kt-warning);
+        --error-color: var(--kt-error);
+        --info-color: var(--kt-info);
+      }
+    `;
+  }
+
+  // Couche 4: Styles spécifiques à KidsTasksChildCard
+  getSpecificStyles() {
+    return `
+      /* Layout principal enfant - style Habitica */
+      :host {
+        display: block;
+        font-family: var(--kt-font-family);
         }
         
         .habitica-card {
@@ -6161,7 +6715,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         /* Contenu */
         .content {
-          padding: 20px;
+          /* padding and background inherited from base */
           min-height: 400px;
         }
         
@@ -6215,13 +6769,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           margin-bottom: 4px;
         }
         
-        .task-meta {
-          display: flex;
-          gap: 12px;
-          align-items: center;
-          font-size: 0.85em;
-          color: var(--secondary-text-color, #757575);
-        }
+        /* .task-meta fully inherited from parent card definition */
         
         .task-points {
           font-weight: bold;
@@ -6232,10 +6780,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: var(--warning-color);
         }
         
-        .task-actions {
-          display: flex;
-          gap: 8px;
-        }
+        /* .task-actions inherited from base class */
         
         .btn-task {
           padding: 10px 16px;
@@ -6271,23 +6816,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         /* Récompenses en grille */
-        .rewards-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-          gap: 8px;
-          margin-top: 16px;
-        }
+        /* .rewards-grid inherited from base class */
         
         .reward-square {
+          /* display, flex-direction, align-items, cursor inherited from base */
           aspect-ratio: 1;
           background: var(--secondary-background-color, #f8f9fa);
           border-radius: 6px;
           padding: 6px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
           justify-content: center;
-          cursor: pointer;
           transition: all 0.3s;
           border: 1px solid transparent;
           text-align: center;
@@ -6317,11 +6854,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
         
         .reward-icon-large {
+          /* display, align-items, justify-content inherited from base */
           font-size: 4em;
           margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           width: 64px;
           height: 64px;
         }
@@ -6490,9 +7025,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             font-size: 2.2em;
           }
           
-          .content {
-            padding: 16px;
-          }
+          /* .content responsive padding handled by parent card media query */
           
           .task-item {
             flex-direction: column;
@@ -6543,29 +7076,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             justify-content: center;
           }
           
-          .reward-name {
-            font-size: 1em;
-            margin-bottom: 1px;
-            line-height: 1.1;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-          }
+          /* .reward-name responsive styles inherited */
           
-          .reward-price {
-            font-size: 0.5em;
-          }
+          /* .reward-price responsive styles inherited */
         }
         
         @media (max-width: 320px) {
-          .rewards-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 3px;
-          }
+          /* .rewards-grid responsive styles covered by 400px breakpoint */
           
-          .reward-square {
-            padding: 3px;
-            border-radius: 3px;
-          }
+          /* .reward-square responsive styles covered by 400px breakpoint */
           
           .reward-square.points-only {
             border-left: 2px solid #4caf50;
@@ -6579,15 +7098,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             border-left: 2px solid #9c27b0;
           }
           
-          .reward-icon-large {
-            font-size: 4em;
-            width: 64px;
-            height: 64px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
+          /* .reward-icon-large responsive styles covered by 400px breakpoint */
           
           .reward-name {
             font-size: 1em;
@@ -6596,9 +7107,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             overflow-wrap: break-word;
           }
           
-          .reward-price {
-            font-size: 0.45em;
-          }
+          /* .reward-price responsive styles inherited */
         }
         
         /* Styles pour l'onglet historique */
@@ -7867,23 +8376,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 customElements.define('kids-tasks-child-card', KidsTasksChildCard);
 
 // Éditeur de configuration pour la carte enfant
-class KidsTasksChildCardEditor extends HTMLElement {
+class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
   constructor() {
     super();
-    this._config = {};
   }
 
   setConfig(config) {
-    this._config = Object.assign({}, config);
+    super.setConfig(config);
     if (this._rendered) {
       this._updateValues();
-    }
-  }
-
-  set hass(hass) {
-    this._hass = hass;
-    if (!this._rendered) {
-      this.render();
     }
   }
 
@@ -8620,13 +9121,8 @@ class KidsTasksChildCardEditor extends HTMLElement {
     // Mettre à jour l'aperçu en temps réel
     this.updatePreview();
 
-    // Fire config-changed event
-    const event = new CustomEvent('config-changed', {
-      detail: { config: this._config },
-      bubbles: true,
-      composed: true
-    });
-    this.dispatchEvent(event);
+    // Fire config-changed event using base class method
+    this.fireConfigChanged(this._config);
   }
 
   updatePreview() {
