@@ -936,7 +936,7 @@ class KidsTasksBaseCard extends HTMLElement {
           font-weight: 700;
           text-align: center;
           margin: 0 0 12px 0;
-          color: var(--header-text-color);
+          color: var(--custom-child-text-color, var(--header-text-color));
           text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
@@ -947,7 +947,8 @@ class KidsTasksBaseCard extends HTMLElement {
         top: 0;
         bottom: 0;
         width: 4px;
-        background: var(--custom-dashboard-primary, var(--kt-primary));
+        background: white;
+        z-index: 1;
       }
       
       .drag-handle {
@@ -3230,7 +3231,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
       ${pendingTasks.length > 0 ? `
         <div class="section">
           <h2>Tâches à valider (${pendingTasks.length})</h2>
-          ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
+          <div class="validation-tasks-list">
+            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
+          </div>
         </div>
       ` : ''}
     `;
