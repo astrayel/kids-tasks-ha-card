@@ -3495,13 +3495,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   renderValidationTask(task, children) {
-    // Pour les validations, afficher l'enfant qui a COMPLÉTÉ la tâche, pas tous les assignés
+    // Pour les validations, afficher l'enfant qui a demandé la validation
     let childName = 'Enfant inconnu';
-    if (task.completed_by) {
+    if (task.pending_validation_children && task.pending_validation_children.length > 0) {
+      // Utiliser les noms des enfants en attente de validation déjà construits
+      childName = task.pending_validation_children.join(', ');
+    } else if (task.completed_by) {
       const child = children.find(c => c.id === task.completed_by);
       childName = child ? child.name : `Enfant ${task.completed_by}`;
     } else {
-      // Fallback sur les enfants assignés si completed_by n'est pas disponible
+      // Fallback sur les enfants assignés si rien d'autre n'est disponible
       childName = this.formatAssignedChildren(task);
     }
     
