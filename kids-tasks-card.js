@@ -682,6 +682,7 @@ class KidsTasksBaseCard extends HTMLElement {
         padding: var(--kt-space-sm) var(--kt-space-md);
         flex: 1;
         min-width: 120px;
+        flex-direction: row;
       }
       
       .stat-icon.small {
@@ -986,7 +987,6 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .child-card.dashboard {
-        background: var(--card-background-color, #fff);
         border-radius: var(--kt-radius-lg);
         padding: var(--kt-space-md);
         box-shadow: var(--kt-shadow-light);
@@ -1029,16 +1029,18 @@ class KidsTasksBaseCard extends HTMLElement {
       .child-name-compact {
         font-size: 1.1em;
         font-weight: 700;
-        color: var(--primary-text-color, #212121);
+        color: white;
         line-height: 1.2;
         word-wrap: break-word;
         margin-bottom: 2px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
       .level-compact {
         font-size: 0.8em;
-        color: var(--secondary-text-color, #757575);
+        color: rgba(255,255,255,0.9);
         font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
       .gauges-compact {
@@ -1050,14 +1052,15 @@ class KidsTasksBaseCard extends HTMLElement {
       .progress-bar-compact {
         position: relative;
         height: 20px;
-        background: var(--divider-color, #e0e0e0);
+        background: rgba(0,0,0,0.2);
         border-radius: var(--kt-radius-md);
         overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.3);
       }
       
       .progress-fill-compact {
         height: 100%;
-        background: linear-gradient(90deg, var(--kt-primary), var(--kt-secondary));
+        background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
         transition: width 0.3s ease;
         border-radius: var(--kt-radius-md);
       }
@@ -1073,21 +1076,23 @@ class KidsTasksBaseCard extends HTMLElement {
         justify-content: center;
         font-size: 0.75em;
         font-weight: 600;
-        color: var(--primary-text-color, #212121);
-        text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        color: rgba(0,0,0,0.8);
+        text-shadow: 0 1px 1px rgba(255,255,255,0.5);
       }
       
       .coins-display-compact {
         text-align: center;
         padding: var(--kt-space-xs);
-        background: var(--kt-surface-variant);
+        background: rgba(0,0,0,0.2);
         border-radius: var(--kt-radius-md);
+        border: 1px solid rgba(255,255,255,0.3);
       }
       
       .coin-text-compact {
         font-size: 0.9em;
         font-weight: 600;
-        color: var(--kt-on-surface);
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
       .child-name-header {
@@ -1386,8 +1391,13 @@ class KidsTasksBaseCard extends HTMLElement {
       const level = child.level || 1;
       const progress = ((points % 100) / 100) * 100;
 
+      // Utiliser les couleurs de gradient personnalisées de l'enfant
+      const gradientStart = child.card_gradient_start || '#3f51b5';
+      const gradientEnd = child.card_gradient_end || '#ff4081';
+
       return `
-        <div class="child-card dashboard" data-child-id="${child.id || 'unknown'}">
+        <div class="child-card dashboard" data-child-id="${child.id || 'unknown'}" 
+             style="background: linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%);">
           <!-- Header compact avec avatar et nom -->
           <div class="dashboard-header">
             <div class="avatar-compact">${this.getEffectiveAvatar(child, 'normal')}</div>
@@ -5165,15 +5175,39 @@ class KidsTasksCard extends KidsTasksBaseCard {
             font-size: 0.8em;
           }
           
-          /* Stats compactes sur mobile */
+          /* Stats compactes sur mobile - FORCER une seule ligne */
           .stats-grid-compact {
-            flex-direction: column;
-            gap: var(--kt-space-sm);
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: var(--kt-space-xs);
+            overflow-x: auto;
           }
           
           .stat-card.compact {
-            justify-content: flex-start;
-            min-width: auto;
+            justify-content: center;
+            min-width: 80px;
+            flex: 1 1 auto;
+            padding: var(--kt-space-xs);
+            flex-direction: column;
+            text-align: center;
+          }
+          
+          .stat-card.compact .stat-icon.small {
+            font-size: 1em;
+            margin-bottom: 2px;
+          }
+          
+          .stat-card.compact .stat-info.compact .stat-number {
+            font-size: 0.9em;
+            line-height: 1;
+          }
+          
+          .stat-card.compact .stat-info.compact .stat-label {
+            font-size: 0.65em;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: var(--kt-space-lg); }*/
