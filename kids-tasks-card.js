@@ -4793,6 +4793,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           align-items: center;
           justify-content: center;
           transition: all 0.2s;
+          z-index: 100;
         }
         
         .btn-close:hover {
