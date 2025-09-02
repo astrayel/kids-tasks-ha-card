@@ -28,8 +28,8 @@ class KidsTasksBaseCard extends HTMLElement {
     const action = target.dataset.action;
     const id = target.dataset.id;
 
-    // Pour les filtres de récompenses, passer le filtre à la place de l'ID
-    if (action === 'filter-rewards') {
+    // Pour les filtres, passer la valeur du filtre à la place de l'ID
+    if (action === 'filter-rewards' || action === 'filter-children' || action === 'filter-tasks') {
       this.handleAction(action, target.dataset.filter, event);
     } else {
       this.handleAction(action, id, event);
@@ -1190,6 +1190,7 @@ class KidsTasksBaseCard extends HTMLElement {
         <div class="child-card unified" data-child-id="${child.id || 'unknown'}">
           ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
           ${showActions ? '<div class="child-border"></div>' : ''}
+          ${showActions ? `<button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">×</button>` : ''}
           
           <!-- Header avec le style de la carte enfant -->
           <div class="child-border"></div>
@@ -1212,7 +1213,6 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showActions ? `
             <div class="task-actions">
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
-              <button class="btn btn-danger btn-icon delete-btn" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">🗑️</button>
             </div>
           ` : ''}
         </div>
