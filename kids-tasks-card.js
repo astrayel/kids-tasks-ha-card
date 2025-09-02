@@ -666,6 +666,43 @@ class KidsTasksBaseCard extends HTMLElement {
         margin: var(--kt-space-lg) 0;
       }
       
+      /* Stats compactes sur une ligne */
+      .stats-grid-compact {
+        display: flex;
+        gap: var(--kt-space-md);
+        margin: var(--kt-space-lg) 0;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      
+      .stat-card.compact {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-sm);
+        padding: var(--kt-space-sm) var(--kt-space-md);
+        flex: 1;
+        min-width: 120px;
+      }
+      
+      .stat-icon.small {
+        font-size: 1.2em;
+        width: auto;
+        height: auto;
+      }
+      
+      .stat-info.compact {
+        text-align: left;
+      }
+      
+      .stat-info.compact .stat-number {
+        font-size: 1.1em;
+        margin-bottom: 2px;
+      }
+      
+      .stat-info.compact .stat-label {
+        font-size: 0.8em;
+      }
+      
       .stat-item {
         display: flex;
         flex-direction: column;
@@ -938,6 +975,119 @@ class KidsTasksBaseCard extends HTMLElement {
       .child-card.unified:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px var(--kt-shadow-medium);
+      }
+      
+      /* === CARTES ENFANTS DASHBOARD (COMPACTES ET CARRÉES) === */
+      .children-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--kt-space-md);
+        margin-top: var(--kt-space-md);
+      }
+      
+      .child-card.dashboard {
+        background: var(--card-background-color, #fff);
+        border-radius: var(--kt-radius-lg);
+        padding: var(--kt-space-md);
+        box-shadow: var(--kt-shadow-light);
+        border: var(--kt-border-thin);
+        transition: all var(--kt-transition-fast);
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 160px;
+      }
+      
+      .child-card.dashboard:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--kt-shadow-medium);
+      }
+      
+      .dashboard-header {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-sm);
+        margin-bottom: var(--kt-space-sm);
+      }
+      
+      .avatar-compact {
+        font-size: 2em;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      
+      .child-info-compact {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .child-name-compact {
+        font-size: 1.1em;
+        font-weight: 700;
+        color: var(--primary-text-color, #212121);
+        line-height: 1.2;
+        word-wrap: break-word;
+        margin-bottom: 2px;
+      }
+      
+      .level-compact {
+        font-size: 0.8em;
+        color: var(--secondary-text-color, #757575);
+        font-weight: 500;
+      }
+      
+      .gauges-compact {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .progress-bar-compact {
+        position: relative;
+        height: 20px;
+        background: var(--divider-color, #e0e0e0);
+        border-radius: var(--kt-radius-md);
+        overflow: hidden;
+      }
+      
+      .progress-fill-compact {
+        height: 100%;
+        background: linear-gradient(90deg, var(--kt-primary), var(--kt-secondary));
+        transition: width 0.3s ease;
+        border-radius: var(--kt-radius-md);
+      }
+      
+      .progress-text-compact {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em;
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+        text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+      }
+      
+      .coins-display-compact {
+        text-align: center;
+        padding: var(--kt-space-xs);
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+      }
+      
+      .coin-text-compact {
+        font-size: 0.9em;
+        font-weight: 600;
+        color: var(--kt-on-surface);
       }
       
       .child-name-header {
@@ -1220,6 +1370,51 @@ class KidsTasksBaseCard extends HTMLElement {
     } catch (error) {
       console.error('Erreur dans renderUnifiedChildCard:', error, 'Child data:', child);
       return `<div class="child-card unified"><div class="error">Erreur rendu: ${error.message}</div></div>`;
+    }
+  }
+
+  renderDashboardChildCard(child) {
+    // Protection contre les enfants undefined/null
+    if (!child) {
+      return '<div class="child-card dashboard"><div class="error">Erreur: enfant non trouvé</div></div>';
+    }
+    
+    try {
+      const name = child.name || 'Enfant sans nom';
+      const points = child.points || 0;
+      const coins = child.coins || 0;
+      const level = child.level || 1;
+      const progress = ((points % 100) / 100) * 100;
+
+      return `
+        <div class="child-card dashboard" data-child-id="${child.id || 'unknown'}">
+          <!-- Header compact avec avatar et nom -->
+          <div class="dashboard-header">
+            <div class="avatar-compact">${this.getEffectiveAvatar(child, 'normal')}</div>
+            <div class="child-info-compact">
+              <div class="child-name-compact">${name}</div>
+              <div class="level-compact">Niveau ${level}</div>
+            </div>
+          </div>
+          
+          <!-- Jauges compactes -->
+          <div class="gauges-compact">
+            <!-- Barre de points vers prochain niveau -->
+            <div class="progress-bar-compact">
+              <div class="progress-fill-compact" style="width: ${progress}%"></div>
+              <div class="progress-text-compact">${points % 100}/100 🎫</div>
+            </div>
+            
+            <!-- Coins -->
+            <div class="coins-display-compact">
+              <span class="coin-text-compact">${coins} 🪙</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Erreur dans renderDashboardChildCard:', error, 'Child data:', child);
+      return `<div class="child-card dashboard"><div class="error">Erreur rendu: ${error.message}</div></div>`;
     }
   }
 
@@ -3191,62 +3386,31 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const pendingTasks = tasks.filter(t => t.status === 'pending_validation');
 
     return `
-      <div class="section">
-        <h2>${this.title}</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-info">
-              <div class="stat-header">
-                <div class="stat-icon">👶</div>
-                <div class="stat-number">${stats.totalChildren}</div>
-              </div>
-              <div class="stat-label">Enfant${stats.totalChildren > 1 ? 's' : ''}</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-info">
-              <div class="stat-header">
-                <div class="stat-icon">📝</div>
-                <div class="stat-number">${stats.totalTasks}</div>
-              </div>
-              <div class="stat-label">Tâches créées</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-info">
-              <div class="stat-header">
-                <div class="stat-icon">✅</div>
-                <div class="stat-number">${stats.completedToday}</div>
-              </div>
-              <div class="stat-label">Terminées aujourd'hui</div>
-            </div>
-          </div>
-          <div class="stat-card clickable" data-action="switch-view" data-id="validation" title="Voir les tâches à valider">
-            <div class="stat-info">
-              <div class="stat-header">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-number">${stats.pendingValidation}</div>
-              </div>
-              <div class="stat-label">À valider</div>
-            </div>
+      ${pendingTasks.length > 0 ? `
+        <div class="section">
+          <h2>Tâches à valider (${pendingTasks.length})</h2>
+          <div class="validation-tasks-list">
+            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
           </div>
         </div>
-      </div>
+      ` : ''}
 
       ${children.length > 0 ? `
         <div class="section children-grid">
           <h2>Enfants</h2>
-          ${children.map((child, index) => {
-            try {
-              console.log(`Rendu enfant ${index}:`, child);
-              const result = this.renderUnifiedChildCard(child, false, false);
-              console.log(`Rendu enfant ${index} réussi`);
-              return result;
-            } catch (error) {
-              console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
-              return `<div class="child-card unified"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
-            }
-          }).join('')}
+          <div class="children-dashboard-grid">
+            ${children.map((child, index) => {
+              try {
+                console.log(`Rendu enfant ${index}:`, child);
+                const result = this.renderDashboardChildCard(child);
+                console.log(`Rendu enfant ${index} réussi`);
+                return result;
+              } catch (error) {
+                console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
+                return `<div class="child-card dashboard"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
+              }
+            }).join('')}
+          </div>
         </div>
       ` : `
         <div class="empty-state">
@@ -3256,14 +3420,39 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </div>
       `}
 
-      ${pendingTasks.length > 0 ? `
-        <div class="section">
-          <h2>Tâches à valider (${pendingTasks.length})</h2>
-          <div class="validation-tasks-list">
-            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
+      <div class="section">
+        <h2>${this.title}</h2>
+        <div class="stats-grid-compact">
+          <div class="stat-card compact">
+            <div class="stat-icon small">👶</div>
+            <div class="stat-info compact">
+              <div class="stat-number">${stats.totalChildren}</div>
+              <div class="stat-label">Enfant${stats.totalChildren > 1 ? 's' : ''}</div>
+            </div>
+          </div>
+          <div class="stat-card compact">
+            <div class="stat-icon small">📝</div>
+            <div class="stat-info compact">
+              <div class="stat-number">${stats.totalTasks}</div>
+              <div class="stat-label">Tâches créées</div>
+            </div>
+          </div>
+          <div class="stat-card compact">
+            <div class="stat-icon small">✅</div>
+            <div class="stat-info compact">
+              <div class="stat-number">${stats.completedToday}</div>
+              <div class="stat-label">Terminées aujourd'hui</div>
+            </div>
+          </div>
+          <div class="stat-card compact clickable" data-action="switch-view" data-id="validation" title="Voir les tâches à valider">
+            <div class="stat-icon small">⏳</div>
+            <div class="stat-info compact">
+              <div class="stat-number">${stats.pendingValidation}</div>
+              <div class="stat-label">À valider</div>
+            </div>
           </div>
         </div>
-      ` : ''}
+      </div>
     `;
   }
 
@@ -4933,6 +5122,59 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+          
+          /* Optimisation des cartes compactes pour mobile */
+          .children-dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--kt-space-sm);
+          }
+          
+          .child-card.dashboard {
+            min-height: 140px;
+            padding: var(--kt-space-sm);
+          }
+          
+          .dashboard-header {
+            gap: var(--kt-space-xs);
+            margin-bottom: var(--kt-space-xs);
+          }
+          
+          .avatar-compact {
+            font-size: 1.6em;
+            width: 40px;
+            height: 40px;
+          }
+          
+          .child-name-compact {
+            font-size: 1em;
+          }
+          
+          .level-compact {
+            font-size: 0.75em;
+          }
+          
+          .progress-bar-compact {
+            height: 16px;
+          }
+          
+          .progress-text-compact {
+            font-size: 0.7em;
+          }
+          
+          .coin-text-compact {
+            font-size: 0.8em;
+          }
+          
+          /* Stats compactes sur mobile */
+          .stats-grid-compact {
+            flex-direction: column;
+            gap: var(--kt-space-sm);
+          }
+          
+          .stat-card.compact {
+            justify-content: flex-start;
+            min-width: auto;
+          }
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: var(--kt-space-lg); }*/
           
