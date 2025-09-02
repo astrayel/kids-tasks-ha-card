@@ -1212,6 +1212,7 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showActions ? `
             <div class="task-actions">
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
+              <button class="btn btn-danger btn-icon delete-btn" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">🗑️</button>
             </div>
           ` : ''}
         </div>
