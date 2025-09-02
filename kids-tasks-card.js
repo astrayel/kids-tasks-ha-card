@@ -2588,8 +2588,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
     setTimeout(() => {
       const frequencySelect = dialog.querySelector('[name="frequency"]');
       const weeklyDaysSection = dialog.querySelector('.weekly-days-section');
-      const penaltyPointsField = dialog.querySelector('[name="penalty_points"]').parentElement;
-      const deadlineTimeField = dialog.querySelector('[name="deadline_time"]').parentElement;
+      const penaltyPointsField = dialog.querySelector('[name="penalty_points"]')?.parentElement;
+      const deadlineTimeField = dialog.querySelector('[name="deadline_time"]')?.parentElement;
       
       if (frequencySelect && weeklyDaysSection) {
         // Fonction pour afficher/masquer la section des jours et les champs liés
@@ -2600,7 +2600,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           // Afficher/masquer la section des jours (seulement pour daily)
           weeklyDaysSection.style.display = isDaily ? 'block' : 'none';
           
-          // Masquer les points de pénalité et l'heure limite pour les tâches bonus
+          // Masquer SEULEMENT les points de pénalité et l'heure limite pour les tâches bonus
+          // Les points et coins principaux restent TOUJOURS visibles
           if (penaltyPointsField) {
             penaltyPointsField.style.display = isBonus ? 'none' : 'block';
           }
