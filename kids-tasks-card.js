@@ -52,6 +52,15 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   showModal(content, title = '') {
+    // Fermer toutes les dialogs existantes avant d'en créer une nouvelle
+    const existingDialogs = document.querySelectorAll('ha-dialog');
+    existingDialogs.forEach(existingDialog => {
+      if (existingDialog && existingDialog.parentNode) {
+        existingDialog.close();
+        existingDialog.parentNode.removeChild(existingDialog);
+      }
+    });
+    
     const dialog = document.createElement('ha-dialog');
     dialog.setAttribute('open', '');
     dialog.setAttribute('hide-actions', '');
@@ -2010,6 +2019,15 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   showModal(content, title = '') {
+    // Fermer toutes les dialogs existantes avant d'en créer une nouvelle
+    const existingDialogs = document.querySelectorAll('ha-dialog');
+    existingDialogs.forEach(existingDialog => {
+      if (existingDialog && existingDialog.parentNode) {
+        existingDialog.close();
+        existingDialog.parentNode.removeChild(existingDialog);
+      }
+    });
+
     // Utiliser ha-dialog pour les modales
     const dialog = document.createElement('ha-dialog');
     dialog.heading = title;
@@ -3313,11 +3331,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         <!-- Filtres pour les tâches -->
         <div class="filters">
+          <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-action="filter-tasks" data-filter="all">Toutes</button>
           <button class="filter-btn ${currentFilter === 'active' ? 'active' : ''}" data-action="filter-tasks" data-filter="active">Actives</button>
+          <button class="filter-btn ${currentFilter === 'bonus' ? 'active' : ''}" data-action="filter-tasks" data-filter="bonus">Bonus</button>
           <button class="filter-btn ${currentFilter === 'inactive' ? 'active' : ''}" data-action="filter-tasks" data-filter="inactive">Désactivées</button>
           <button class="filter-btn ${currentFilter === 'out-of-period' ? 'active' : ''}" data-action="filter-tasks" data-filter="out-of-period">Hors période</button>
-          <button class="filter-btn ${currentFilter === 'bonus' ? 'active' : ''}" data-action="filter-tasks" data-filter="bonus">Bonus</button>
-          <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-action="filter-tasks" data-filter="all">Toutes</button>
         </div>
         
         ${tasks.length > 0 ? `
