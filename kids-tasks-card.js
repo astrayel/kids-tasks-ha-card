@@ -1471,6 +1471,14 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         break;
         
+      case 'filter-children':
+        // Filtrer les enfants par ID
+        if (id) {
+          this.childFilter = id;
+          this.render();
+        }
+        break;
+        
       case 'load-cosmetics-catalog':
         if (!this._hass) {
           this.showNotification('Erreur : Home Assistant non disponible', 'error');
@@ -3241,15 +3249,30 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
   getChildrenView() {
     const children = this.getChildren();
+    const currentChildFilter = this.childFilter || 'all';
+    
+    // Filtrer les enfants selon le filtre sélectionné
+    const filteredChildren = currentChildFilter === 'all' ? children : 
+                             children.filter(child => child.id === currentChildFilter);
+    
     return `
       <div class="section">
         <h2>
           Gestion des enfants
           <button class="btn btn-primary add-btn" data-action="add-child">Ajouter</button>
         </h2>
-        ${children.length > 0 ? `
-          <div class="grid grid-2 children-grid">
-            ${children.map((child, index) => {
+        
+        <!-- Filtres pour les enfants -->
+        <div class="filters">
+          <button class="filter-btn ${currentChildFilter === 'all' ? 'active' : ''}" data-action="filter-children" data-filter="all">Tous</button>
+          ${children.map(child => `
+            <button class="filter-btn ${currentChildFilter === child.id ? 'active' : ''}" data-action="filter-children" data-filter="${child.id}">${child.name}</button>
+          `).join('')}
+        </div>
+        
+        ${filteredChildren.length > 0 ? `
+          <div class="${currentChildFilter === 'all' ? 'grid grid-2 children-grid' : 'single-child-view'}">
+            ${filteredChildren.map((child, index) => {
               try {
                 console.log(`Rendu enfant gestion ${index}:`, child);
                 const result = this.renderUnifiedChildCard(child, true, true);
@@ -4776,6 +4799,17 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .grid { display: grid; gap: 24px; }
         .grid-2 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
         .grid-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        
+        .single-child-view {
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+        }
+        
+        .single-child-view .child-card {
+          max-width: 400px;
+          width: 100%;
+        }
         
         .avatar-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .avatar-option {
