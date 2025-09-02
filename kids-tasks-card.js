@@ -3380,7 +3380,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </div>
         <div class="task-rewards-compact">
           ${task.points > 0 ? `<span class="reward-points">+${task.points}p</span>` : ''}
-          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}c</span>` : ''}
+          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
           ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}p</span>` : ''}
         </div>
         <div class="task-actions-compact">
@@ -3539,7 +3539,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             <span class="validation-child">${childName}</span>
             <span class="validation-rewards">
               ${task.points !== 0 ? `${task.points > 0 ? '+' : ''}${task.points}p` : ''}
-              ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}c` : ''}
+              ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}🪙` : ''}
               ${task.penalty_points ? ` ${task.penalty_points}p` : ''}
             </span>
             <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
@@ -4868,18 +4868,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           align-items: center;
           padding: 40px;
           color: var(--secondary-text-color, #757575);
-        }
-        
-        /* Tablette */
-        @media (max-width: 1024px) and (min-width: 769px) {
-          .child-card, .reward-card {
-            padding: 14px;
-            padding-bottom: 50px;
-          }
-          .child-card .task-actions, .reward-card .task-actions {
-            right: 8px;
-            bottom: 8px;
-          }
         }
         
         /* Téléphone */
@@ -7007,7 +6995,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                     ${task.penalty_points > 0 ? `<div><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} points</span></div>` : ''}
                     ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
                   ` : `
-                    ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
+                    ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}🪙` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
                 </div>
               </div>
@@ -7230,7 +7218,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} points</span></div>` : ''}
               ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
             ` : `
-              ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}c` : ''}
+              ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}🪙` : ''}
             `}
           </div>
         </div>
@@ -7353,7 +7341,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             </div>
             <div class="reward-name">${reward.name}</div>
             <div class="reward-price">
-              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}c` : ''}
+              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}🪙` : ''}
               ${reward.cost === 0 && reward.coin_cost === 0 ? 'Gratuit' : ''}
             </div>
             ${reward.min_level && reward.min_level > 1 ? `<div class="reward-level">Niveau ${reward.min_level}+</div>` : ''}
@@ -7368,7 +7356,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             </div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
             <div class="reward-price" style="opacity: 0.5">
-              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}c` : ''}
+              ${reward.cost > 0 ? `${reward.cost}p` : ''}${reward.coin_cost > 0 ? `${reward.cost > 0 ? ' + ' : ''}${reward.coin_cost}🪙` : ''}
               ${reward.cost === 0 && reward.coin_cost === 0 ? 'Gratuit' : ''}
             </div>
             ${reward.min_level && reward.min_level > 1 ? `<div class="reward-level" style="opacity: 0.5">Niveau ${reward.min_level}+</div>` : ''}

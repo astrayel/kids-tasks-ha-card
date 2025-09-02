@@ -50,7 +50,10 @@
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks/**)",
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks/**)",
       "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks/**)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha/**)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks/**)",
+      "Read(C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\Kids-task-ha\\custom_components\\kids_tasks/**)"
     ],
     "deny": [],
     "ask": []
