@@ -249,7 +249,7 @@ class KidsTasksBaseCard extends HTMLElement {
         --kt-status-validated: var(--kt-success);
         --kt-status-failed: var(--kt-error);
         
-        /* Monnaies et 🎫 */
+        /* Monnaies et points */
         --kt-points-color: var(--kt-success);
         --kt-coins-color: #9C27B0;
         --kt-penalty-color: var(--kt-error);
@@ -1124,7 +1124,7 @@ class KidsTasksBaseCard extends HTMLElement {
           children.push({
             id: entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
             name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
-            🎫: parseInt(entity.state) || 0,
+            points: parseInt(entity.state) || 0,
             coins: parseInt(entity.attributes.coins) || 0,
             level: entity.attributes.level || 1,
             // Attributs supplémentaires pour compatibilité avec carte parent
@@ -1153,26 +1153,26 @@ class KidsTasksBaseCard extends HTMLElement {
     
     try {
       const name = child.name || 'Enfant sans nom';
-      const 🎫 = child.points || 0;
+      const points = child.points || 0;
       const coins = child.coins || 0;
       const level = child.level || 1;
       const progress = ((points % 100) / 100) * 100;
-      const 🎫ToNext = (100 - (points % 100));
+      const pointsToNext = (100 - (points % 100));
       
       // Calculer les statistiques comme la carte enfant
-      const 🎫InCurrentLevel = 🎫 % 100;
-      const 🎫ToNextLevel = 100;
-      const totalPoints = 🎫;
+      const pointsInCurrentLevel = points % 100;
+      const pointsToNextLevel = 100;
+      const totalPoints = points;
       
       const stats = {
         level: level,
-        🎫: 🎫,
+        points: points,
         coins: coins,
         progress: progress,
-        🎫ToNext: 🎫ToNext,
+        pointsToNext: pointsToNext,
         totalPoints: totalPoints,
-        🎫InCurrentLevel: 🎫InCurrentLevel,
-        🎫ToNextLevel: 🎫ToNextLevel,
+        pointsInCurrentLevel: pointsInCurrentLevel,
+        pointsToNextLevel: pointsToNextLevel,
         completedTasks: 0,
         totalTasksToday: 0
       };
@@ -1294,12 +1294,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     Object.keys(entities).forEach(entityId => {
       if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
-        const 🎫Entity = entities[entityId];
-        if (pointsEntity && 🎫Entity.attributes && 🎫Entity.state !== 'unavailable') {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
           children.push({
-            id: 🎫Entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
-            state: 🎫Entity.state,
-            attributes: 🎫Entity.attributes
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
+            state: pointsEntity.state,
+            attributes: pointsEntity.attributes
           });
         }
       }
@@ -1858,7 +1858,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const icon = form.querySelector('[name="icon"]').value || null;
     const categorySelect = form.querySelector('[name="category"]');
     const category = categorySelect.value || categorySelect.getAttribute('value') || 'other';
-    const 🎫 = parseInt(form.querySelector('[name="points"]').value);
+    const points = parseInt(form.querySelector('[name="points"]').value);
     const coins = parseInt(form.querySelector('[name="coins"]').value) || 0;
     const frequencySelect = form.querySelector('[name="frequency"]');
     const frequency = frequencySelect.value || frequencySelect.getAttribute('value') || 'daily';
@@ -1886,7 +1886,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       description,
       category,
       icon,
-      🎫,
+      points,
       frequency,
       validation_required
     };
@@ -2592,7 +2592,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           // Afficher/masquer la section des jours (seulement pour daily)
           weeklyDaysSection.style.display = isDaily ? 'block' : 'none';
           
-          // Masquer les 🎫 de pénalité et l'heure limite pour les tâches bonus
+          // Masquer les points de pénalité et l'heure limite pour les tâches bonus
           if (penaltyPointsField) {
             penaltyPointsField.style.display = isBonus ? 'none' : 'block';
           }
@@ -2759,31 +2759,31 @@ class KidsTasksCard extends KidsTasksBaseCard {
     Object.keys(entities).forEach(entityId => {
       // Chercher UNIQUEMENT les entités avec le nouveau format kidtasks_
       if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
-        const 🎫Entity = entities[entityId];
+        const pointsEntity = entities[entityId];
         
-        if (pointsEntity && 🎫Entity.attributes && 🎫Entity.state !== 'unavailable') {
-          const 🎫 = parseInt(pointsEntity.state) || 0;
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
+          const points = parseInt(pointsEntity.state) || 0;
           const coins = parseInt(pointsEntity.attributes.coins) || 0;
           const level = parseInt(pointsEntity.attributes.level) || 1;
           const progress = ((points % 100) / 100) * 100;
           
           // Extraire l'ID et le nom depuis le nouveau format kidtasks_
-          const childId = 🎫Entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
-          const childName = 🎫Entity.attributes.name || 🎫Entity.attributes.friendly_name?.replace(' Points', '') || childId;
+          const childId = pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+          const childName = pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || childId;
           
           children.push({
             id: childId,
             name: childName,
-            🎫: 🎫,
+            points: points,
             coins: coins,
             level: level,
             progress: progress,
-            avatar: 🎫Entity.attributes.avatar || '👶',
-            person_entity_id: 🎫Entity.attributes.person_entity_id,
-            avatar_type: 🎫Entity.attributes.avatar_type || 'emoji',
-            avatar_data: 🎫Entity.attributes.avatar_data,
-            card_gradient_start: 🎫Entity.attributes.card_gradient_start,
-            card_gradient_end: 🎫Entity.attributes.card_gradient_end
+            avatar: pointsEntity.attributes.avatar || '👶',
+            person_entity_id: pointsEntity.attributes.person_entity_id,
+            avatar_type: pointsEntity.attributes.avatar_type || 'emoji',
+            avatar_data: pointsEntity.attributes.avatar_data,
+            card_gradient_start: pointsEntity.attributes.card_gradient_start,
+            card_gradient_end: pointsEntity.attributes.card_gradient_end
           });
         }
       }
@@ -2891,7 +2891,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             description: attrs.description || '',
             category: attrs.category || 'other',
             icon: attrs.icon,
-            🎫: parseInt(attrs.points) || 10,
+            points: parseInt(attrs.points) || 10,
             coins: parseInt(attrs.coins) || 0,
             frequency: attrs.frequency || 'daily',
             status: taskEntity.state || 'todo',
@@ -3420,8 +3420,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
   calculateChildStats(child, tasks) {
     const totalPoints = child.points || 0;
     const level = child.level || 1;
-    const 🎫ToNextLevel = level * 100;
-    const 🎫InCurrentLevel = totalPoints % 100;
+    const pointsToNextLevel = level * 100;
+    const pointsInCurrentLevel = totalPoints % 100;
     
     // Calculer les tâches actives aujourd'hui (similaire à getChildStats)
     const today = new Date();
@@ -3438,8 +3438,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return {
       totalPoints,
       level,
-      🎫InCurrentLevel,
-      🎫ToNextLevel,
+      pointsInCurrentLevel,
+      pointsToNextLevel,
       activeTasks: activeTasks.length,
       completedTasks: completedTasks.length,
       totalTasksToday: activeTasks.length + completedTasks.length
@@ -3720,7 +3720,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const childTextColor = this.config?.child_text_color || '#ffffff';
     const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
     const progressBarColor = this.config?.progress_bar_color || 'var(--kt-success)';
-    const 🎫BadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
+    const pointsBadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
     const iconColor = this.config?.icon_color || '#757575';
 
     
@@ -5458,7 +5458,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     const childTextInput = this.shadowRoot.getElementById('child-text-input');
     const buttonHoverInput = this.shadowRoot.getElementById('button-hover-input');
     const progressBarInput = this.shadowRoot.getElementById('progress-bar-input');
-    const 🎫BadgeInput = this.shadowRoot.getElementById('points-badge-input');
+    const pointsBadgeInput = this.shadowRoot.getElementById('points-badge-input');
     const iconColorInput = this.shadowRoot.getElementById('icon-color-input');
     const childPreview = this.shadowRoot.getElementById('child-preview');
     
@@ -5565,9 +5565,9 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     }
     
     if (pointsBadgeInput) {
-      🎫BadgeInput.addEventListener('input', (ev) => {
+      pointsBadgeInput.addEventListener('input', (ev) => {
         if (!this.config) return;
-        this.config = { ...this.config, 🎫_badge_color: ev.target.value };
+        this.config = { ...this.config, points_badge_color: ev.target.value };
         this.fireConfigChanged(this.config);
       });
     }
@@ -5734,8 +5734,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     const entities = this._hass.states;
     
-    // Chercher l'entité de 🎫 de cet enfant (nouveau format KT_ ou ancien)
-    const 🎫Entity = Object.values(entities).find(entity => 
+    // Chercher l'entité de points de cet enfant (nouveau format KT_ ou ancien)
+    const pointsEntity = Object.values(entities).find(entity => 
       entity.attributes && 
       (entity.attributes.type === 'child' || entity.entity_id?.startsWith('sensor.KT_')) &&
       entity.attributes.child_id === this.config.child_id
@@ -5743,25 +5743,25 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     if (!pointsEntity) return null;
 
-    const 🎫 = parseInt(pointsEntity.state) || 0;
+    const points = parseInt(pointsEntity.state) || 0;
     const coins = parseInt(pointsEntity.attributes.coins) || 0;
     const level = parseInt(pointsEntity.attributes.level) || 1;
     const progress = ((points % 100) / 100) * 100;
 
     return {
       id: this.config.child_id,
-      name: 🎫Entity.attributes.name || 🎫Entity.attributes.friendly_name?.replace(' Points', '') || 'Enfant',
-      🎫: 🎫,
+      name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || 'Enfant',
+      points: points,
       coins: coins,
       level: level,
       progress: progress,
-      avatar: 🎫Entity.attributes.avatar || '👶',
-      🎫ToNext: 🎫Entity.attributes.points_to_next_level || (100 - (points % 100)),
-      card_gradient_start: 🎫Entity.attributes.card_gradient_start,
-      card_gradient_end: 🎫Entity.attributes.card_gradient_end,
-      avatar_type: 🎫Entity.attributes.avatar_type || 'emoji',
-      avatar_data: 🎫Entity.attributes.avatar_data,
-      person_entity_id: 🎫Entity.attributes.person_entity_id
+      avatar: pointsEntity.attributes.avatar || '👶',
+      pointsToNext: pointsEntity.attributes.points_to_next_level || (100 - (points % 100)),
+      card_gradient_start: pointsEntity.attributes.card_gradient_start,
+      card_gradient_end: pointsEntity.attributes.card_gradient_end,
+      avatar_type: pointsEntity.attributes.avatar_type || 'emoji',
+      avatar_data: pointsEntity.attributes.avatar_data,
+      person_entity_id: pointsEntity.attributes.person_entity_id
     };
   }
 
@@ -5816,7 +5816,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               name: attrs.task_name || attrs.friendly_name || 'Tâche',
               description: attrs.description || '',
               category: attrs.category || 'other',
-              🎫: parseInt(attrs.points) || 10,
+              points: parseInt(attrs.points) || 10,
               coins: parseInt(attrs.coins) || 0,
               penalty_points: parseInt(attrs.penalty_points) || 0,
               status: childStatus,
@@ -5945,7 +5945,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   shouldUpdate(oldHass, newHass) {
     if (!oldHass) return true;
     
-    // Vérifier si les données de l'enfant ont changé (entité 🎫)
+    // Vérifier si les données de l'enfant ont changé (entité points)
     const oldChildEntity = oldHass.states[`sensor.kidtasks_${this.config.child_id}_points`];
     const newChildEntity = newHass.states[`sensor.kidtasks_${this.config.child_id}_points`];
     
@@ -6128,7 +6128,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           children.push({
             id: entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
             name: entity.attributes.name || entity.attributes.friendly_name || 'Enfant',
-            🎫: parseInt(entity.state) || 0,
+            points: parseInt(entity.state) || 0,
             coins: parseInt(entity.attributes.coins) || 0,
             level: entity.attributes.level || 1
           });
@@ -6194,8 +6194,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   getChildStats(child, tasks) {
     const totalPoints = child.points || 0;
     const level = child.level || 1;
-    const 🎫ToNextLevel = level * 100;
-    const 🎫InCurrentLevel = totalPoints % 100;
+    const pointsToNextLevel = level * 100;
+    const pointsInCurrentLevel = totalPoints % 100;
     
     // Calculer les tâches de la période actuelle
     const activeTasks = tasks.filter(task => 
@@ -6215,8 +6215,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return {
       totalPoints,
       level,
-      🎫InCurrentLevel,
-      🎫ToNextLevel,
+      pointsInCurrentLevel,
+      pointsToNextLevel,
       activeTasks: activeTasks.length,
       completedTasks: completedTasks.length,
       pendingTasks: pendingTasks.length,
@@ -7135,7 +7135,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               description: task.description,
               icon: task.icon,
               category: task.category,
-              🎫: task.points,
+              points: task.points,
               frequency: 'none',
               status: 'validated',
               last_completed_at: validation.completed_at,
@@ -7152,7 +7152,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             description: task.description,
             icon: task.icon,
             category: task.category,
-            🎫: task.points,
+            points: task.points,
             frequency: 'none',
             status: 'validated',
             last_completed_at: childStatus.completed_at,
@@ -7774,11 +7774,11 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
     
     Object.keys(entities).forEach(entityId => {
       if (entityId.endsWith('_points')) {
-        const 🎫Entity = entities[entityId];
-        if (pointsEntity && 🎫Entity.attributes && 🎫Entity.attributes.type === 'child') {
+        const pointsEntity = entities[entityId];
+        if (pointsEntity && pointsEntity.attributes && pointsEntity.attributes.type === 'child') {
           children.push({
-            id: 🎫Entity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
-            name: 🎫Entity.attributes.name || 🎫Entity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
+            id: pointsEntity.attributes.child_id || entityId.replace('sensor.', '').replace('_points', ''),
+            name: pointsEntity.attributes.name || pointsEntity.attributes.friendly_name?.replace(' Points', '') || entityId.replace('sensor.', '').replace('_points', ''),
           });
         }
       }
