@@ -978,121 +978,12 @@ class KidsTasksBaseCard extends HTMLElement {
         box-shadow: 0 4px 12px var(--kt-shadow-medium);
       }
       
-      /* === CARTES ENFANTS DASHBOARD (COMPACTES ET CARRÉES) === */
+      /* === GRID DASHBOARD 2 COLONNES === */
       .children-dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: var(--kt-space-md);
         margin-top: var(--kt-space-md);
-      }
-      
-      .child-card.dashboard {
-        border-radius: var(--kt-radius-lg);
-        padding: var(--kt-space-md);
-        box-shadow: var(--kt-shadow-light);
-        border: var(--kt-border-thin);
-        transition: all var(--kt-transition-fast);
-        aspect-ratio: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 160px;
-      }
-      
-      .child-card.dashboard:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--kt-shadow-medium);
-      }
-      
-      .dashboard-header {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-sm);
-        margin-bottom: var(--kt-space-sm);
-      }
-      
-      .avatar-compact {
-        font-size: 2em;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      
-      .child-info-compact {
-        flex: 1;
-        min-width: 0;
-      }
-      
-      .child-name-compact {
-        font-size: 1.1em;
-        font-weight: 700;
-        color: white;
-        line-height: 1.2;
-        word-wrap: break-word;
-        margin-bottom: 2px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
-      .level-compact {
-        font-size: 0.8em;
-        color: rgba(255,255,255,0.9);
-        font-weight: 500;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
-      .gauges-compact {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .progress-bar-compact {
-        position: relative;
-        height: 20px;
-        background: rgba(0,0,0,0.2);
-        border-radius: var(--kt-radius-md);
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.3);
-      }
-      
-      .progress-fill-compact {
-        height: 100%;
-        background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
-        transition: width 0.3s ease;
-        border-radius: var(--kt-radius-md);
-      }
-      
-      .progress-text-compact {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75em;
-        font-weight: 600;
-        color: rgba(0,0,0,0.8);
-        text-shadow: 0 1px 1px rgba(255,255,255,0.5);
-      }
-      
-      .coins-display-compact {
-        text-align: center;
-        padding: var(--kt-space-xs);
-        background: rgba(0,0,0,0.2);
-        border-radius: var(--kt-radius-md);
-        border: 1px solid rgba(255,255,255,0.3);
-      }
-      
-      .coin-text-compact {
-        font-size: 0.9em;
-        font-weight: 600;
-        color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
       .child-name-header {
@@ -1378,55 +1269,6 @@ class KidsTasksBaseCard extends HTMLElement {
     }
   }
 
-  renderDashboardChildCard(child) {
-    // Protection contre les enfants undefined/null
-    if (!child) {
-      return '<div class="child-card dashboard"><div class="error">Erreur: enfant non trouvé</div></div>';
-    }
-    
-    try {
-      const name = child.name || 'Enfant sans nom';
-      const points = child.points || 0;
-      const coins = child.coins || 0;
-      const level = child.level || 1;
-      const progress = ((points % 100) / 100) * 100;
-
-      // Utiliser les couleurs de gradient personnalisées de l'enfant
-      const gradientStart = child.card_gradient_start || '#3f51b5';
-      const gradientEnd = child.card_gradient_end || '#ff4081';
-
-      return `
-        <div class="child-card dashboard" data-child-id="${child.id || 'unknown'}" 
-             style="background: linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%);">
-          <!-- Header compact avec avatar et nom -->
-          <div class="dashboard-header">
-            <div class="avatar-compact">${this.getEffectiveAvatar(child, 'normal')}</div>
-            <div class="child-info-compact">
-              <div class="child-name-compact">${name}</div>
-              <div class="level-compact">Niveau ${level}</div>
-            </div>
-          </div>
-          
-          <!-- Jauges compactes -->
-          <div class="gauges-compact">
-            <!-- Barre de points vers prochain niveau -->
-            <div class="progress-bar-compact">
-              <div class="progress-fill-compact" style="width: ${progress}%"></div>
-              <div class="progress-text-compact">${points % 100}/100 🎫</div>
-            </div>
-            
-            <!-- Coins -->
-            <div class="coins-display-compact">
-              <span class="coin-text-compact">${coins} 🪙</span>
-            </div>
-          </div>
-        </div>
-      `;
-    } catch (error) {
-      console.error('Erreur dans renderDashboardChildCard:', error, 'Child data:', child);
-      return `<div class="child-card dashboard"><div class="error">Erreur rendu: ${error.message}</div></div>`;
-    }
-  }
 
   getStyles() {
     return `<style>
@@ -3412,12 +3254,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
             ${children.map((child, index) => {
               try {
                 console.log(`Rendu enfant ${index}:`, child);
-                const result = this.renderDashboardChildCard(child);
+                const result = this.renderUnifiedChildCard(child, false, false);
                 console.log(`Rendu enfant ${index} réussi`);
                 return result;
               } catch (error) {
                 console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
-                return `<div class="child-card dashboard"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
+                return `<div class="child-card unified"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
               }
             }).join('')}
           </div>
@@ -5134,46 +4976,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
           
-          /* Optimisation des cartes compactes pour mobile */
+          /* Optimisation dashboard pour mobile */
           .children-dashboard-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: var(--kt-space-sm);
-          }
-          
-          .child-card.dashboard {
-            min-height: 140px;
-            padding: var(--kt-space-sm);
-          }
-          
-          .dashboard-header {
-            gap: var(--kt-space-xs);
-            margin-bottom: var(--kt-space-xs);
-          }
-          
-          .avatar-compact {
-            font-size: 1.6em;
-            width: 40px;
-            height: 40px;
-          }
-          
-          .child-name-compact {
-            font-size: 1em;
-          }
-          
-          .level-compact {
-            font-size: 0.75em;
-          }
-          
-          .progress-bar-compact {
-            height: 16px;
-          }
-          
-          .progress-text-compact {
-            font-size: 0.7em;
-          }
-          
-          .coin-text-compact {
-            font-size: 0.8em;
           }
           
           /* Stats compactes sur mobile - FORCER une seule ligne */
