@@ -2588,7 +2588,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     setTimeout(() => {
       const frequencySelect = dialog.querySelector('[name="frequency"]');
       const weeklyDaysSection = dialog.querySelector('.weekly-days-section');
-      const penaltyPointsField = dialog.querySelector('[name="penalty_points"]')?.parentElement;
+      const penaltyPointsField = dialog.querySelector('[name="penalty_points"]');
       const deadlineTimeField = dialog.querySelector('[name="deadline_time"]')?.parentElement;
       
       if (frequencySelect && weeklyDaysSection) {
