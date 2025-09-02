@@ -658,6 +658,17 @@ class KidsTasksBaseCard extends HTMLElement {
         justify-content: space-between;
       }
       
+      /* Réduire les jauges quand les actions sont présentes dans l'onglet enfant */
+      .child-card.unified.with-actions .gauges-section {
+        padding-right: 80px; /* Espace pour bouton Modifier + croix de suppression */
+        max-width: calc(100% - 80px);
+      }
+      
+      .child-card.unified.with-actions .gauge-bar,
+      .child-card.unified.with-actions .gauge-bar-compact {
+        max-width: 100%; /* S'assurer que les barres respectent la contrainte */
+      }
+      
       /* Stats et métriques */
       .stats-grid {
         display: grid;
@@ -1233,7 +1244,7 @@ class KidsTasksBaseCard extends HTMLElement {
       };
 
       return `
-        <div class="child-card unified" data-child-id="${child.id || 'unknown'}">
+        <div class="child-card unified ${showActions ? 'with-actions' : ''}" data-child-id="${child.id || 'unknown'}">
           ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
           ${showActions ? '<div class="child-border"></div>' : ''}
           ${showActions ? `<button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">×</button>` : ''}
