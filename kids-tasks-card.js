@@ -130,7 +130,7 @@ class KidsTasksBaseCard extends HTMLElement {
     const avatarType = child.avatar_type || 'emoji';
     
     if (avatarType === 'emoji') {
-      return child.avatar || '👶';
+      return child.avatar || '👶' ;
     } else if (avatarType === 'url' && child.avatar_data) {
       const size = '4em';
       return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
