@@ -1567,7 +1567,7 @@ class KidsTasksBaseCard extends HTMLElement {
               <div class="kt-avatar-section">
                 <div class="kt-child-name-header">${name}</div>
                 <div class="kt-avatar-container">
-                  <div class="kt-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                  <div class="kt-avatar kt-avatar--large">${this.getEffectiveAvatar(child, 'large')}</div>
                   <div class="kt-level-badge kt-level-badge--child-card">Niveau ${level}</div>
                 </div>
               </div>
@@ -2883,7 +2883,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             <div class="kt-avatar-section">
               <div class="kt-child-name-header">${child.name}</div>
               <div class="kt-avatar-container">
-                <div class="kt-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                <div class="kt-avatar kt-avatar--large">${this.getEffectiveAvatar(child, 'large')}</div>
                 <div class="kt-level-badge kt-level-badge--modal">Niveau ${child.level || 1}</div>
               </div>
             </div>
