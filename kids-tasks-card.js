@@ -823,7 +823,6 @@ class KidsTasksBaseCard extends HTMLElement {
       .notification.info { background: var(--kt-notification-info); }
       
       /* === UTILITAIRES === */
-      
       .loading {
         display: flex;
         align-items: center;
@@ -927,7 +926,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .entry-title {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
       }
 
       .entry-content {
@@ -2387,6 +2386,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
           color: var(--primary-text-color, #212121);
           user-select: none;
         }
+
+        .child-info {
+          display: flex;
+          flex-direction: column;
+        }
         
         /* Styles pour la section des jours de la semaine */
         .weekly-days-section, .children-section {
@@ -2462,6 +2466,28 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         /* Styles avatar spécifiques aux modales */
+        .child-avatar { 
+          font-size: 2.5em; 
+          margin-right: 16px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          min-width: 3em;
+          min-height: 3em;
+          flex-shrink: 0;
+          padding-top: 8px;
+          height: 100%;
+          pointer-events: none;
+        }
+        .child-avatar img {
+          width: 3em !important;
+          height: 3em !important;
+          border-radius: var(--kt-radius-round) !important;
+          object-fit: cover !important;
+          border: 2px solid var(--kt-cosmetic-background);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
+        }
         .avatar-options { 
           display: flex; 
           gap: 8px; 
