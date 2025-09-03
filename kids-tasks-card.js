@@ -704,6 +704,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .stat-info.compact .stat-number {
         font-size: 1.1em;
         margin-bottom: 2px;
+        line-height: 1.2;
       }
       
       .stat-info.compact .stat-label {
@@ -722,7 +723,13 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .stat-icon { font-size: 2em; margin-bottom: var(--kt-space-sm); }
-      .stat-number { font-size: 1.8em; font-weight: bold; color: var(--primary-text-color, #212121); }
+      .stat-number { 
+        font-size: 1.8em; 
+        font-weight: bold; 
+        color: var(--primary-text-color, #212121);
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
       .stat-label { color: var(--secondary-text-color, #757575); font-size: var(--kt-font-size-sm); }
       
       /* === COSMÉTIQUES === */
@@ -1878,6 +1885,15 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
+    } else {
+      // En mode édition, récupérer les valeurs niveau, points et coins
+      const level = parseInt(form.querySelector('[name="level"]')?.value || '1');
+      const points = parseInt(form.querySelector('[name="points"]')?.value || '0');
+      const coins = parseInt(form.querySelector('[name="coins"]')?.value || '0');
+      
+      serviceData.level = level;
+      serviceData.points = points;
+      serviceData.coins = coins;
     }
 
     try {
@@ -2263,11 +2279,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             flex-direction: column;
             gap: 16px;
           }
-           
-          .dialog-actions {
-            flex-direction: column-reverse;
-            gap: 8px;
-          }
           
           .form-row {
             flex-direction: column;
@@ -2417,7 +2428,34 @@ class KidsTasksCard extends KidsTasksBaseCard {
             min="0"
             max="1000">
           </ha-textfield>
-        ` : ''}
+        ` : `
+          <div class="form-row">
+            <ha-textfield
+              label="Niveau"
+              name="level"
+              type="number"
+              value="${child.level || 1}"
+              min="1"
+              max="100">
+            </ha-textfield>
+            <ha-textfield
+              label="Points"
+              name="points"
+              type="number"
+              value="${child.points || 0}"
+              min="0"
+              max="10000">
+            </ha-textfield>
+            <ha-textfield
+              label="Coins 🪙"
+              name="coins"
+              type="number"
+              value="${child.coins || 0}"
+              min="0"
+              max="1000">
+            </ha-textfield>
+          </div>
+        `}
 
         <div class="dialog-actions">
           <ha-button onclick="this.closest('ha-dialog').close()">Annuler</ha-button>
@@ -3922,6 +3960,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-size: 1.8em;
           font-weight: bold;
           color: var(--primary-text-color, #212121);
+          line-height: 1.2;
+          margin-bottom: 4px;
         }
         .stat-label { 
           color: var(--secondary-text-color, #757575); 
@@ -5012,7 +5052,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           .stat-card.compact .stat-info.compact .stat-number {
             font-size: 0.9em;
-            line-height: 1;
+            line-height: 1.2;
+            margin-bottom: 2px;
           }
           
           .stat-card.compact .stat-info.compact .stat-label {
