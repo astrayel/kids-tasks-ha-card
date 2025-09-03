@@ -440,14 +440,6 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-top: var(--kt-space-xl);
       }
       
-      /* Base level badge styles */
-      .level-badge {
-        border-radius: var(--kt-radius-md);
-        font-size: 0.8em;
-        font-weight: 600;
-        text-align: center;
-        z-index: 2;
-      }
 
       /* Classes utilitaires pour styles inline répétitifs */
       .avatar-placeholder {
@@ -765,38 +757,6 @@ class KidsTasksBaseCard extends HTMLElement {
         font-size: 3em;
       }
       
-      .avatar-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .avatar {
-        font-size: 3em;
-        margin-bottom: 8px;
-        border-radius: var(--kt-radius-round);
-        background: var(--kt-cosmetic-background);
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 3px dashed var(--kt-cosmetic-background);
-      }
-      
-      .avatar img {
-        width: 80px !important;
-        height: 80px !important;
-        border-radius: var(--kt-radius-round) !important;
-      }
-
-      .avatar-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 80px;
-        }
 
       .pixel-art-preview {
         max-width: 64px;
@@ -1144,14 +1104,6 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-top: var(--kt-space-md);
       }
       
-      .child-name-header {
-          font-size: 1.3em;
-          font-weight: 700;
-          text-align: center;
-          margin: 0 0 12px 0;
-          color: var(--custom-child-text-color, var(--header-text-color));
-          text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
 
 
       .child-border {
@@ -1177,6 +1129,227 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .drag-handle:active {
         cursor: grabbing;
+      }
+
+      /* === COMPOSANTS CSS RÉUTILISABLES === */
+      
+      /* Composant Avatar Section - Structure de base pour avatar + nom */
+      .kt-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+      }
+      
+      /* Modificateurs de taille pour avatar-section */
+      .kt-avatar-section--compact {
+        min-width: 60px;
+      }
+      
+      .kt-avatar-section--large {
+        min-width: 100px;
+      }
+
+      /* Composant Avatar Container - Conteneur pour avatar + badge */
+      .kt-avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* Composant Avatar - Styles de base pour l'avatar */
+      .kt-avatar {
+        font-size: 3em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        position: relative;
+      }
+      
+      /* Modificateurs de taille pour avatar */
+      .kt-avatar--small {
+        font-size: 1.5em;
+      }
+      
+      .kt-avatar--normal {
+        font-size: 3em;
+      }
+      
+      .kt-avatar--large {
+        font-size: 4em;
+      }
+      
+      .kt-avatar--compact {
+        font-size: 2em;
+        margin-bottom: 4px;
+      }
+
+      /* Images dans l'avatar */
+      .kt-avatar img {
+        width: 1em !important;
+        height: 1em !important;
+        border-radius: var(--kt-radius-round) !important;
+        object-fit: cover !important;
+        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      /* Composant Child Name Header - En-tête nom d'enfant */
+      .kt-child-name-header {
+        font-size: 1.3em;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      /* Modificateurs pour child-name-header */
+      .kt-child-name-header--compact {
+        font-size: 1.1em;
+        margin: 0 0 8px 0;
+      }
+      
+      .kt-child-name-header--large {
+        font-size: 1.5em;
+        margin: 0 0 16px 0;
+      }
+
+      /* Composant Level Badge - Badge de niveau standardisé */
+      .kt-level-badge {
+        border-radius: var(--kt-radius-md);
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 12px;
+        min-width: 60px;
+        color: var(--primary-text-color, #333);
+      }
+      
+      /* Modificateurs contextuels pour level-badge */
+      .kt-level-badge--modal {
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--child-card {
+        position: absolute;
+        top: 72px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--compact {
+        font-size: 0.7em;
+        padding: 2px 8px;
+        min-width: 40px;
+      }
+
+      /* Composant Child Info - Conteneur d'informations enfant pour modales */
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+      }
+      
+      .kt-child-info--column {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-sm);
+      }
+
+      /* Composant Child Details - Détails complémentaires */
+      .kt-child-details {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-xs);
+      }
+      
+      /* Current Stats dans child-details */
+      .kt-child-details .current-stats {
+        display: flex;
+        gap: var(--kt-space-sm);
+        align-items: center;
+      }
+      
+      .kt-child-details .current-stats .stat {
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--secondary-text-color, #666);
+      }
+
+      /* === ALIAS DE COMPATIBILITÉ === */
+      /* Ces alias maintiennent la compatibilité avec le code existant */
+      /* À terme, ils pourront être supprimés quand toutes les références seront migrées */
+      
+      .avatar-section {
+        /* Alias vers les nouveaux composants */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+      }
+      
+      .avatar-container {
+        /* Alias vers le nouveau composant */
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .avatar {
+        /* Alias vers le nouveau composant */
+        font-size: 3em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        position: relative;
+      }
+      
+      .child-name-header {
+        /* Alias vers le nouveau composant */
+        font-size: 1.3em;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .level-badge {
+        /* Alias vers le nouveau composant avec style de base */
+        border-radius: var(--kt-radius-md);
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 12px;
+        min-width: 60px;
+        color: var(--primary-text-color, #333);
+      }
+      
+      .child-info {
+        /* Alias vers le nouveau composant */
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
       }
       
     `;
@@ -1400,11 +1573,11 @@ class KidsTasksBaseCard extends HTMLElement {
           <div class="child-border"></div>
           <div class="header">
             <div class="header-content">
-              <div class="avatar-section">
-                <div class="child-name-header">${name}</div>
-                <div class="avatar-container">
-                  <div class="avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
-                  <div class="level-badge">Niveau ${level}</div>
+              <div class="kt-avatar-section">
+                <div class="kt-child-name-header">${name}</div>
+                <div class="kt-avatar-container">
+                  <div class="kt-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                  <div class="kt-level-badge kt-level-badge--child-card">Niveau ${level}</div>
                 </div>
               </div>
               
@@ -1416,8 +1589,8 @@ class KidsTasksBaseCard extends HTMLElement {
           
           ${showActions ? `
             <div class="task-actions">
-              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
               <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
+              <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
             </div>
           ` : ''}
         </div>
@@ -2466,28 +2639,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         /* Styles avatar spécifiques aux modales */
-        .child-avatar { 
-          font-size: 2.5em; 
-          margin-right: 16px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center;
-          min-width: 3em;
-          min-height: 3em;
-          flex-shrink: 0;
-          padding-top: 8px;
-          height: 100%;
-          pointer-events: none;
-        }
-        .child-avatar img {
-          width: 3em !important;
-          height: 3em !important;
-          border-radius: var(--kt-radius-round) !important;
-          object-fit: cover !important;
-          border: 2px solid var(--kt-cosmetic-background);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          flex-shrink: 0;
-        }
         .avatar-options { 
           display: flex; 
           gap: 8px; 
@@ -2737,12 +2888,16 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const content = `
       <div class="child-history-container">
         <div class="history-header">
-          <div class="child-info">
-            <div class="child-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
-            <div class="child-details">
-              <h3>${child.name}</h3>
+          <div class="kt-child-info">
+            <div class="kt-avatar-section">
+              <div class="kt-child-name-header">${child.name}</div>
+              <div class="kt-avatar-container">
+                <div class="kt-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+                <div class="kt-level-badge kt-level-badge--modal">Niveau ${child.level || 1}</div>
+              </div>
+            </div>
+            <div class="kt-child-details">
               <div class="current-stats">
-                <span class="stat">Niveau ${child.level || 1}</span>
                 <span class="stat">${child.points || 0} 🎫</span>
                 <span class="stat">${child.coins || 0} 🪙</span>
               </div>
