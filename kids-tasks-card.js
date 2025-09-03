@@ -71,6 +71,297 @@ class KidsTasksBaseCard extends HTMLElement {
 
     dialog.innerHTML = `
       <div slot="content">
+        <style>
+          /* Styles spécifiques pour les modales ha-dialog */
+          ha-dialog {
+            max-height: 90vh;
+            overflow-y: auto;
+            --mdc-dialog-max-width: 800px;
+            --mdc-dialog-min-width: 600px;
+            z-index: 10001 !important;
+          }
+          
+          ha-select {
+            --mdc-menu-max-height: 480px;
+            --mdc-menu-max-width: 400px;
+          }
+          
+          ha-formfield {
+            display: block;
+          }
+          
+          /* Configuration des formulaires dans les modales */
+          .form-grid {
+            display: grid;
+            gap: var(--kt-space-md);
+            margin-bottom: var(--kt-space-lg);
+          }
+          
+          .form-row {
+            display: flex;
+            gap: var(--kt-space-md);
+            align-items: start;
+            margin-bottom: var(--kt-space-md);
+          }
+          
+          .form-row.full-width .form-group {
+            flex: 1;
+          }
+          
+          .form-row.half-width {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--kt-space-md);
+          }
+          
+          .form-group {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .form-group.full {
+            grid-column: 1 / -1;
+          }
+          
+          .form-label {
+            display: block;
+            margin-bottom: var(--kt-space-xs);
+            font-weight: 600;
+            color: var(--primary-text-color);
+          }
+          
+          .form-input {
+            width: 100%;
+            padding: var(--kt-space-sm);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--kt-radius-md);
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+          }
+          
+          .form-input:focus {
+            outline: none;
+            border-color: var(--kt-primary);
+            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+          }
+          
+          .form-select {
+            width: 100%;
+            padding: var(--kt-space-sm);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--kt-radius-md);
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            box-sizing: border-box;
+          }
+          
+          .form-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: var(--kt-space-sm);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--kt-radius-md);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+          }
+          
+          .form-checkbox {
+            margin-right: var(--kt-space-xs);
+          }
+          
+          .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-xs);
+            font-weight: normal;
+            cursor: pointer;
+          }
+          
+          .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--kt-space-sm);
+            margin-top: var(--kt-space-lg);
+            padding-top: var(--kt-space-lg);
+            border-top: 1px solid var(--divider-color);
+          }
+          
+          .btn {
+            padding: var(--kt-space-sm) var(--kt-space-md);
+            border: none;
+            border-radius: var(--kt-radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            min-height: 40px;
+          }
+          
+          .btn-primary {
+            background: var(--kt-primary);
+            color: white;
+          }
+          
+          .btn-primary:hover {
+            background: var(--kt-primary-dark);
+            transform: translateY(-1px);
+          }
+          
+          .btn-secondary {
+            background: var(--kt-surface);
+            color: var(--kt-on-surface);
+            border: 1px solid var(--kt-outline);
+          }
+          
+          .btn-secondary:hover {
+            background: var(--kt-surface-variant);
+          }
+          
+          /* Styles pour les grilles d'avatars */
+          .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: var(--kt-space-md);
+            max-height: 200px;
+            overflow-y: auto;
+            padding: var(--kt-space-sm);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--kt-radius-md);
+          }
+          
+          .avatar-option {
+            width: 60px;
+            height: 60px;
+            border: 2px solid transparent;
+            border-radius: var(--kt-radius-md);
+            background: var(--kt-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          
+          .avatar-option:hover {
+            border-color: var(--kt-primary);
+            background: var(--kt-surface-variant);
+          }
+          
+          .avatar-option.selected {
+            border-color: var(--kt-primary);
+            background: rgba(63, 81, 181, 0.1);
+          }
+          
+          /* Styles pour les listes de sélection multiple */
+          .checkbox-group {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--divider-color);
+            border-radius: var(--kt-radius-md);
+            padding: var(--kt-space-sm);
+          }
+          
+          .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-xs);
+            padding: var(--kt-space-xs) var(--kt-space-sm);
+            border-radius: var(--kt-radius-sm);
+            cursor: pointer;
+            margin-bottom: var(--kt-space-xs);
+          }
+          
+          .checkbox-item:hover {
+            background: var(--kt-surface-variant);
+          }
+          
+          .checkbox-item:last-child {
+            margin-bottom: 0;
+          }
+          
+          /* États de validation */
+          .form-error {
+            border-color: var(--kt-error) !important;
+            background: rgba(244, 67, 54, 0.05);
+          }
+          
+          .error-message {
+            color: var(--kt-error);
+            font-size: 12px;
+            margin-top: var(--kt-space-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-xs);
+          }
+          
+          .success-message {
+            color: var(--kt-success);
+            font-size: 12px;
+            margin-top: var(--kt-space-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-xs);
+          }
+          
+          /* Animation des boutons */
+          .btn-loading {
+            position: relative;
+            color: transparent !important;
+          }
+          
+          .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            color: white;
+          }
+          
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          
+          .form-help {
+            font-size: 12px;
+            color: var(--secondary-text-color);
+            margin-top: var(--kt-space-xs);
+          }
+          
+          /* Responsive */
+          @media (max-width: 768px) {
+            ha-dialog {
+              --mdc-dialog-max-width: 95vw;
+              --mdc-dialog-min-width: 300px;
+            }
+            
+            .form-row {
+              flex-direction: column;
+            }
+            
+            .form-row.half-width {
+              grid-template-columns: 1fr;
+            }
+          }
+          
+          /* Point d'amélioration spécifique */
+          .points-negative {
+            color: var(--kt-error);
+            background: rgba(244, 67, 54, 0.1);
+          }
+        </style>
         ${content}
       </div>
     `;
