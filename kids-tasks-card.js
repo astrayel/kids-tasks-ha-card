@@ -62,12 +62,8 @@ class KidsTasksBaseCard extends HTMLElement {
     });
     
     const dialog = document.createElement('ha-dialog');
-    dialog.setAttribute('open', '');
-    dialog.setAttribute('hide-actions', '');
-    
-    if (title) {
-      dialog.setAttribute('heading', title);
-    }
+    dialog.heading = title;
+    dialog.hideActions = true;
 
     dialog.innerHTML = `
       <div slot="content">
@@ -368,6 +364,9 @@ class KidsTasksBaseCard extends HTMLElement {
 
     dialog._cardInstance = this;
     document.body.appendChild(dialog);
+    
+    // Ouvrir la modale
+    dialog.show();
 
     dialog.addEventListener('closed', () => {
       this.closeModal(dialog);
