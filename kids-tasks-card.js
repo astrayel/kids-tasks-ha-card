@@ -2306,11 +2306,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             gap: 16px;
           }
           
-          .form-row {
-            flex-direction: column;
-            gap: 0;
-          }
-          
           .form-row > * {
             margin-bottom: 16px;
           }
