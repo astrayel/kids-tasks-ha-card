@@ -838,6 +838,163 @@ class KidsTasksBaseCard extends HTMLElement {
         color: var(--secondary-text-color, #757575);
       }
       
+      /* === INTERFACE HISTORIQUE === */
+      .child-history-container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .history-header {
+        padding: var(--kt-space-lg);
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        margin-bottom: var(--kt-space-lg);
+      }
+      
+      .child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+      }
+      
+      .child-avatar {
+        font-size: 3em;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        background: var(--kt-surface-variant);
+      }
+      
+      .child-details h3 {
+        margin: 0 0 var(--kt-space-sm) 0;
+        color: var(--primary-text-color, #212121);
+        font-size: 1.4em;
+      }
+      
+      .current-stats {
+        display: flex;
+        gap: var(--kt-space-md);
+      }
+      
+      .current-stats .stat {
+        background: var(--kt-surface-variant);
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        border-radius: var(--kt-radius-md);
+        font-size: 0.9em;
+        font-weight: 600;
+      }
+      
+      .history-content {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .history-entry {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+        padding: var(--kt-space-md);
+        background: var(--card-background-color, #fff);
+        border: var(--kt-border-thin);
+        border-radius: var(--kt-radius-lg);
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .history-entry:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--kt-shadow-light);
+      }
+      
+      .entry-icon {
+        font-size: 1.5em;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-round);
+        flex-shrink: 0;
+      }
+      
+      .entry-content {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .entry-description {
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+        margin-bottom: var(--kt-space-xs);
+        line-height: 1.3;
+      }
+      
+      .entry-details {
+        display: flex;
+        gap: var(--kt-space-md);
+        font-size: 0.85em;
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .entry-date {
+        font-weight: 500;
+      }
+      
+      .entry-type {
+        background: var(--kt-surface-variant);
+        padding: 2px var(--kt-space-xs);
+        border-radius: var(--kt-radius-sm);
+      }
+      
+      .entry-points {
+        font-weight: 700;
+        font-size: 1.1em;
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        border-radius: var(--kt-radius-md);
+        flex-shrink: 0;
+      }
+      
+      .entry-points.points-positive {
+        color: var(--kt-success);
+        background: rgba(76, 175, 80, 0.1);
+      }
+      
+      .entry-points.points-negative {
+        color: var(--kt-error);
+        background: rgba(244, 67, 54, 0.1);
+      }
+      
+      .empty-history {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .empty-icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+      
+      .history-btn {
+        background: var(--kt-info);
+        color: white;
+        border: 1px solid #2196f3;
+      }
+      
+      .history-btn:hover {
+        background: #1976d2;
+        transform: scale(1.05);
+      }
+      
       .section {
         margin: var(--kt-space-xl) 0;
       }
@@ -1263,6 +1420,7 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showActions ? `
             <div class="task-actions">
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
+              <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
             </div>
           ` : ''}
         </div>
@@ -1433,6 +1591,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         break;
       case 'edit-child':
         this.showChildForm(id);
+        break;
+      case 'show-child-history':
+        this.showChildHistory(id);
         break;
       case 'add-task':
         this.showTaskForm();
@@ -2506,6 +2667,140 @@ class KidsTasksCard extends KidsTasksBaseCard {
         });
       }
     }, 100);
+  }
+
+  async showChildHistory(childId) {
+    if (!childId) {
+      console.error('ID enfant manquant pour l\'affichage de l\'historique');
+      return;
+    }
+
+    // Récupérer les données de l'enfant
+    const children = this.getChildren();
+    const child = children.find(c => c.id === childId);
+    
+    if (!child) {
+      console.error(`Enfant avec l'ID ${childId} introuvable`);
+      return;
+    }
+
+    // Récupérer l'historique via le service backend
+    let historyData = [];
+    try {
+      await this._hass.callService('kids_tasks', 'get_child_history', {
+        child_id: childId,
+        limit: 20
+      });
+      
+      // Fallback to sensor data since services don't return data directly
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+      
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+      // Fallback to sensor if service fails
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+      
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    }
+
+    const content = `
+      <div class="child-history-container">
+        <div class="history-header">
+          <div class="child-info">
+            <div class="child-avatar">${this.getEffectiveAvatar(child, 'normal')}</div>
+            <div class="child-details">
+              <h3>${child.name}</h3>
+              <div class="current-stats">
+                <span class="stat">Niveau ${child.level || 1}</span>
+                <span class="stat">${child.points || 0} 🎫</span>
+                <span class="stat">${child.coins || 0} 🪙</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="history-content">
+          ${historyData.length > 0 ? `
+            <div class="history-list">
+              ${historyData.map(entry => this.renderHistoryEntry(entry)).join('')}
+            </div>
+          ` : `
+            <div class="empty-history">
+              <div class="empty-icon">📈</div>
+              <p>Aucun historique disponible</p>
+              <small>Les actions sur les points apparaîtront ici</small>
+            </div>
+          `}
+        </div>
+        
+        <div class="dialog-actions">
+          <ha-button onclick="this.closest('ha-dialog').close()">Fermer</ha-button>
+        </div>
+      </div>
+    `;
+
+    this.showModal(content, `Historique - ${child.name}`);
+  }
+
+  renderHistoryEntry(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'points-positive' : 'points-negative';
+    const actionIcon = this.getActionIcon(entry.action_type);
+
+    return `
+      <div class="history-entry">
+        <div class="entry-icon">${actionIcon}</div>
+        <div class="entry-content">
+          <div class="entry-description">${entry.description || 'Action inconnue'}</div>
+          <div class="entry-details">
+            <span class="entry-date">${dateStr} à ${timeStr}</span>
+            <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
+          </div>
+        </div>
+        <div class="entry-points ${pointsClass}">
+          ${pointsDisplay} 🎫
+        </div>
+      </div>
+    `;
+  }
+
+  getActionIcon(actionType) {
+    const icons = {
+      'task_completed': '✅',
+      'task_validated': '🎯',
+      'task_penalty': '⚠️',
+      'reward_claimed': '🏆',
+      'manual_adjustment': '⚙️',
+      'level_up': '📈',
+      'bonus_points': '🌟',
+      'default': '📊'
+    };
+    return icons[actionType] || icons['default'];
+  }
+
+  getActionTypeLabel(actionType) {
+    const labels = {
+      'task_completed': 'Tâche terminée',
+      'task_validated': 'Tâche validée',
+      'task_penalty': 'Pénalité',
+      'reward_claimed': 'Récompense',
+      'manual_adjustment': 'Ajustement',
+      'level_up': 'Montée niveau',
+      'bonus_points': 'Points bonus',
+      'default': 'Autre'
+    };
+    return labels[actionType] || labels['default'];
   }
 
   showTaskForm(taskId = null) {
