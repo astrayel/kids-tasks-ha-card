@@ -699,16 +699,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .stat-info.compact {
         text-align: left;
-      }
-      
-      .stat-info.compact .stat-number {
-        font-size: 1.1em;
-        margin-bottom: 2px;
-        line-height: 1.2;
-      }
-      
-      .stat-info.compact .stat-label {
-        font-size: 0.8em;
+        font-size: var(--kt-font-size-sm);
       }
       
       .stat-item {
@@ -3327,29 +3318,25 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="stat-card compact">
             <div class="stat-icon small">👶</div>
             <div class="stat-info compact">
-              <div class="stat-number">${stats.totalChildren}</div>
-              <div class="stat-label">Enfant${stats.totalChildren > 1 ? 's' : ''}</div>
+              ${stats.totalChildren} Enfant${stats.totalChildren > 1 ? 's' : ''}
             </div>
           </div>
           <div class="stat-card compact">
             <div class="stat-icon small">📝</div>
             <div class="stat-info compact">
-              <div class="stat-number">${stats.totalTasks}</div>
-              <div class="stat-label">Tâches créées</div>
+              ${stats.totalTasks} tâches
             </div>
           </div>
           <div class="stat-card compact">
             <div class="stat-icon small">✅</div>
             <div class="stat-info compact">
-              <div class="stat-number">${stats.completedToday}</div>
-              <div class="stat-label">Terminées aujourd'hui</div>
+              ${stats.completedToday} finies<br>aujourd'hui
             </div>
           </div>
           <div class="stat-card compact clickable" data-action="switch-view" data-id="validation" title="Voir les tâches à valider">
             <div class="stat-icon small">⏳</div>
             <div class="stat-info compact">
-              <div class="stat-number">${stats.pendingValidation}</div>
-              <div class="stat-label">À valider</div>
+              ${stats.pendingValidation} à valider
             </div>
           </div>
         </div>
@@ -4055,9 +4042,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .drag-handle {
           position: absolute;
-          top: -2px;
-          left: 2px;
-          color: var(--secondary-text-color, #757575);
+          top: 20px;
+          left: 8px;
+          color: var(--secondary-text-color, --kt-success);
           font-size: 32px;
           line-height: 32px;
           cursor: grab;
@@ -5054,19 +5041,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             margin-bottom: 2px;
           }
           
-          .stat-card.compact .stat-info.compact .stat-number {
-            font-size: 0.9em;
-            line-height: 1.2;
-            margin-bottom: 2px;
-          }
-          
-          .stat-card.compact .stat-info.compact .stat-label {
-            font-size: 0.65em;
-            line-height: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: var(--kt-space-lg); }*/
           
