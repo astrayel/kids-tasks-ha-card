@@ -1242,7 +1242,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .kt-level-badge--child-card {
         position: absolute;
-        top: 72px;
+        bottom: -8px;
         left: 50%;
         transform: translateX(-50%);
         background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
@@ -1310,16 +1310,7 @@ class KidsTasksBaseCard extends HTMLElement {
         align-items: center;
       }
       
-      .avatar {
-        /* Alias vers le nouveau composant */
-        font-size: 3em;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--kt-radius-round);
-        position: relative;
-      }
+      /* .avatar supprimé - utiliser .kt-avatar à la place */
       
       .child-name-header {
         /* Alias vers le nouveau composant */
@@ -6688,11 +6679,11 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         <div class="header">
           <div class="header-content">
             ${this.config.show_avatar ? `
-            <div class="avatar-section">
-              <div class="child-name-header">${child.name}</div>
-              <div class="avatar-container">
-                <div class="avatar">${this.getEffectiveAvatar(child, 'large')}</div>
-                <div class="level-badge">Niveau ${stats.level}</div>
+            <div class="kt-avatar-section">
+              <div class="kt-child-name-header">${child.name}</div>
+              <div class="kt-avatar-container">
+                <div class="kt-avatar kt-avatar--large">${this.getEffectiveAvatar(child, 'large')}</div>
+                <div class="kt-level-badge kt-level-badge--child-card">Niveau ${stats.level}</div>
                 <!-- Placeholder pour avatar cosmétique -->
                 <!--<div class="cosmetic-avatar-placeholder"></div>-->
               </div>
