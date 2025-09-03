@@ -1885,26 +1885,52 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
-    } else {
-      // En mode édition, récupérer les valeurs niveau, points et coins
-      const level = parseInt(form.querySelector('[name="level"]')?.value || '1');
-      const points = parseInt(form.querySelector('[name="points"]')?.value || '0');
-      const coins = parseInt(form.querySelector('[name="coins"]')?.value || '0');
-      
-      serviceData.level = level;
-      serviceData.points = points;
-      serviceData.coins = coins;
     }
 
     try {
       if (isEdit) {
-        serviceData.child_id = form.querySelector('[name="child_id"]').value;
+        const childId = form.querySelector('[name="child_id"]').value;
+        serviceData.child_id = childId;
+        
+        // Récupérer les nouvelles valeurs pour niveau, points et coins
+        const newLevel = parseInt(form.querySelector('[name="level"]')?.value || '1');
+        const newPoints = parseInt(form.querySelector('[name="points"]')?.value || '0');
+        const newCoins = parseInt(form.querySelector('[name="coins"]')?.value || '0');
+        
+        // Trouver l'enfant actuel pour comparer les valeurs
+        const children = this.getChildren();
+        const currentChild = children.find(c => c.id === childId);
+        
         console.log('Calling update_child with:', serviceData);
         const success = await this.callService('kids_tasks', 'update_child', serviceData);
         console.log('update_child result:', success);
-        if (success) {
+        
+        if (success && currentChild) {
+          // Calculer la différence totale de points (incluant le changement de niveau)
+          let finalPointsDiff = newPoints - (currentChild.points || 0);
+          const coinsDiff = newCoins - (currentChild.coins || 0);
+          
+          // Si le niveau change, ajuster les points pour le nouveau niveau
+          const currentLevel = currentChild.level || 1;
+          if (newLevel !== currentLevel) {
+            // Calculer les points de base pour le nouveau niveau
+            const newLevelBasePoints = (newLevel - 1) * 100;
+            const currentLevelBasePoints = (currentLevel - 1) * 100;
+            const levelPointsDiff = newLevelBasePoints - currentLevelBasePoints;
+            finalPointsDiff += levelPointsDiff;
+          }
+          
+          // Appliquer les changements de points et coins
+          if (finalPointsDiff !== 0 || coinsDiff !== 0) {
+            console.log(`Adjusting currency: points=${finalPointsDiff}, coins=${coinsDiff}`);
+            await this.callService('kids_tasks', 'add_currency', {
+              child_id: childId,
+              points: finalPointsDiff,
+              coins: coinsDiff
+            });
+          }
+          
           console.log('Closing dialog...');
-          // Délai pour s'assurer que la notification est affichée avant fermeture
           setTimeout(() => {
             if (dialog && dialog.close) {
               console.log('Dialog still exists, closing...');
@@ -2402,23 +2428,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
               placeholder="https://example.com/photo.png">
             </ha-textfield>
           </div>
-
         </div>
-
-        <div class="form-row">
-          <ha-input-color-picker
-            label="Couleur dégradé début"
-            name="card_gradient_start"
-            value="${isEdit ? child.card_gradient_start || '#3f51b5' : '#3f51b5'}">
-          </ha-input-color-picker>
-          
-          <ha-input-color-picker
-            label="Couleur dégradé fin"
-            name="card_gradient_end"
-            value="${isEdit ? child.card_gradient_end || '#ff4081' : '#ff4081'}">
-          </ha-input-color-picker>
-        </div>
-
         ${!isEdit ? `
           <ha-textfield
             label="Points initiaux"
@@ -5018,7 +5028,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         @media (max-width: 768px) {
           /*.content { padding: var(--kt-space-lg); }
           .nav-tab { font-size: 11px; padding: var(--kt-space-sm) 4px; }
-          .form-row { flex-direction: column; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
           
