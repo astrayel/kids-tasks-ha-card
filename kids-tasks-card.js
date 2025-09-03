@@ -925,6 +925,11 @@ class KidsTasksBaseCard extends HTMLElement {
         flex-shrink: 0;
       }
       
+      .entry-title {
+        display: flex;
+        flex-direction: column;
+      }
+
       .entry-content {
         flex: 1;
         min-width: 0;
@@ -935,13 +940,6 @@ class KidsTasksBaseCard extends HTMLElement {
         color: var(--primary-text-color, #212121);
         margin-bottom: var(--kt-space-xs);
         line-height: 1.3;
-      }
-      
-      .entry-details {
-        display: flex;
-        gap: var(--kt-space-md);
-        font-size: 0.85em;
-        color: var(--secondary-text-color, #757575);
       }
       
       .entry-date {
@@ -2760,16 +2758,15 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
     return `
       <div class="history-entry">
-        <div class="entry-icon">${actionIcon}</div>
-        <div class="entry-content">
+        <div class="entry-title">
+          <div class="entry-icon">${actionIcon}</div>
           <div class="entry-description">${entry.description || 'Action inconnue'}</div>
-          <div class="entry-details">
-            <span class="entry-date">${dateStr} à ${timeStr}</span>
-            <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
-          </div>
         </div>
-        <div class="entry-points ${pointsClass}">
-          ${pointsDisplay} 🎫
+        <div class="entry-content">
+          <span class="entry-date">${dateStr} à ${timeStr}</span>
+          <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
+          <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>
+        </div>
         </div>
       </div>
     `;
