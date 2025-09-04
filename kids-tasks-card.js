@@ -60,11 +60,12 @@ class KidsTasksBaseCard extends HTMLElement {
         existingDialog.parentNode.removeChild(existingDialog);
       }
     });
-    
+
+    // Utiliser ha-dialog pour les modales
     const dialog = document.createElement('ha-dialog');
     dialog.heading = title;
     dialog.hideActions = true;
-
+    
     dialog.innerHTML = `
       <div slot="content">
         <style>
@@ -361,17 +362,28 @@ class KidsTasksBaseCard extends HTMLElement {
         ${content}
       </div>
     `;
-
+    
+    // Stocker la référence à this dans le dialog
     dialog._cardInstance = this;
+    
     document.body.appendChild(dialog);
     
-    // Ouvrir la modale
+    // Ouvrir le dialog
     dialog.show();
-
-    dialog.addEventListener('closed', () => {
-      this.closeModal(dialog);
-    });
-
+    
+    // Attendre que les composants Home Assistant se chargent
+    setTimeout(() => {
+      // Forcer la mise à jour des composants HA
+      const haComponents = dialog.querySelectorAll('ha-textfield, ha-select, ha-button');
+      haComponents.forEach(component => {
+        if (component.updateComplete) {
+          component.updateComplete.then(() => {
+            component.requestUpdate && component.requestUpdate();
+          });
+        }
+      });
+    }, 100);
+    
     return dialog;
   }
 
