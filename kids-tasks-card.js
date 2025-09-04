@@ -73,6 +73,9 @@ class KidsTasksBaseCard extends HTMLElement {
       ${content}
     `;
 
+    // Forcer un z-index très élevé pour la dialog
+    dialog.style.zIndex = '99999';
+    
     dialog._cardInstance = this;
     document.body.appendChild(dialog);
 
@@ -1226,7 +1229,7 @@ class KidsTasksBaseCard extends HTMLElement {
         background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
         padding: var(--kt-space-xs) 12px;
-        min-width: 60px;
+        min-width: 80px;
         color: var(--primary-text-color, #333);
       }
       
@@ -1577,7 +1580,7 @@ class KidsTasksBaseCard extends HTMLElement {
           </div>
           
           ${showActions ? `
-            <div class="task-actions">
+            <div class="task-actions" style="flex-direction: column; gap: 4px;">
               <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
             </div>
