@@ -91,7 +91,10 @@
       "Read(/C:\\Users\\micro\\Sources\\kids-tasks-ha-card/**)",
       "Read(/C:\\Users\\micro\\Sources\\kids-tasks-ha-card/**)",
       "Read(/C:\\Users\\micro\\Sources\\kids-tasks-ha-card/**)",
-      "Read(/C:\\Users\\micro\\Sources\\kids-tasks-ha-card/**)"
+      "Read(/C:\\Users\\micro\\Sources\\kids-tasks-ha-card/**)",
+      "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\kids-tasks-card/**)",
+      "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\kids-tasks-card/**)",
+      "Read(/C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\kids-tasks-card/**)"
     ],
     "deny": [],
     "ask": []

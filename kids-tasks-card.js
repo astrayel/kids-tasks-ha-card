@@ -4132,8 +4132,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           ${reward.description ? `<div class="reward-description-compact">${reward.description}</div>` : ''}
         </div>
         <div class="reward-actions-compact">
-          <button class="btn-icon-compact edit-btn" data-action="edit-reward" data-id="${reward.id}" title="Modifier">✎</button>
-          <button class="btn-icon-compact delete-btn" data-action="remove-reward" data-id="${reward.id}" title="Supprimer">🗑</button>
+          <button class="btn btn-secondary btn-sm" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
+          <button class="btn btn-danger btn-sm" data-action="remove-reward" data-id="${reward.id}">×</button>
         </div>
       </div>
     `;
