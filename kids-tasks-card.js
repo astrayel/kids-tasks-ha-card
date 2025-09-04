@@ -1190,8 +1190,6 @@ class KidsTasksBaseCard extends HTMLElement {
 
       /* Images dans l'avatar */
       .kt-avatar img {
-        width: 1em !important;
-        height: 1em !important;
         border-radius: var(--kt-radius-round) !important;
         object-fit: cover !important;
         border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
@@ -7620,9 +7618,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                 <div class="task-name">${task.name}</div>
                 <div class="task-points">
                   ${this.config && this.config.child_id ? `
-                    ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span></div>` : ''}
-                    ${task.penalty_points > 0 ? `<div><span style="color: #f44336; font-weight: bold;">-${task.penalty_points} 🎫</span></div>` : ''}
-                    ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
+                    ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
+                    ${task.penalty_points > 0 ? `<span style="color: #f44336; font-weight: bold;">-${task.penalty_points} 🎫</span>` : ''}
+                    ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
                   ` : `
                     ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}🪙` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
@@ -7697,8 +7695,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                       ${task.last_validated_at ? `<div class="task-validation-compact" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                     <div class="task-points">
-                      ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span></div>` : ''}
-                      ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
+                      ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
+                      ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
                       ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                   </div>
