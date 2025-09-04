@@ -1622,7 +1622,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       // Récupérer les tâches de l'enfant
       const childTasks = this.getTasks().filter(task => 
-        task.assigned_children && task.assigned_children.includes(child.id)
+        task.assigned_child_ids && task.assigned_child_ids.includes(child.id)
       );
       
       // Utiliser la méthode partagée pour calculer les statistiques
