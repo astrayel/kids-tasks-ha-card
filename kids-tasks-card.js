@@ -132,7 +132,7 @@ class KidsTasksBaseCard extends HTMLElement {
     if (avatarType === 'emoji') {
       return child.avatar || '👶';
     } else if (avatarType === 'url' && child.avatar_data) {
-      const size '4em';
+      const size = '4em';
       return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
     } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
