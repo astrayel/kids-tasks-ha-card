@@ -1286,28 +1286,6 @@ class KidsTasksBaseCard extends HTMLElement {
         font-size: 0.9em;
         color: var(--secondary-text-color, #666);
       }
-
-      /* === ALIAS DE COMPATIBILITÉ === */
-      /* Ces alias maintiennent la compatibilité avec le code existant */
-      /* À terme, ils pourront être supprimés quand toutes les références seront migrées */
-      
-      .avatar-section {
-        /* Alias vers les nouveaux composants */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 80px;
-      }
-      
-      .avatar-container {
-        /* Alias vers le nouveau composant */
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      /* .avatar supprimé - utiliser .kt-avatar à la place */
       
       .child-name-header {
         /* Alias vers le nouveau composant */
