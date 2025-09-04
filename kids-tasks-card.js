@@ -86,8 +86,11 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   closeModal(dialog) {
-    if (dialog && dialog.parentNode) {
-      dialog.parentNode.removeChild(dialog);
+    if (dialog && dialog.close) {
+      dialog.close();
+      if (dialog.parentNode) {
+        dialog.parentNode.removeChild(dialog);
+      }
     }
   }
 
@@ -128,16 +131,15 @@ class KidsTasksBaseCard extends HTMLElement {
     }
     
     const avatarType = child.avatar_type || 'emoji';
-    const size = '4em';
 
     if (avatarType === 'emoji') {
       return child.avatar || '👶' ;
     } else if (avatarType === 'url' && child.avatar_data) {
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}">`;
     } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
       const personEntity = this._hass.states[child.person_entity_id];
       if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}">`;
       }
     }
     return child.avatar || '👶';
@@ -1398,7 +1400,7 @@ class KidsTasksBaseCard extends HTMLElement {
     };
     
     let gaugesHtml = renderGauge(
-      'Points totaux', 
+      'Points totaux2', 
       stats.totalPoints, 
       'total-points', 
       Math.min((stats.totalPoints / 500) * 100, 100)
@@ -2426,253 +2428,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }
   }
 
-  showModal(content, title = '') {
-    // Fermer toutes les dialogs existantes avant d'en créer une nouvelle
-    const existingDialogs = document.querySelectorAll('ha-dialog');
-    existingDialogs.forEach(existingDialog => {
-      if (existingDialog && existingDialog.parentNode) {
-        existingDialog.close();
-        existingDialog.parentNode.removeChild(existingDialog);
-      }
-    });
-
-    // Utiliser ha-dialog pour les modales
-    const dialog = document.createElement('ha-dialog');
-    dialog.heading = title;
-    dialog.hideActions = true;
-    
-    // Créer le contenu avec les styles et référence à l'instance
-    const contentDiv = document.createElement('div');
-    contentDiv.innerHTML = `
-      <style>
-        /* Styles spécifiques pour les modales ha-dialog */
-        ha-dialog {
-          max-height: 90vh;
-          overflow-y: auto;
-          --mdc-dialog-max-width: 800px;
-          --mdc-dialog-min-width: 600px;
-          z-index: 10001 !important;
-        }
-        
-        ha-select {
-          --mdc-menu-max-height: 480px;
-          --mdc-menu-min-width: 100%;
-        }
-        
-        ha-select mwc-menu {
-          --mdc-menu-max-height: 480px;
-          --mdc-menu-item-height: 48px;
-        }
-        
-        /* Composants HA dans les modales */
-        ha-textfield, ha-textarea, ha-select, ha-formfield {
-          display: block;
-          margin-bottom: 16px;
-          width: 100%;
-          --mdc-typography-subtitle1-font-size: 16px;
-        }
-        
-        /* Effet hover pour les ha-formfield cliquables (validation requise, etc.) */
-        ha-formfield {
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-        
-        /* Styles des formulaires pour les modales */
-        .form-group { margin-bottom: 16px; }
-        .form-label {
-          display: block;
-          margin-bottom: 4px;
-          font-weight: 500;
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .form-row { 
-          display: flex; 
-          gap: 12px; 
-          margin-bottom: 16px;
-        }
-        .form-row > * { 
-          flex: 1; 
-          margin-bottom: 0;
-        }
-        
-        /* Layout côte à côte pour enfants et jours */
-        .selection-row {
-          display: flex;
-          gap: 20px;
-          align-items: flex-start;
-        }
-        
-        .children-column {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        .days-column {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        /* Quand la section des jours est masquée, masquer toute la colonne des jours */
-        .days-column .weekly-days-section[style*="display: none"],
-        .days-column .weekly-days-section[style*="display:none"] {
-          display: none !important;
-        }
-        
-        /* Masquer la colonne des jours si elle ne contient qu'une section masquée */
-        .days-column:has(.weekly-days-section[style*="display: none"]) {
-          display: none;
-        }
-        
-        .children-grid {
-          display: flex
-          flex-direction: column;          
-        }
-
-        .child-checkbox {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          border-radius: 4px;
-          transition: background-color 0.2s;
-          user-select: none;
-        }
-        
-        .child-checkbox:hover {
-          background-color: var(--primary-color, #3f51b5);
-          color: white;
-        }
-        
-        .child-label {
-          font-size: 14px;
-          color: var(--primary-text-color, #212121);
-          user-select: none;
-        }
-
-        .child-info {
-          display: flex;
-          flex-direction: column;
-        }
-        
-        /* Styles pour la section des jours de la semaine */
-        .weekly-days-section, .children-section {
-          margin-bottom: 20px;
-          padding: var(--kt-space-lg);
-          border: 1px solid var(--divider-color, #e0e0e0);
-          border-radius: var(--kt-radius-sm);
-          background: var(--secondary-background-color, #fafafa);
-        }
-        
-        .weekly-days-section .form-label, .children-section .form-label {
-          margin-bottom: 12px;
-          font-weight: 600;
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .weekly-days-section .days-selector {
-          display: flex;
-          flex-direction: column;
-          margin-top: 8px;
-        }
-        
-        .day-checkbox {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          border-radius: 4px;
-          transition: background-color 0.2s;
-          user-select: none;
-        }
-        
-        .day-checkbox:hover {
-          background-color: var(--primary-color, #3f51b5);
-          color: white;
-        }
-        
-        .day-checkbox:hover .day-label {
-          color: white;
-        }
-        
-        .day-label {
-          font-size: 14px;
-          color: var(--primary-text-color, #212121);
-          user-select: none;
-        }
-        
-        
-        /* Actions des dialogues */
-        .dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          margin-top: 24px;
-          padding-top: 16px;
-          border-top: 1px solid var(--divider-color, #e0e0e0);
-        }
-        
-        /* Responsive design pour les modales */
-        @media (max-width: 768px) {
-          ha-dialog {
-            --mdc-dialog-max-width: 95vw;
-            --mdc-dialog-min-width: 320px;
-          }
-          
-          .selection-row {
-            flex-direction: column;
-            gap: 16px;
-          }
-          
-          .form-row > * {
-            margin-bottom: 16px;
-          }
-        }
-        
-        /* Styles avatar spécifiques aux modales */
-        .avatar-options { 
-          display: flex; 
-          gap: 8px; 
-          flex-wrap: wrap; 
-          margin-bottom: 8px; 
-        }
-        .avatar-option {
-          padding: var(--kt-space-sm);
-          border: 2px solid var(--divider-color);
-          border-radius: var(--kt-radius-sm);
-          background: var(--secondary-background-color);
-          cursor: pointer;
-          font-size: 1.5em;
-          transition: all 0.3s;
-        }
-        .avatar-option:hover { border-color: var(--primary-color); }
-        .avatar-option.selected {
-          border-color: var(--accent-color);
-          background: rgba(255, 64, 129, 0.1);
-        }
-      </style>
-      ${content}
-    `;
-    
-    // Stocker la référence à this dans le dialog
-    dialog._cardInstance = this;
-    
-    dialog.appendChild(contentDiv);
-    document.body.appendChild(dialog);
-    
-    // Ouvrir immédiatement et laisser les composants s'initialiser naturellement
-    dialog.show();
-    
-    return dialog;
-  }
-
-  closeModal(dialog) {
-    if (dialog && dialog.close) {
-      dialog.close();
-      if (dialog.parentNode) {
-        dialog.parentNode.removeChild(dialog);
-      }
-    }
-  }
+  /* showModal() et closeModal() héritées de KidsTasksBaseCard - duplications supprimées */
 
   showChildForm(editChildId = null) {
     const children = this.getChildren();
@@ -6658,7 +6414,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             <div class="kt-avatar-section">
               <div class="kt-child-name-header">${child.name}</div>
               <div class="kt-avatar-container">
-                <div class="kt-avatar kt-avatar--large">${this.getEffectiveAvatar(child, 'large')}</div>
+                <div class="kt-avatar kt-avatar--large">${this.getEffectiveAvatar(child)}</div>
                 <div class="kt-level-badge kt-level-badge--child-card">Niveau ${stats.level}</div>
                 <!-- Placeholder pour avatar cosmétique -->
                 <!--<div class="cosmetic-avatar-placeholder"></div>-->
