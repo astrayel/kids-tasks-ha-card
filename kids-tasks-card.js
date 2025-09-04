@@ -1499,7 +1499,7 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   // Méthode unifiée pour afficher les enfants, basée sur le style de la carte enfant
-  renderUnifiedChildCard(child, showActions = false, showDragHandle = false) {
+  renderChildCard(child, showActions = false, showDragHandle = false) {
     // Protection contre les enfants undefined/null
     if (!child) {
       return '<div class="child-card unified"><div class="error">Erreur: enfant non trouvé</div></div>';
@@ -1564,7 +1564,7 @@ class KidsTasksBaseCard extends HTMLElement {
         </div>
       `;
     } catch (error) {
-      console.error('Erreur dans renderUnifiedChildCard:', error, 'Child data:', child);
+      console.error('Erreur dans renderChildCard:', error, 'Child data:', child);
       return `<div class="child-card unified"><div class="error">Erreur rendu: ${error.message}</div></div>`;
     }
   }
@@ -3735,7 +3735,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             ${children.map((child, index) => {
               try {
                 console.log(`Rendu enfant ${index}:`, child);
-                const result = this.renderUnifiedChildCard(child, false, false);
+                const result = this.renderChildCard(child, false, false);
                 console.log(`Rendu enfant ${index} réussi`);
                 return result;
               } catch (error) {
@@ -3813,7 +3813,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             ${filteredChildren.map((child, index) => {
               try {
                 console.log(`Rendu enfant gestion ${index}:`, child);
-                const result = this.renderUnifiedChildCard(child, true, true);
+                const result = this.renderChildCard(child, true, true);
                 console.log(`Rendu enfant gestion ${index} réussi`);
                 return result;
               } catch (error) {
