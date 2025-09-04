@@ -70,9 +70,7 @@ class KidsTasksBaseCard extends HTMLElement {
     }
 
     dialog.innerHTML = `
-      <div slot="content">
-        ${content}
-      </div>
+      ${content}
     `;
 
     dialog._cardInstance = this;
