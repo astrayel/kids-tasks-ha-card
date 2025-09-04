@@ -5599,6 +5599,29 @@ class KidsTasksCard extends KidsTasksBaseCard {
     };
   }
 
+  // Méthode pour résoudre l'avatar effectif
+  getEffectiveAvatar(child, context = 'normal') {
+    if (!child) {
+      return '👶';
+    }
+    
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
+      return child.avatar || '👶';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      const size = context === 'large' ? '4em' : '3em';
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        const size = context === 'large' ? '4em' : '3em';
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}" style="width: ${size}; height: ${size}; border-radius: var(--kt-radius-round); object-fit: cover;">`;
+      }
+    }
+    return child.avatar || '👶';
+  }
+
   getCosmeticImagePath(cosmeticType, fileName) {
     // Construire le chemin vers l'image cosmétique
     if (!fileName || !cosmeticType) return null;
@@ -7969,6 +7992,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         `).join('')}
       </div>
     `;
+  }
+
+  getCosmeticImagePath(cosmeticType, fileName) {
+    // Construire le chemin vers l'image cosmétique
+    if (!fileName || !cosmeticType) return null;
+    
+    // URL de base pour les cosmétiques dans Home Assistant
+    const baseUrl = '/local/community/kids_tasks/cosmetics';
+    return `${baseUrl}/${cosmeticType}/${fileName}`;
   }
 
   generateCosmeticDataFromName(rewardName) {
