@@ -1188,6 +1188,8 @@ class KidsTasksBaseCard extends HTMLElement {
 
       /* Images dans l'avatar */
       .kt-avatar img {
+        width: 2em;
+        height: 2em;
         border-radius: var(--kt-radius-round) !important;
         object-fit: cover !important;
         border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
