@@ -1422,29 +1422,107 @@ class KidsTasksBaseCard extends HTMLElement {
   safeGetCategoryIcon(categoryOrItem, fallback = '📋') {
     try {
       if (this.getCategoryIcon && typeof this.getCategoryIcon === 'function') {
-        return this.getCategoryIcon(categoryOrItem);
+        const icon = this.getCategoryIcon(categoryOrItem);
+        if (icon && icon !== '') {
+          return icon;
+        }
       }
     } catch (error) {
       console.warn('Error in getCategoryIcon:', error);
     }
-    return fallback;
+    
+    // Provide default icons for common reward categories
+    const category = typeof categoryOrItem === 'object' ? categoryOrItem?.category : categoryOrItem;
+    const defaultIcons = {
+      'leisure': '🎮',
+      'outing': '🚶',
+      'food': '🍕',
+      'toy': '🧸',
+      'experience': '🎪',
+      'cosmetic': '🎨',
+      'gift': '🎁',
+      'money': '💰',
+      'activity': '⚽',
+      'entertainment': '🎬'
+    };
+    
+    return defaultIcons[category] || fallback;
   }
   
   renderIcon(iconData) {
-    if (!iconData) return '📋';
+    if (!iconData || iconData === '') return '📋';
     
-    // Si c'est une URL (commence par http:// ou https://)
-    if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
-      return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;">`;
+    try {
+      // Si c'est une URL (commence par http:// ou https://)
+      if (typeof iconData === 'string' && (iconData.startsWith('http://') || iconData.startsWith('https://'))) {
+        return `<img src="${iconData}" class="icon-image" style="width: 1.2em; height: 1.2em; object-fit: cover; border-radius: 3px;" onerror="this.style.display='none'; this.insertAdjacentText('afterend', '📋');">`;
+      }
+      
+      // Si c'est une icône MDI (commence par mdi:)
+      if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
+        return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
+      }
+      
+      // Sinon, traiter comme un emoji ou texte simple
+      const iconString = iconData.toString();
+      return iconString || '📋';
+    } catch (error) {
+      console.warn('Error in renderIcon:', error);
+      return '📋';
+    }
+  }
+
+  // Méthode commune pour calculer les statistiques des tâches
+  getTasksStatsForGauges(tasks, completedToday) {
+    const activeTasks = tasks.filter(task => 
+      task.status === 'todo' && 
+      this.isTaskActiveToday && this.isTaskActiveToday(task)
+    );
+    
+    const completedTasks = tasks.filter(task => 
+      (task.status === 'validated' || task.status === 'completed') &&
+      this.isTaskActiveToday && this.isTaskActiveToday(task)
+    );
+    
+    const pendingTasks = tasks.filter(task => 
+      task.status === 'pending_validation'
+    );
+    
+    return {
+      completedToday: completedToday,
+      totalTasksToday: activeTasks.length + completedTasks.length + pendingTasks.length
+    };
+  }
+
+  // Vérifier si une tâche est active aujourd'hui (méthode partagée)
+  isTaskActiveToday(task) {
+    if (!task.active && task.active !== undefined) return false;
+    
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = dimanche
+    
+    // Logique pour la carte enfant
+    if (task.frequency) {
+      const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      const todayName = dayNames[dayOfWeek];
+      
+      if (task.frequency === 'daily' && task.weekly_days && task.weekly_days.length > 0) {
+        return task.weekly_days.includes(todayName);
+      }
+      
+      return task.frequency === 'daily' || 
+             (task.frequency === 'weekly' && dayOfWeek === 1) ||
+             (task.frequency === 'monthly' && today.getDate() === 1);
     }
     
-    // Si c'est une icône MDI (commence par mdi:)
-    if (typeof iconData === 'string' && iconData.startsWith('mdi:')) {
-      return `<ha-icon icon="${iconData}" style="width: 1.2em; height: 1.2em;"></ha-icon>`;
+    // Logique pour la carte parent
+    if (task.days && task.days.length > 0) {
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const todayName = dayNames[dayOfWeek];
+      return task.days.includes(todayName);
     }
     
-    // Sinon, traiter comme un emoji ou texte simple
-    return iconData.toString();
+    return true;
   }
   
   isToday(dateString) {
@@ -2505,7 +2583,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .children-grid {
           display: flex
-          flex-direction: column;          
+          flex-direction: column;  
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         }
 
         .child-checkbox {
@@ -3523,10 +3602,14 @@ class KidsTasksCard extends KidsTasksBaseCard {
       this.isToday(task.last_completed_at)
     ).length;
 
+    // Utiliser la méthode partagée pour les statistiques des jauges
+    const taskStats = this.getTasksStatsForGauges(tasks, completedToday);
+
     return {
       totalChildren: children.length,
       totalTasks: tasks.length,
-      completedToday: completedToday,
+      completedToday: taskStats.completedToday,
+      totalTasksToday: taskStats.totalTasksToday,
       pendingValidation: tasks.filter(t => t.status === 'pending_validation').length
     };
   }
@@ -3730,7 +3813,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
       ${children.length > 0 ? `
         <div class="section children-grid">
-          <h2>Enfants</h2>
           <div class="children-dashboard-grid">
             ${children.map((child, index) => {
               try {
@@ -3809,7 +3891,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </div>
         
         ${filteredChildren.length > 0 ? `
-          <div class="${currentChildFilter === 'all' ? 'grid grid-2 children-grid' : 'single-child-view'}">
+          <div class="${currentChildFilter === 'all' ? 'grid children-grid' : 'single-child-view'}">
             ${filteredChildren.map((child, index) => {
               try {
                 console.log(`Rendu enfant gestion ${index}:`, child);
@@ -5456,7 +5538,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           /* Optimisation dashboard pour mobile */
           .children-dashboard-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(1, 1fr);
             gap: var(--kt-space-sm);
           }
           
@@ -5492,13 +5574,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           
           .task-actions .btn {
             min-width: 70px;
-          }
-          
-          /* Styles enfants - disposition horizontale forcée */
-          .child-card, .reward-card {
-            min-height: 120px;
-            height: auto;
-            padding: 6px;
           }
           
           .child-avatar {
@@ -5598,20 +5673,22 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     const category = categoryOrItem;
     
-    // Récupérer les icônes depuis l'intégration
-    const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
-    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
-      const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
-      if (dynamicIcons[category]) {
-        return this.renderIcon(dynamicIcons[category]);
+    // Récupérer les icônes depuis l'intégration si _hass est disponible
+    if (this._hass && this._hass.states) {
+      const pendingValidationsEntity = this._hass.states['sensor.kidtasks_pending_validations'];
+      if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.category_icons) {
+        const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
+        if (dynamicIcons[category]) {
+          return this.renderIcon(dynamicIcons[category]);
+        }
       }
-    }
-    
-    // Récupérer les icônes de récompenses depuis l'intégration
-    if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
-      const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
-      if (rewardIcons[category]) {
-        return this.renderIcon(rewardIcons[category]);
+      
+      // Récupérer les icônes de récompenses depuis l'intégration
+      if (pendingValidationsEntity && pendingValidationsEntity.attributes && pendingValidationsEntity.attributes.reward_category_icons) {
+        const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
+        if (rewardIcons[category]) {
+          return this.renderIcon(rewardIcons[category]);
+        }
       }
     }
     
@@ -5857,14 +5934,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
       <div class="config-container">
         <!-- Section Configuration Générale -->
         <div class="config-section">
-          <div class="section-title">🔧 Configuration Générale</div>
-          
-          <ha-textfield
-            id="title-input"
-            label="Titre de la carte"
-            value="${this.config?.title || 'Gestionnaire de Tâches Enfants'}">
-          </ha-textfield>
-          
+          <div class="section-title">🔧 Configuration Générale</div>          
           <div class="config-row">
             <ha-switch
               id="navigation-switch"
@@ -6750,19 +6820,19 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
     
     // Utiliser les icônes dynamiques si disponibles
-    const pendingValidationsEntity = this._hass?.states['sensor.kids_tasks_pending_validations'];
-    if (pendingValidationsEntity) {
-      const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
-      if (dynamicIcons[categoryOrItem]) {
-        return this.renderIcon(dynamicIcons[categoryOrItem]);
-      }
-    }
-    
-    // Essayer aussi les icônes de récompenses
-    if (pendingValidationsEntity) {
-      const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
-      if (rewardIcons[categoryOrItem]) {
-        return this.renderIcon(rewardIcons[categoryOrItem]);
+    if (this._hass && this._hass.states) {
+      const pendingValidationsEntity = this._hass.states['sensor.kids_tasks_pending_validations'];
+      if (pendingValidationsEntity && pendingValidationsEntity.attributes) {
+        const dynamicIcons = pendingValidationsEntity.attributes.category_icons;
+        if (dynamicIcons && dynamicIcons[categoryOrItem]) {
+          return this.renderIcon(dynamicIcons[categoryOrItem]);
+        }
+        
+        // Essayer aussi les icônes de récompenses
+        const rewardIcons = pendingValidationsEntity.attributes.reward_category_icons;
+        if (rewardIcons && rewardIcons[categoryOrItem]) {
+          return this.renderIcon(rewardIcons[categoryOrItem]);
+        }
       }
     }
     
@@ -6777,14 +6847,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const pointsToNextLevel = level * 100;
     const pointsInCurrentLevel = totalPoints % 100;
     
-    // Calculer les tâches de la période actuelle
+    // Utiliser la méthode partagée pour calculer les statistiques des tâches
+    const completedToday = tasks.filter(task => 
+      (task.status === 'validated' || task.status === 'completed') &&
+      this.isTaskActiveToday(task)
+    ).length;
+    const taskStats = this.getTasksStatsForGauges(tasks, completedToday);
+    
     const activeTasks = tasks.filter(task => 
       task.status === 'todo' && 
-      this.isTaskActiveToday(task)
-    );
-    
-    const completedTasks = tasks.filter(task => 
-      (task.status === 'validated' || task.status === 'completed') &&
       this.isTaskActiveToday(task)
     );
     
@@ -6798,29 +6869,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       pointsInCurrentLevel,
       pointsToNextLevel,
       activeTasks: activeTasks.length,
-      completedTasks: completedTasks.length,
+      completedTasks: completedToday,
       pendingTasks: pendingTasks.length,
-      totalTasksToday: activeTasks.length + completedTasks.length + pendingTasks.length
+      completedToday: taskStats.completedToday,
+      totalTasksToday: taskStats.totalTasksToday
     };
   }
 
-  // Vérifier si une tâche est active aujourd'hui
-  isTaskActiveToday(task) {
-    if (!task.active) return false;
-    
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = dimanche
-    const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-    const todayName = dayNames[dayOfWeek];
-    
-    if (task.frequency === 'daily' && task.weekly_days && task.weekly_days.length > 0) {
-      return task.weekly_days.includes(todayName);
-    }
-    
-    return task.frequency === 'daily' || 
-           (task.frequency === 'weekly' && dayOfWeek === 1) ||
-           (task.frequency === 'monthly' && today.getDate() === 1);
-  }
 
   // Obtenir les tâches par catégorie
   getTasksByCategory(tasks) {
