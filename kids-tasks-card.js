@@ -1346,7 +1346,7 @@ class KidsTasksBaseCard extends HTMLElement {
     const useHeader = !compact; // La version non-compacte utilise gauge-header
     
     // Utiliser les valeurs passées ou celles dans stats
-    const completed = completedToday !== undefined ? completedToday : (stats.completedTasks || stats.completedToday || 0);
+    const completed = completedToday !== undefined ? completedToday : (stats.completedToday || 0);
     const total = totalTasksToday !== undefined ? totalTasksToday : (stats.totalTasksToday || 0);
     
     const renderGauge = (label, text, fillClass, width, barExtra = '') => {
@@ -1549,9 +1549,7 @@ class KidsTasksBaseCard extends HTMLElement {
       pointsInCurrentLevel,
       pointsToNextLevel,
       completedToday: taskStats.completedToday,
-      totalTasksToday: taskStats.totalTasksToday,
-      // Champs supplémentaires pour compatibilité
-      completedTasks: taskStats.completedToday
+      totalTasksToday: taskStats.totalTasksToday
     };
   }
   
@@ -1589,9 +1587,6 @@ class KidsTasksBaseCard extends HTMLElement {
             points: parseInt(entity.state) || 0,
             coins: parseInt(entity.attributes.coins) || 0,
             level: entity.attributes.level || 1,
-            // Attributs supplémentaires pour compatibilité avec carte parent
-            state: entity.state,
-            attributes: entity.attributes,
             avatar: entity.attributes.avatar || '👶',
             avatar_type: entity.attributes.avatar_type || 'emoji',
             avatar_data: entity.attributes.avatar_data,
@@ -3236,7 +3231,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       </form>
     `;
 
-    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche v0.15');
+    const dialog = this.showModal(content, isEdit ? 'Modifier la tâche' : 'Créer une tâche');
     
     // Ajouter les event listeners après affichage du modal
     setTimeout(() => {
@@ -4600,7 +4595,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           line-height: 32px;
           cursor: grab;
           user-select: none;
-          z-index: 10;
+          z-index: 1;
         }
         
         .drag-handle:active {
@@ -4941,25 +4936,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           flex-shrink: 0;
         }
         
-        .btn-icon-compact {
-          background: transparent;
-          border: none;
-          padding: var(--kt-space-xs);
-          font-size: 0.85em;
-          cursor: pointer;
-          border-radius: 4px;
-          transition: all 0.2s ease;
-          color: var(--secondary-text-color, #757575);
-        }
-        
-        .btn-icon-compact:hover {
-          background: var(--primary-color, #1976d2);
-          color: white;
-        }
-        
-        .btn-icon-compact.delete-btn:hover {
-          background: var(--kt-error);
-        }
         
         /* Styles pour l'onglet Validation */
         .validation-tasks-list {
@@ -6724,8 +6700,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     
 
     this.shadowRoot.innerHTML = `
-      ${this.getStyles()}
-      
+      ${this.getStyles()}   
       <div class="kidstask-card">
         <!-- Header avec avatar et jauges -->
         <div class="header">
@@ -6736,8 +6711,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               <div class="kt-avatar-container">
                 <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
                 <div class="kt-level-badge kt-level-badge--child-card">Niveau ${stats.level}</div>
-                <!-- Placeholder pour avatar cosmétique -->
-                <!--<div class="cosmetic-avatar-placeholder"></div>-->
               </div>
             </div>
             ` : `
@@ -7011,18 +6984,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           min-width: 60px;
         }
         
-        .cosmetic-avatar-placeholder {
-          margin-top: 8px;
-          width: 40px;
-          height: 40px;
-          border: 2px dashed rgba(255,255,255,0.3);
-          border-radius: var(--kt-radius-round);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.7em;
-          color: rgba(255,255,255,0.6);
-        }
         /* Navigation par onglets */
         .tabs {
           display: flex;
