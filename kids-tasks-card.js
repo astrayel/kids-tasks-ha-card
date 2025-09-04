@@ -1651,7 +1651,7 @@ class KidsTasksBaseCard extends HTMLElement {
                 <div class="kt-child-name-header">${name}</div>
                 <div class="kt-avatar-container">
                   <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
-                  <div class="kt-level-badge kt-level-badge--child-card">Niveau ${level}</div>
+                  <div class="kt-level-badge kt-level-badge--child-card">Niveau ${stats.level}</div>
                 </div>
               </div>
               
