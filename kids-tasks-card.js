@@ -1400,7 +1400,7 @@ class KidsTasksBaseCard extends HTMLElement {
     };
     
     let gaugesHtml = renderGauge(
-      'Points totaux2', 
+      'Points totaux3', 
       stats.totalPoints, 
       'total-points', 
       Math.min((stats.totalPoints / 500) * 100, 100)
