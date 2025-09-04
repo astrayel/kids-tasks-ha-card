@@ -1524,6 +1524,36 @@ class KidsTasksBaseCard extends HTMLElement {
     
     return true;
   }
+
+  // Méthode partagée pour calculer les statistiques d'un enfant
+  calculateChildStatistics(child, tasks) {
+    // Statistiques de base de l'enfant
+    const totalPoints = child.points || 0;
+    const level = child.level || 1;
+    const pointsInCurrentLevel = totalPoints % 100;
+    const pointsToNextLevel = level * 100;
+    
+    // Calculer les tâches complétées aujourd'hui
+    const completedToday = tasks.filter(task => 
+      (task.status === 'validated' || task.status === 'completed') &&
+      this.isTaskActiveToday(task)
+    ).length;
+    
+    // Utiliser la méthode partagée pour les statistiques des jauges
+    const taskStats = this.getTasksStatsForGauges(tasks, completedToday);
+    
+    // Retourner les statistiques communes
+    return {
+      totalPoints,
+      level,
+      pointsInCurrentLevel,
+      pointsToNextLevel,
+      completedToday: taskStats.completedToday,
+      totalTasksToday: taskStats.totalTasksToday,
+      // Champs supplémentaires pour compatibilité
+      completedTasks: taskStats.completedToday
+    };
+  }
   
   isToday(dateString) {
     if (!dateString) return false;
@@ -1587,26 +1617,24 @@ class KidsTasksBaseCard extends HTMLElement {
       const name = child.name || 'Enfant sans nom';
       const points = child.points || 0;
       const coins = child.coins || 0;
-      const level = child.level || 1;
       const progress = ((points % 100) / 100) * 100;
       const pointsToNext = (100 - (points % 100));
       
-      // Calculer les statistiques comme la carte enfant
-      const pointsInCurrentLevel = points % 100;
-      const pointsToNextLevel = 100;
-      const totalPoints = points;
+      // Récupérer les tâches de l'enfant
+      const childTasks = this.getTasks().filter(task => 
+        task.assigned_children && task.assigned_children.includes(child.id)
+      );
       
+      // Utiliser la méthode partagée pour calculer les statistiques
+      const baseStats = this.calculateChildStatistics(child, childTasks);
+      
+      // Compléter avec les champs spécifiques à la carte parent
       const stats = {
-        level: level,
+        ...baseStats,
         points: points,
         coins: coins,
         progress: progress,
-        pointsToNext: pointsToNext,
-        totalPoints: totalPoints,
-        pointsInCurrentLevel: pointsInCurrentLevel,
-        pointsToNextLevel: pointsToNextLevel,
-        completedTasks: 0,
-        totalTasksToday: 0
+        pointsToNext: pointsToNext
       };
 
       return `
@@ -6842,18 +6870,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   // Calculer les statistiques de l'enfant
   getChildStats(child, tasks) {
-    const totalPoints = child.points || 0;
-    const level = child.level || 1;
-    const pointsToNextLevel = level * 100;
-    const pointsInCurrentLevel = totalPoints % 100;
+    // Utiliser la méthode partagée pour calculer les statistiques de base
+    const baseStats = this.calculateChildStatistics(child, tasks);
     
-    // Utiliser la méthode partagée pour calculer les statistiques des tâches
-    const completedToday = tasks.filter(task => 
-      (task.status === 'validated' || task.status === 'completed') &&
-      this.isTaskActiveToday(task)
-    ).length;
-    const taskStats = this.getTasksStatsForGauges(tasks, completedToday);
-    
+    // Ajouter les champs spécifiques à la carte enfant
     const activeTasks = tasks.filter(task => 
       task.status === 'todo' && 
       this.isTaskActiveToday(task)
@@ -6864,15 +6884,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     );
     
     return {
-      totalPoints,
-      level,
-      pointsInCurrentLevel,
-      pointsToNextLevel,
+      ...baseStats,
       activeTasks: activeTasks.length,
-      completedTasks: completedToday,
-      pendingTasks: pendingTasks.length,
-      completedToday: taskStats.completedToday,
-      totalTasksToday: taskStats.totalTasksToday
+      pendingTasks: pendingTasks.length
     };
   }
 
