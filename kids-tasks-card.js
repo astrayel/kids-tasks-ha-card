@@ -1580,7 +1580,7 @@ class KidsTasksBaseCard extends HTMLElement {
           </div>
           
           ${showActions ? `
-            <div class="task-actions">
+            <div class="task-actions" style="flex-direction: column; gap: 4px;">
               <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
             </div>
