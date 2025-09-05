@@ -1694,7 +1694,7 @@ class KidsTasksBaseCard extends HTMLElement {
     // Ajouter la jauge des coins si demandée
     if (includeCoins && stats.coins !== undefined) {
       gaugesHtml += renderGauge(
-        'Coins', 
+        '🪙', 
         stats.coins, 
         'coins-progress', 
         Math.min(stats.coins, 100)
@@ -3144,7 +3144,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
               max="10000">
             </ha-textfield>
             <ha-textfield
-              label="Coins 🪙"
+              label="🪙"
               name="coins"
               type="number"
               value="${child.coins || 0}"
@@ -7035,8 +7035,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           ${this.config.show_rewards ? `<button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
                   data-action="switch_tab" data-id="rewards">Récompenses</button>` : ''}
         </div>
-
-        <!-- Contenu des onglets -->
         <div class="content">
           ${this.renderTabContent(taskCategories, rewards, stats, child)}
         </div>
@@ -7158,7 +7156,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     };
   }
 
-
   // Obtenir les tâches par catégorie
   getTasksByCategory(tasks) {
     
@@ -7178,10 +7175,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     
     const pastTasks = tasks.filter(t => this.isTaskFromPast(t));
     
+    const bonusTasks = tasks.filter(task => task.frequency === 'none');
+
     const categories = {
       todo: todoTasks,
       pending: pendingTasks,
       completed: completedTasks,
+      bonus: bonusTasks,
       past: pastTasks
     };
     
@@ -7840,7 +7840,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       case 'past':
         return this.renderPastTab(taskCategories.completed.concat(taskCategories.past));
       case 'bonus':
-        return this.renderBonusTab();
+        return this.renderPastTab(taskCategories.bonus);
       case 'rewards':
         return this.renderRewardsTab(rewards, child.points);
       default:
@@ -7890,14 +7890,14 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               </div>
               <div class="task-action-compact">
                 ${task.status === 'todo' ? `
-                  <button class="btn-compact btn-complete" 
+                  <button class="btn btn-complete" 
                           data-action="complete_task" 
                           data-id="${task.id}">Terminé</button>
                 ` : task.status === 'pending_validation' ? `
                   ${this.config && this.config.child_id ? `
                     <span class="status pending">En attente de validation</span>
                   ` : `
-                    <button class="btn-compact btn-validate" 
+                    <button class="btn btn-validate" 
                             data-action="validate_task"
                             data-id="${task.id}">Validation</button>
                   `}
@@ -8052,91 +8052,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     // Trier par date de validation (plus récent en premier)
     return occurrences.sort((a, b) => new Date(b.last_validated_at) - new Date(a.last_validated_at));
-  }
-
-  // Onglet bonus
-  renderBonusTab() {
-    const allTasks = this.getTasks();
-    // Filtrer uniquement les tâches bonus (frequency='none')
-    const bonusTasks = allTasks.filter(task => task.frequency === 'none');
-    
-    return this.renderTasksTab(bonusTasks);
-/*    if (bonusTasks.length === 0) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">⭐</div>
-          <div class="empty-text">Aucune tâche bonus</div>
-          <div class="empty-subtext">Les tâches avec fréquence "Aucune" apparaîtront ici</div>
-        </div>
-      `;
-    }
-
-    return `
-      <div class="task-list">
-        ${bonusTasks.map(task => this.renderBonusTaskCard(task)).join('')}
-      </div>
-    `;*/
-  }
-
-  // Méthode pour afficher une carte de tâche bonus
-  renderBonusTaskCard(task) {
-    const child = this.getChild();
-    if (!child) return '';
-
-    // Déterminer le statut de la tâche pour cet enfant
-    const childStatus = task.child_statuses && task.child_statuses[child.id] 
-      ? task.child_statuses[child.id].status 
-      : 'todo';
-
-    // Déterminer la classe de style selon le statut (même logique que les tâches normales)
-    let delayClass = '';
-    if (childStatus === 'pending_validation') {
-      delayClass = 'pending';
-    } else if (childStatus === 'validated') {
-      delayClass = 'on-time';
-    } else {
-      delayClass = 'on-time'; // Les tâches bonus n'ont pas de retard
-    }
-
-    return `
-      <div class="task ${childStatus} ${delayClass}">
-        <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
-        <div class="task-main flex-content">
-          <div class="task-name">${task.name}</div>
-          <div class="task-points">
-            ${this.config && this.config.child_id ? `
-              ${task.points > 0 ? `<div><span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span></div>` : ''}
-              ${task.coins > 0 ? `<div><span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span></div>` : ''}
-            ` : `
-              ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}🪙` : ''}
-            `}
-          </div>
-        </div>
-        <div class="task-action-compact">
-          ${childStatus === 'todo' ? `
-            <button class="btn-compact btn-complete" 
-                    data-action="complete_task" 
-                    data-id="${task.id}">Terminé</button>
-          ` : childStatus === 'pending_validation' ? `
-            ${this.config && this.config.child_id ? `
-              <span class="status pending">En attente de validation</span>
-            ` : `
-              <button class="btn-compact btn-validate" 
-                      data-action="validate_task"
-                      data-id="${task.id}">Validation</button>
-            `}
-          ` : `
-            <span class="status completed">✓ Validée</span>
-            ${childStatus === 'validated' ? `
-              <button class="btn-compact btn-complete" 
-                      data-action="complete_task" 
-                      data-id="${task.id}" 
-                      style="margin-top: 4px;">Refaire</button>
-            ` : ''}
-          `}
-        </div>
-      </div>
-    `;
   }
 
   // Onglet des récompenses
@@ -8556,7 +8471,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         <button class="reward-modal-close" data-action="close_modal">×</button>
         <div class="reward-modal-icon">${reward.cosmetic_data || reward.category === 'cosmetic' ? this.renderCosmeticPreviewLarge(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}</div>
         <div class="reward-modal-name">${reward.name}</div>
-        <div class="reward-modal-price">${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''}</div>
+        <div class="reward-modal-price">${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''}</div>
         ${reward.description ? `<div class="reward-modal-description">${reward.description}</div>` : ''}
         <div class="reward-modal-actions">
           <button class="btn-modal btn-modal-cancel" data-action="close_modal">Annuler</button>
@@ -8564,7 +8479,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   data-action="claim_reward" 
                   data-id="${reward.id}"
                   ${!canAfford ? 'disabled' : ''}>
-            ${canAfford ? `Acheter (${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''})` : 'Pas assez de monnaie'}
+            ${canAfford ? `Acheter (${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''})` : 'Pas assez de monnaie'}
           </button>
         </div>
       </div>
