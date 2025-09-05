@@ -274,6 +274,181 @@ class KidsTasksStyleManager {
     `;
   }
   
+  // Méthode pour obtenir les styles kt-* sans namespace pour le Shadow DOM
+  static getShadowDOMStyles() {
+    return `
+      /* === COMPOSANTS CSS POUR SHADOW DOM === */
+      
+      /* Composant Avatar Section - Structure de base pour avatar + nom */
+      .kt-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-sm);
+      }
+      
+      /* Composant Avatar Container - Conteneur pour avatar + badge */
+      .kt-avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-xs);
+      }
+      
+      /* Composant Avatar - Styles de base pour l'avatar */
+      .kt-avatar {
+        font-size: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        background: var(--kt-avatar-background);
+        border: 2px solid var(--kt-cosmetic-background);
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .kt-avatar--small {
+        font-size: 1.5em;
+      }
+      
+      .kt-avatar--large {
+        font-size: 4em;
+      }
+      
+      .kt-avatar--extra-large {
+        font-size: 6em;
+      }
+      
+      /* Images dans l'avatar */
+      .kt-avatar img {
+        width: 2em;
+        height: 2em;
+        border-radius: var(--kt-radius-round) !important;
+        object-fit: cover !important;
+        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      /* Composant Child Name Header - En-tête nom d'enfant */
+      .kt-child-name-header {
+        font-size: 1.3em;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .kt-child-name-header--compact {
+        font-size: 1.1em;
+        margin: 0 0 8px 0;
+      }
+      
+      .kt-child-name-header--large {
+        font-size: 1.5em;
+        margin: 0 0 16px 0;
+      }
+      
+      /* Composant Level Badge - Badge de niveau standardisé */
+      .kt-level-badge {
+        border-radius: var(--kt-radius-md);
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 12px;
+        min-width: 60px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .kt-level-badge--modal {
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--child-card {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--compact {
+        font-size: 0.7em;
+        padding: 2px 8px;
+        min-width: 40px;
+      }
+      
+      /* Composant Child Info - Conteneur d'informations enfant pour modales */
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-lg);
+        margin-bottom: var(--kt-space-lg);
+      }
+      
+      .kt-child-info--compact {
+        gap: var(--kt-space-md);
+        margin-bottom: var(--kt-space-md);
+      }
+      
+      /* Composant Child Details - Détails complémentaires */
+      .kt-child-details {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .kt-child-details .current-stats {
+        display: flex;
+        gap: var(--kt-space-md);
+        flex-wrap: wrap;
+      }
+      
+      .kt-child-details .current-stats .stat {
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--secondary-text-color, #666);
+      }
+      
+      /* Classes utilitaires */
+      .avatar-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        font-size: 20px;
+        color: rgba(0, 0, 0, 0.4);
+        z-index: 1;
+      }
+      
+      .avatar-placeholder-large {
+        border-radius: var(--kt-radius-md);
+        font-size: 32px;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(0, 0, 0, 0.4);
+        border: 2px solid var(--kt-cosmetic-border);
+      }
+    `;
+  }
+  
   static removeGlobalStyles() {
     const existingStyles = document.querySelector('#kids-tasks-global-styles');
     if (existingStyles) {
@@ -1456,9 +1631,11 @@ class KidsTasksBaseCard extends HTMLElement {
       }
 
       /* === COMPOSANTS CSS SHADOW DOM === */
+      ${KidsTasksStyleManager.getShadowDOMStyles()}
       
+      /* Alias pour compatibilité */
       .child-name-header {
-        /* Alias vers le nouveau composant */
+        /* Alias vers kt-child-name-header */
         font-size: 1.3em;
         font-weight: 700;
         text-align: center;
@@ -1468,7 +1645,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .level-badge {
-        /* Alias vers le nouveau composant avec style de base */
+        /* Alias vers kt-level-badge */
         border-radius: var(--kt-radius-md);
         font-size: 0.8em;
         font-weight: 600;
@@ -1482,7 +1659,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .child-info {
-        /* Alias vers le nouveau composant */
+        /* Alias vers kt-child-info */
         display: flex;
         align-items: center;
         gap: var(--kt-space-md);
@@ -9288,5 +9465,60 @@ window.KidsTasksDebug = {
       version: styles?.getAttribute('data-version'),
       size: styles?.textContent?.length || 0
     };
+  },
+  testHybridSystem: () => {
+    console.log('=== TEST DU SYSTÈME HYBRIDE ===');
+    
+    // Test 1: Styles globaux pour modales
+    const globalDiv = document.createElement('div');
+    globalDiv.className = 'kids-tasks-scope';
+    globalDiv.innerHTML = `
+      <h3>Test Global (Modales)</h3>
+      <div class="kt-avatar-container">
+        <div class="kt-avatar kt-avatar--large">🌍</div>
+        <div class="kt-level-badge kt-level-badge--modal">Global</div>
+      </div>
+    `;
+    globalDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: rgba(0,255,0,0.1); padding: 10px; border: 2px solid green; z-index: 10000;';
+    document.body.appendChild(globalDiv);
+    
+    // Test 2: Créer une carte Shadow DOM temporaire
+    const shadowHost = document.createElement('div');
+    const shadowRoot = shadowHost.attachShadow({mode: 'open'});
+    shadowRoot.innerHTML = `
+      <style>
+        ${KidsTasksStyleManager.getShadowDOMStyles()}
+        .test-container {
+          background: rgba(255,0,0,0.1);
+          padding: 10px;
+          border: 2px solid red;
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          z-index: 10000;
+        }
+      </style>
+      <div class="test-container">
+        <h3>Test Shadow DOM (Cartes)</h3>
+        <div class="kt-avatar-container">
+          <div class="kt-avatar kt-avatar--large">🔒</div>
+          <div class="kt-level-badge kt-level-badge--child-card">Shadow</div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(shadowHost);
+    
+    console.log('Tests créés - vérifiez visuellement les deux zones de test');
+    console.log('- Zone verte (droite) = Styles globaux pour modales');  
+    console.log('- Zone rouge (gauche) = Styles Shadow DOM pour cartes');
+    
+    // Nettoyage après 8 secondes
+    setTimeout(() => {
+      document.body.removeChild(globalDiv);
+      document.body.removeChild(shadowHost);
+      console.log('Tests nettoyés');
+    }, 8000);
+    
+    return { globalTest: !!globalDiv, shadowTest: !!shadowHost };
   }
 };
