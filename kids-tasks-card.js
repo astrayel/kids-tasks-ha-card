@@ -1607,20 +1607,6 @@ class KidsTasksBaseCard extends HTMLElement {
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
-      .level-badge {
-        /* Alias vers kt-level-badge */
-        border-radius: var(--kt-radius-md);
-        font-size: 0.8em;
-        font-weight: 600;
-        text-align: center;
-        z-index: 2;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 12px;
-        min-width: 60px;
-        color: var(--primary-text-color, #333);
-      }
-      
       .child-info {
         /* Alias vers kt-child-info */
         display: flex;
@@ -4587,7 +4573,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             <div class="cosmetic-simple-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
               <div class="cosmetic-simple-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
-                 <div class="cosmetic-simple-rarity level-badge rarity-${cosmetic.cosmetic_data?.rarity || 'common'}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
+                 <div class="cosmetic-simple-rarity kt-level-badge rarity-${cosmetic.cosmetic_data?.rarity || 'common'}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               </div>
               <div class="cosmetic-simple-info">
                 <div class="cosmetic-simple-name">${cosmetic.name}</div>
@@ -7275,25 +7261,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           align-items: flex-start;
           min-width: 80px;
         }
-        
-        .avatar-section .level-badge {
-          position: absolute;
-          top: 72px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-          color: white;
-          padding: var(--kt-space-xs) 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .level-badge {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          padding: var(--kt-space-xs) 12px;
-          min-width: 60px;
-        }
-        
+                  
         /* Navigation par onglets */
         .tabs {
           display: flex;
