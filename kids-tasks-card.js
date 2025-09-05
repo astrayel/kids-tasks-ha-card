@@ -372,7 +372,7 @@ class KidsTasksStyleManager {
       
       .kt-level-badge--child-card {
         position: absolute;
-        top: 80px;
+        top: 100px;
         background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
         color: white;
         padding: var(--kt-space-xs) 8px;
