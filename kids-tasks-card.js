@@ -550,8 +550,11 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   closeModal(dialog) {
-    if (dialog && dialog.parentNode) {
-      dialog.parentNode.removeChild(dialog);
+    if (dialog && dialog.close) {
+      dialog.close();
+      if (dialog.parentNode) {
+        dialog.parentNode.removeChild(dialog);
+      }
     }
   }
 
@@ -590,7 +593,6 @@ class KidsTasksBaseCard extends HTMLElement {
     if (!child) {
       return '👶';
     }
-    
     const avatarType = child.avatar_type || 'emoji';
     
     if (avatarType === 'emoji') {
@@ -604,6 +606,18 @@ class KidsTasksBaseCard extends HTMLElement {
       }
     }
     return child.avatar || '👶';
+  }
+
+  getAssignedChildrenNames(task) {
+    if (!this._hass) return [];
+    
+    const children = this.getChildren();
+    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
+    
+    return assignedIds.map(assignedChildId => {
+      const child = children.find(c => c.id === assignedChildId);
+      return child ? child.name : 'Enfant inconnu';
+    }).filter(name => name);
   }
 
   getCosmeticImagePath(cosmeticType, fileName) {
@@ -665,6 +679,16 @@ class KidsTasksBaseCard extends HTMLElement {
       default:
         return '🎨';
     }
+  }
+
+  emptySection(icon, text, subtext){
+    return `
+        <div class="empty-state">
+          <div class="empty-icon">${icon}</div>
+          <div class="empty-text">${text}</div>
+          <div class="empty-subtext">${subtext}</div>
+        </div>
+      `;
   }
 
   // Méthode héritée - peut être surchargée dans les classes filles
@@ -901,8 +925,7 @@ class KidsTasksBaseCard extends HTMLElement {
         justify-content: flex-end;
         margin-top: var(--kt-space-xl);
       }
-      
-
+    
       /* Classes utilitaires pour styles inline répétitifs */
       .avatar-placeholder {
         position: absolute;
@@ -975,23 +998,21 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .task.pending {
-        border-left-color: var(--kt-status-pending);
         border-left: 4px solid var(--kt-status-pending);
         background: #fff3e0;
       }
 
-      /* Liserets colorés selon le statut de retard */
       .task.on-time, coin-earned {
-        border-left: 4px solid #4caf50; /* Vert pour à l'heure */
+        border-left: 4px solid var(--kt-status-validated); 
       }
         
       .task.delayed, coin-lost {
-        border-left: 4px solid #f44336; /* Rouge pour en retard */
+        border-left: 4px solid var(--kt-status-failed);
       }
         
       /* Liseret vert pour les tâches réussies dans la carte enfant */
       .task.success-border {
-        border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
+        border-left: 4px solid var(--kt-status-completed); 
       }
 
       .task-top-row {
@@ -1565,12 +1586,6 @@ class KidsTasksBaseCard extends HTMLElement {
           font-size: 0.9em;
         }
         
-        .btn-compact {
-          padding: var(--kt-space-xs) 8px;
-          font-size: 0.75em;
-          min-width: 60px;
-        }
-        
         /* Force les containers à prendre toute la largeur */
         .child-card.unified {
           width: 100% !important;
@@ -1753,8 +1768,6 @@ class KidsTasksBaseCard extends HTMLElement {
     
     return gaugesHtml;
   }
-
-  // Fonctions communes dupliquées - déplacées ici pour éviter redondance
   
   formatAssignedChildren(task) {
     const childrenNames = this.getAssignedChildrenNames(task);
@@ -3090,15 +3103,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return dialog;
   }
 
-  closeModal(dialog) {
-    if (dialog && dialog.close) {
-      dialog.close();
-      if (dialog.parentNode) {
-        dialog.parentNode.removeChild(dialog);
-      }
-    }
-  }
-
   showChildForm(editChildId = null) {
     const children = this.getChildren();
     const child = editChildId ? children.find(c => c.id === editChildId) : null;
@@ -4063,18 +4067,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const child = children.find(c => c.id === childId);
     return child ? child.name : 'Non assigné';
   }
-
-  getAssignedChildrenNames(task) {
-    const children = this.getChildren();
-    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
-    
-    return assignedIds.map(assignedChildId => {
-      const child = children.find(c => c.id === assignedChildId);
-      return child ? child.name : 'Enfant inconnu';
-    }).filter(name => name);
-  }
-  
-  // formatAssignedChildren et getStatusLabel déplacées vers KidsTasksBaseCard
 
   getCategoryLabel(category) {
     // Récupérer les labels depuis l'intégration
@@ -5619,16 +5611,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           display: inline-block;
         }
         
-        .status-todo { background: var(--kt-status-todo); color: white; }
-        .status-in_progress { background: var(--kt-status-progress); color: white; }
-        .status-pending_validation { background: var(--kt-status-pending); color: white; }
-        .status-validated { background: var(--kt-status-validated); color: white; }
-        .status-failed { background: var(--kt-status-failed); color: white; }
-        
-        /* Styles de boutons spécifiques à la carte parent (hérite de la base) */
-        
         /* .form-group et .form-label définis dans showModal() */
-        
         .form-input, .form-select, .form-textarea {
           width: 100%;
           padding: var(--kt-space-sm) 12px;
@@ -6882,25 +6865,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     };
     return labels[status] || status;
   }
-  
-  getAssignedChildrenNames(task) {
-    if (!this._hass) return [];
-    
-    const children = this.getChildren();
-    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
-    
-    return assignedIds.map(assignedChildId => {
-      const child = children.find(c => c.id === assignedChildId);
-      return child ? child.name : 'Enfant inconnu';
-    }).filter(name => name);
-  }
-  
-  formatAssignedChildren(task) {
-    const childrenNames = this.getAssignedChildrenNames(task);
-    if (childrenNames.length === 0) return 'Non assigné';
-    if (childrenNames.length === 1) return childrenNames[0];
-    return childrenNames.join(', ');
-  }
 
   shouldUpdate(oldHass, newHass) {
     if (!oldHass) return true;
@@ -7051,25 +7015,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         </div>
       </div>
     `;
-  }
-  
-  getAssignedChildrenNames(task) {
-    if (!this._hass) return [];
-    
-    const children = this.getChildren();
-    const assignedIds = task.assigned_child_ids || (task.assigned_child_id ? [task.assigned_child_id] : []);
-    
-    return assignedIds.map(assignedChildId => {
-      const child = children.find(c => c.id === assignedChildId);
-      return child ? child.name : 'Enfant inconnu';
-    }).filter(name => name);
-  }
-  
-  formatAssignedChildren(task) {
-    const childrenNames = this.getAssignedChildrenNames(task);
-    if (childrenNames.length === 0) return 'Non assigné';
-    if (childrenNames.length === 1) return childrenNames[0];
-    return childrenNames.join(', ');
   }
   
   getChildren() {
@@ -7525,11 +7470,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         
         /* Styles pour l'onglet historique */
-        
-        .past-section {
-          background: var(--secondary-background-color, #fafafa);
-        }
-        
         .section-header {
           display: flex;
           align-items: center;
@@ -7620,36 +7560,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .task-action-compact {
           flex-shrink: 0;
         }
-        
-        .btn-compact {
-          background: var(--primary-color, #3f51b5);
-          color: white;
-          border: none;
-          padding: 6px 12px;
-          border-radius: var(--kt-radius-lg);
-          font-size: 0.8em;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-          min-width: 70px;
-        }
-        
-        .btn-compact.btn-complete {
-          background: var(--success-color, #4CAF50);
-        }
-        
-        .btn-compact.btn-validate {
-          background: var(--warning-color, #FF9800);
-        }
-        
-        .btn-compact:hover {
-          transform: scale(1.05);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .btn-compact:active {
-          transform: scale(0.95);
-        }
+
         
         /* Indicateurs de statut pour les tâches */
         .status {
@@ -7825,13 +7736,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   // Onglet des tâches actives
   renderTasksTab(tasks) {
     if (tasks.length === 0) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">🎉</div>
-          <div class="empty-text">Toutes les tâches sont terminées !</div>
-          <div class="empty-subtext">Bravo ! Tu as tout fini.</div>
-        </div>
-      `;
+      return emptySection('🎉', 'Toutes les tâches sont terminées !', 'Bravo ! Tu as tout fini.');
     }
 
     return `
@@ -7895,13 +7800,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const allPastTasks = [...tasks, ...bonusTaskOccurrences];
     
     if (allPastTasks.length === 0) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">📚</div>
-          <div class="empty-text">Aucune tâche passée</div>
-          <div class="empty-subtext">Tes tâches terminées apparaîtront ici.</div>
-        </div>
-      `;
+      return this.emptySection('📚', 'Aucune tâche passée', 'Tes tâches terminées apparaîtront ici.');
     }
 
     // Séparer les tâches réussies des tâches manquées
@@ -8031,13 +7930,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   // Onglet des récompenses
   renderRewardsTab(rewards, childPoints) {
     if (rewards.length === 0) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">🎁</div>
-          <div class="empty-text">Aucune récompense</div>
-          <div class="empty-subtext">Les récompenses apparaîtront ici.</div>
-        </div>
-      `;
+      return this.emptySection('🎁', 'Aucune récompense', 'Les récompenses apparaîtront ici.');
     }
 
     const child = this.getChild();
