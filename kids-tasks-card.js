@@ -457,41 +457,6 @@ class KidsTasksStyleManager {
       console.log('Kids Tasks: Global styles removed');
     }
   }
-  
-  // Méthode de test pour vérifier que les styles globaux sont bien injectés
-  static testGlobalStyles() {
-    const existingStyles = document.querySelector('#kids-tasks-global-styles');
-    const testDiv = document.createElement('div');
-    testDiv.className = 'kids-tasks-scope';
-    testDiv.innerHTML = `
-      <div class="kt-avatar-container">
-        <div class="kt-avatar kt-avatar--large">🧒</div>
-        <div class="kt-level-badge kt-level-badge--modal">Test</div>
-      </div>
-      <div class="kt-child-name-header">Test Enfant</div>
-    `;
-    
-    document.body.appendChild(testDiv);
-    
-    console.log('Kids Tasks Style Test:', {
-      stylesInjected: !!existingStyles,
-      stylesVersion: existingStyles?.getAttribute('data-version'),
-      testElementCreated: !!testDiv
-    });
-    
-    // Nettoyage après 3 secondes
-    setTimeout(() => {
-      if (testDiv.parentNode) {
-        document.body.removeChild(testDiv);
-        console.log('Kids Tasks: Test element cleaned up');
-      }
-    }, 3000);
-    
-    return {
-      success: !!existingStyles,
-      version: existingStyles?.getAttribute('data-version')
-    };
-  }
 }
 
 class KidsTasksBaseCard extends HTMLElement {
@@ -9455,7 +9420,6 @@ window.KidsTasksStyleManager = KidsTasksStyleManager;
 
 // API de debug globale
 window.KidsTasksDebug = {
-  testStyles: () => KidsTasksStyleManager.testGlobalStyles(),
   injectStyles: () => KidsTasksStyleManager.injectGlobalStyles(),
   removeStyles: () => KidsTasksStyleManager.removeGlobalStyles(),
   getStylesInfo: () => {
@@ -9465,60 +9429,5 @@ window.KidsTasksDebug = {
       version: styles?.getAttribute('data-version'),
       size: styles?.textContent?.length || 0
     };
-  },
-  testHybridSystem: () => {
-    console.log('=== TEST DU SYSTÈME HYBRIDE ===');
-    
-    // Test 1: Styles globaux pour modales
-    const globalDiv = document.createElement('div');
-    globalDiv.className = 'kids-tasks-scope';
-    globalDiv.innerHTML = `
-      <h3>Test Global (Modales)</h3>
-      <div class="kt-avatar-container">
-        <div class="kt-avatar kt-avatar--large">🌍</div>
-        <div class="kt-level-badge kt-level-badge--modal">Global</div>
-      </div>
-    `;
-    globalDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: rgba(0,255,0,0.1); padding: 10px; border: 2px solid green; z-index: 10000;';
-    document.body.appendChild(globalDiv);
-    
-    // Test 2: Créer une carte Shadow DOM temporaire
-    const shadowHost = document.createElement('div');
-    const shadowRoot = shadowHost.attachShadow({mode: 'open'});
-    shadowRoot.innerHTML = `
-      <style>
-        ${KidsTasksStyleManager.getShadowDOMStyles()}
-        .test-container {
-          background: rgba(255,0,0,0.1);
-          padding: 10px;
-          border: 2px solid red;
-          position: fixed;
-          top: 10px;
-          left: 10px;
-          z-index: 10000;
-        }
-      </style>
-      <div class="test-container">
-        <h3>Test Shadow DOM (Cartes)</h3>
-        <div class="kt-avatar-container">
-          <div class="kt-avatar kt-avatar--large">🔒</div>
-          <div class="kt-level-badge kt-level-badge--child-card">Shadow</div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(shadowHost);
-    
-    console.log('Tests créés - vérifiez visuellement les deux zones de test');
-    console.log('- Zone verte (droite) = Styles globaux pour modales');  
-    console.log('- Zone rouge (gauche) = Styles Shadow DOM pour cartes');
-    
-    // Nettoyage après 8 secondes
-    setTimeout(() => {
-      document.body.removeChild(globalDiv);
-      document.body.removeChild(shadowHost);
-      console.log('Tests nettoyés');
-    }, 8000);
-    
-    return { globalTest: !!globalDiv, shadowTest: !!shadowHost };
   }
 };
