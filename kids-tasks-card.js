@@ -9271,3 +9271,22 @@ window.customCards.push({
   preview: true,
   documentationURL: 'https://github.com/astrayel/kids-tasks-card',
 });
+
+// === EXPOSITION GLOBALE POUR DEBUG ===
+// Exposer le gestionnaire de styles pour les tests et le debug
+window.KidsTasksStyleManager = KidsTasksStyleManager;
+
+// API de debug globale
+window.KidsTasksDebug = {
+  testStyles: () => KidsTasksStyleManager.testGlobalStyles(),
+  injectStyles: () => KidsTasksStyleManager.injectGlobalStyles(),
+  removeStyles: () => KidsTasksStyleManager.removeGlobalStyles(),
+  getStylesInfo: () => {
+    const styles = document.querySelector('#kids-tasks-global-styles');
+    return {
+      injected: !!styles,
+      version: styles?.getAttribute('data-version'),
+      size: styles?.textContent?.length || 0
+    };
+  }
+};
