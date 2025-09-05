@@ -1932,7 +1932,6 @@ class KidsTasksBaseCard extends HTMLElement {
           ${showActions ? '<div class="child-border"></div>' : ''}
           ${showActions ? `<button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">×</button>` : ''}
           
-          <!-- Header avec le style de la carte enfant -->
           <div class="child-border"></div>
           <div class="header">
             <div class="header-content">
@@ -7261,7 +7260,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           align-items: flex-start;
           min-width: 80px;
         }
-                  
+
         /* Navigation par onglets */
         .tabs {
           display: flex;
@@ -8061,7 +8060,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     // Filtrer uniquement les tâches bonus (frequency='none')
     const bonusTasks = allTasks.filter(task => task.frequency === 'none');
     
-    if (bonusTasks.length === 0) {
+    this.renderTasksTab(bonusTasks);
+/*    if (bonusTasks.length === 0) {
       return `
         <div class="empty-state">
           <div class="empty-icon">⭐</div>
@@ -8075,7 +8075,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       <div class="task-list">
         ${bonusTasks.map(task => this.renderBonusTaskCard(task)).join('')}
       </div>
-    `;
+    `;*/
   }
 
   // Méthode pour afficher une carte de tâche bonus
