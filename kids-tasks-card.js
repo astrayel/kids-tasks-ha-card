@@ -7840,7 +7840,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       case 'past':
         return this.renderPastTab(taskCategories.completed.concat(taskCategories.past));
       case 'bonus':
-        return this.renderPastTab(taskCategories.bonus);
+        return this.renderTasksTab(taskCategories.bonus);
       case 'rewards':
         return this.renderRewardsTab(rewards, child.points);
       default:
