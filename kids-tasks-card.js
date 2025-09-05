@@ -651,9 +651,9 @@ class KidsTasksBaseCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 40px; height: 40px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient};"></div>`;
         }
-        return `<div class="cosmetic-background-preview" style="background: var(--kt-gradient-neutral); width: 40px; height: 40px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="cosmetic-background-preview"></div>`;
         
       case 'outfit':
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
@@ -1262,9 +1262,17 @@ class KidsTasksBaseCard extends HTMLElement {
         image-rendering: pixelated;
       }
       
-      .cosmetic-background-preview {
+      .background-preview {
         border-radius: var(--kt-radius-round);
-        border: 1px solid var(--kt-cosmetic-border);
+        border: 2px solid var(--kt-cosmetic-border);
+        background: var(--kt-gradient-neutral); 
+        width: 54px; 
+        height: 54px; 
+      }
+      
+      .background-preview.large {
+        width: 108px; 
+        height: 108px;
       }
       
       .cosmetic-outfit-preview {
@@ -4669,9 +4677,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogItemData.css_gradient) {
-          return `<div class="background-preview" style="background: ${catalogItemData.css_gradient}; width: 100px; height: 100px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="background-preview large" style="background: ${catalogItemData.css_gradient};"></div>`;
         }
-        return `<div class="background-preview" style="background: var(--kt-gradient-neutral); width: 100px; height: 100px; border-radius: var(--kt-radius-round); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+        return `<div class="background-preview large"></div>`;
         
       case 'outfit':
         if (catalogItemData.pixel_art && typeof catalogItemData.pixel_art === 'string' && catalogItemData.pixel_art.endsWith('.png')) {
@@ -7413,13 +7421,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           image-rendering: pixelated;
         }
         
-        .cosmetic-background-preview {
-          width: 20px;
-          height: 12px;
-          border-radius: 3px;
-          border: 1px solid var(--kt-cosmetic-border);
-        }
-        
         .cosmetic-outfit-preview {
           position: relative;
           font-size: 1em;
@@ -7435,13 +7436,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .cosmetic-theme-preview {
           display: flex;
           gap: 2px;
-        }
-        
-        .theme-color {
-          width: 8px;
-          height: 8px;
-          border-radius: var(--kt-radius-round);
-          border: 1px solid rgba(255,255,255,0.3);
         }
 
         /* États vides */
@@ -8128,7 +8122,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient}; width: 54px; height: 54px; border-radius: var(--kt-radius-sm); border: 1px solid var(--kt-cosmetic-border);"></div>`;
+          return `<div class="background-preview" style="background: ${catalogData.css_gradient};"></div>`;
         }
         return '🖼️';
         
@@ -8185,7 +8179,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview-large" style="background: ${catalogData.css_gradient}; width: 100px; height: 100px; border-radius: var(--kt-radius-lg); border: 2px solid rgba(0,0,0,0.1);"></div>`;
+          return `<div class="background-preview large" style="background: ${catalogData.css_gradient};"></div>`;
         }
         return '🖼️';
         
@@ -8922,13 +8916,6 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           image-rendering: pixelated;
         }
         
-        .background-preview {
-          width: 60px;
-          height: 40px;
-          border-radius: var(--kt-radius-sm);
-          border: 2px solid rgba(255,255,255,0.8);
-        }
-        
         .outfit-preview {
           position: relative;
           font-size: 2.5em;
@@ -8949,13 +8936,6 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
         .theme-preview {
           display: flex;
           gap: 4px;
-        }
-        
-        .theme-color {
-          width: 24px;
-          height: 24px;
-          border-radius: var(--kt-radius-round);
-          border: 2px solid rgba(255,255,255,0.8);
         }
         
         .generic-preview {
@@ -9030,34 +9010,6 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           display: flex;
           gap: 8px;
           align-items: center;
-        }
-        
-        .cost-points {
-          background: var(--kt-info);
-          color: white;
-          padding: var(--kt-space-xs) 8px;
-          border-radius: var(--kt-radius-md);
-          font-size: 0.8em;
-          font-weight: 500;
-        }
-        
-        .cost-coins {
-          background: var(--kt-warning);
-          color: white;
-          padding: var(--kt-space-xs) 8px;
-          border-radius: var(--kt-radius-md);
-          font-size: 0.8em;
-          font-weight: 500;
-        }
-        
-        .empty-category-message {
-          text-align: center;
-        }
-        
-        .empty-category-message .hint {
-          font-size: 0.85em;
-          opacity: 0.7;
-          margin-top: 8px;
         }
         
         .section-actions {
