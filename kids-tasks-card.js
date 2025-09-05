@@ -716,7 +716,7 @@ class KidsTasksBaseCard extends HTMLElement {
         /* Status unifié */
         --kt-status-todo: var(--kt-warning);
         --kt-status-progress: var(--kt-info);
-        --kt-status-pending: #ff5722;
+        --kt-status-pending: #ff9800;
         --kt-status-validated: var(--kt-success);
         --kt-status-failed: var(--kt-error);
         
@@ -940,7 +940,13 @@ class KidsTasksBaseCard extends HTMLElement {
       .p-lg { padding: var(--kt-space-lg); }
       .p-xl { padding: var(--kt-space-xl); }
 
-      /* Tâches */   
+      /* Tâches */  
+      .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
       .task {
         display: flex;
         align-items: center;
@@ -954,16 +960,32 @@ class KidsTasksBaseCard extends HTMLElement {
         position: relative;
       }   
 
+      .task.inactive {
+        opacity: 0.6;
+        border-left-color: #ccc;
+      }
+      
+      .task.out-of-period {
+        border-left-color: var(--kt-warning);
+        background: #fff8e1;
+      }
+      
+      .task.validated {
+        border-left-color: var(--kt-success);
+      }
+      
+      .task.pending {
+        border-left-color: var(--kt-status-pending);
+        border-left: 4px solid var(--kt-status-pending);
+        background: #fff3e0;
+      }
+
       /* Liserets colorés selon le statut de retard */
-      .task.on-time, 🎫-earned {
+      .task.on-time, coin-earned {
         border-left: 4px solid #4caf50; /* Vert pour à l'heure */
       }
         
-      .task.pending {
-        border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
-      }
-        
-      .task.delayed, 🎫-lost {
+      .task.delayed, coin-lost {
         border-left: 4px solid #f44336; /* Rouge pour en retard */
       }
         
@@ -971,7 +993,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .task.success-border {
         border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
       }
-        
+
       .task-top-row {
         display: flex;
         align-items: center;
@@ -5093,35 +5115,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           color: var(--primary-text-color, #212121);
         }
         .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
-        
-        /* Styles pour l'affichage compact des tâches */
-        .task-list {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        
-        /* Task hover effect handled by hover-card utility class */
-        
-        .task.inactive {
-          opacity: 0.6;
-          border-left-color: #ccc;
-        }
-        
-        .task.out-of-period {
-          border-left-color: var(--kt-warning);
-          background: #fff8e1;
-        }
-        
-        .task.validated {
-          border-left-color: var(--kt-success);
-        }
-        
-        .task.pending_validation {
-          border-left-color: var(--kt-status-pending);
-          background: #fff3e0;
-        }
-        
+              
         .task-name {
           font-weight: 600;
           color: var(--primary-text-color, #212121);
