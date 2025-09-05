@@ -8060,7 +8060,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     // Filtrer uniquement les tâches bonus (frequency='none')
     const bonusTasks = allTasks.filter(task => task.frequency === 'none');
     
-    this.renderTasksTab(bonusTasks);
+    return this.renderTasksTab(bonusTasks);
 /*    if (bonusTasks.length === 0) {
       return `
         <div class="empty-state">
