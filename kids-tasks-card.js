@@ -940,7 +940,38 @@ class KidsTasksBaseCard extends HTMLElement {
       .p-lg { padding: var(--kt-space-lg); }
       .p-xl { padding: var(--kt-space-xl); }
 
-      /* Tâches */      
+      /* Tâches */   
+      .task {
+        display: flex;
+        align-items: center;
+        padding: var(--kt-space-sm) 12px;
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: 6px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        transition: all 0.3s ease;
+        min-height: 48px;
+        gap: 12px;
+        position: relative;
+      }   
+
+      /* Liserets colorés selon le statut de retard */
+      .task.on-time, 🎫-earned {
+        border-left: 4px solid #4caf50; /* Vert pour à l'heure */
+      }
+        
+      .task.pending {
+        border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
+      }
+        
+      .task.delayed, 🎫-lost {
+        border-left: 4px solid #f44336; /* Rouge pour en retard */
+      }
+        
+      /* Liseret vert pour les tâches réussies dans la carte enfant */
+      .task.success-border {
+        border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
+      }
+        
       .task-top-row {
         display: flex;
         align-items: center;
@@ -1219,7 +1250,6 @@ class KidsTasksBaseCard extends HTMLElement {
         font-size: 3em;
       }
       
-
       .pixel-art-preview {
         max-width: 64px;
         max-height: 64px;
@@ -1566,8 +1596,6 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-top: var(--kt-space-md);
       }
       
-
-
       .child-border {
         position: absolute;
         left: 0;
@@ -4331,7 +4359,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     return `
-      <div class="task-item hover-card ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
+      <div class="task hover-card ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
         <div class="task-icon">${taskIcon}</div>
         <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
@@ -4491,7 +4519,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }
     
     return `
-      <div class="validation-task-item">
+      <div class="validation-task">
         <div class="validation-task-icon">${taskIcon}</div>
         <div class="validation-task-content flex-content">
           <div class="validation-task-header">
@@ -5045,7 +5073,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           transition: width 0.6s ease;
         }
         
-        /* .task-item styles inherited from base class */
+        /* .task styles inherited from base class */
         .task-top-row {
           display: flex;
           align-items: center;
@@ -5070,37 +5098,26 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .task-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-        }
-        
-        .task-item {
-          display: flex;
-          align-items: center;
-          padding: var(--kt-space-sm) 12px;
-          background: var(--secondary-background-color, #fafafa);
-          border-radius: 6px;
-          border-left: 3px solid #ddd;
-          transition: all 0.3s ease;
-          min-height: 50px;
+          gap: 6px;
         }
         
         /* Task hover effect handled by hover-card utility class */
         
-        .task-item.inactive {
+        .task.inactive {
           opacity: 0.6;
           border-left-color: #ccc;
         }
         
-        .task-item.out-of-period {
+        .task.out-of-period {
           border-left-color: var(--kt-warning);
           background: #fff8e1;
         }
         
-        .task-item.validated {
+        .task.validated {
           border-left-color: var(--kt-success);
         }
         
-        .task-item.pending_validation {
+        .task.pending_validation {
           border-left-color: var(--kt-status-pending);
           background: #fff3e0;
         }
@@ -5239,7 +5256,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           gap: 8px;
         }
         
-        .validation-task-item {
+        .validation-task {
           display: flex;
           align-items: center;
           padding: var(--kt-space-md);
@@ -5250,7 +5267,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           transition: all 0.3s ease;
         }
         
-        .validation-task-item:hover {
+        .validation-task:hover {
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           transform: translateY(-2px);
         }
@@ -5343,7 +5360,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         /* Améliorations pour mobile - validations */
         @media (max-width: 768px) {
-          .validation-task-item {
+          .validation-task {
             flex-direction: column;
             align-items: stretch;
             padding: var(--kt-space-lg);
@@ -7581,43 +7598,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .penalty-date::before {
           content: "⏰ ";
-        }
-        
-        /* Styles pour les tâches compactes */
-        .task-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        
-        .task {
-          display: flex;
-          align-items: center;
-          background: var(--secondary-background-color, #fafafa);
-          border-radius: var(--kt-radius-sm);
-          padding: var(--kt-space-sm) 12px;
-          border: 1px solid var(--divider-color, #e0e0e0);
-          min-height: 48px;
-          gap: 12px;
-          position: relative;
-        }
-        
-        /* Liserets colorés selon le statut de retard */
-        .task.on-time, 🎫-earned {
-          border-left: 4px solid #4caf50; /* Vert pour à l'heure */
-        }
-        
-        .task.pending {
-          border-left: 4px solid #ff9800; /* Orange pour en attente de validation */
-        }
-        
-        .task.delayed, 🎫-lost {
-          border-left: 4px solid #f44336; /* Rouge pour en retard */
-        }
-        
-        /* Liseret vert pour les tâches réussies dans la carte enfant */
-        .task.success-border {
-          border-left: 4px solid #4caf50; /* Vert pour les tâches réussies */
         }
         
         .task-name {
