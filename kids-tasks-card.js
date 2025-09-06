@@ -53,6 +53,8 @@ class KidsTasksStyleManager {
         --kt-points-color: var(--kt-success);
         --kt-coins-color: #9C27B0;
         --kt-penalty-color: var(--kt-error);
+        --kt-points-plus: var(--kt-success);
+        --kt-points-minus: var(--kt-error);
         
         /* Raretés cosmétiques */
         --kt-rarity-common: #9e9e9e;
@@ -1428,51 +1430,6 @@ class KidsTasksBaseCard extends HTMLElement {
         background: var(--kt-surface-variant);
         border-radius: var(--kt-radius-round);
         flex-shrink: 0;
-      }
-      
-      .entry-title {
-        display: flex;
-        flex-direction: row;
-      }
-
-      .entry-content {
-        flex: 1;
-        min-width: 0;
-      }
-      
-      .entry-description {
-        font-weight: 600;
-        color: var(--primary-text-color, #212121);
-        margin-bottom: var(--kt-space-xs);
-        line-height: 1.3;
-      }
-      
-      .entry-date {
-        font-weight: 500;
-      }
-      
-      .entry-type {
-        background: var(--kt-surface-variant);
-        padding: 2px var(--kt-space-xs);
-        border-radius: var(--kt-radius-sm);
-      }
-      
-      .entry-points {
-        font-weight: 700;
-        font-size: 1.1em;
-        padding: var(--kt-space-xs) var(--kt-space-sm);
-        border-radius: var(--kt-radius-md);
-        flex-shrink: 0;
-      }
-      
-      .entry-points.points-positive {
-        color: var(--kt-success);
-        background: rgba(76, 175, 80, 0.1);
-      }
-      
-      .entry-points.points-negative {
-        color: var(--kt-error);
-        background: rgba(244, 67, 54, 0.1);
       }
       
       .empty-history {
@@ -3364,7 +3321,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     
     const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
-    const pointsClass = entry.points_delta > 0 ? 'points-positive' : 'points-negative';
+    const pointsClass = entry.points_delta > 0 ? 'plus' : 'minus';
     const actionIcon = this.getActionIcon(entry.action_type);
 
     return `
@@ -3374,9 +3331,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="entry-description">${entry.description || 'Action inconnue'}</div>
         </div>
         <div class="entry-content">
-          <span class="entry-date">${dateStr} à ${timeStr}</span>
+          <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>  
           <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
-          <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>
+          <span class="entry-date">(${dateStr} à ${timeStr})</span>
         </div>
         </div>
       </div>
@@ -5174,6 +5131,51 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-weight: bold;
         }
         
+        .entry-title {
+          display: flex;
+          flex-direction: row;
+        }
+
+        .entry-content {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .entry-description {
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+          margin-bottom: var(--kt-space-xs);
+          line-height: 1.3;
+        }
+
+        .entry-date {
+          font-style: italic;
+          font-size: 0.85em;
+        }
+
+        .entry-type {
+          background: var(--kt-surface-variant);
+          padding: 2px var(--kt-space-xs);
+          border-radius: var(--kt-radius-sm);
+        }
+
+        .entry-points {
+          font-weight: 700;
+          font-size: 1.1em;
+          padding: var(--kt-space-xs) var(--kt-space-sm);
+          border-radius: var(--kt-radius-md);
+          flex-shrink: 0;
+        }
+
+        .entry-points.plus {
+          color: var(--kt-points-plus);
+        }
+
+        .entry-points.minus {
+          color: var(--kt-points-minus);
+        }
+
+
         .task-actions-compact {
           display: flex;
           gap: 4px;
