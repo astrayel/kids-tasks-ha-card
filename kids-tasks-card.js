@@ -183,38 +183,18 @@ class KidsTasksStyleManager {
       
       /* Composant Level Badge - Badge de niveau standardisé */
       .kids-tasks-scope .kt-level-badge {
+        position: absolute;
+        top: 80px
         border-radius: var(--kt-radius-md);
         font-size: 0.8em;
         font-weight: 600;
         text-align: center;
         z-index: 2;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
         backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 12px;
+        padding: var(--kt-space-xs) 8px;
         min-width: 60px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .kids-tasks-scope .kt-level-badge--modal {
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        color: white;
-        padding: var(--kt-space-xs) 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
-      .kids-tasks-scope .kt-level-badge--child-card {
-        position: absolute;
-        top: 80px
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        color: white;
-        padding: var(--kt-space-xs) 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
-      .kids-tasks-scope .kt-level-badge--compact {
-        font-size: 0.7em;
-        padding: 2px 8px;
-        min-width: 40px;
       }
       
       /* Composant Child Info - Conteneur d'informations enfant pour modales */
@@ -486,13 +466,6 @@ class KidsTasksStyleManager {
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       
-      .kt-level-badge--modal {
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        color: white;
-        padding: var(--kt-space-xs) 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
       .kt-level-badge--child-card {
         position: absolute;
         top: 100px;
@@ -500,12 +473,6 @@ class KidsTasksStyleManager {
         color: white;
         padding: var(--kt-space-xs) 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
-      .kt-level-badge--compact {
-        font-size: 0.7em;
-        padding: 2px 8px;
-        min-width: 40px;
       }
       
       /* Composant Child Info - Conteneur d'informations enfant pour modales */
@@ -3416,7 +3383,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
               <div class="kt-child-name-header">${child.name}</div>
               <div class="kt-avatar-container">
                 <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
-                <div class="kt-level-badge kt-level-badge--modal">Niveau ${child.level || 1}</div>
+                <div class="kt-level-badge">Niveau ${child.level || 1}</div>
               </div>
             </div>
             <div class="kt-child-details">
@@ -7083,7 +7050,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
               <div class="kt-child-name-header">${child.name}</div>
               <div class="kt-avatar-container">
                 <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
-                <div class="kt-level-badge kt-level-badge--child-card">Niveau ${stats.level}</div>
+                <div class="kt-level-badge">Niveau ${stats.level}</div>
               </div>
             </div>
             ` : `
