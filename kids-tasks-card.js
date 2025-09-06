@@ -184,7 +184,7 @@ class KidsTasksStyleManager {
       /* Composant Level Badge - Badge de niveau standardisé */
       .kids-tasks-scope .kt-level-badge {
         position: absolute;
-        top: 80px
+        top: 80px;
         border-radius: var(--kt-radius-md);
         font-size: 0.8em;
         font-weight: 600;
