@@ -316,6 +316,50 @@ class KidsTasksStyleManager {
         box-shadow: 0 2px 8px var(--kt-shadow-light);
       }
       
+      .kids-tasks-scope .entry-title {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .kids-tasks-scope .entry-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .kids-tasks-scope .entry-description {
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+        margin-bottom: var(--kt-space-xs);
+        line-height: 1.3;
+      }
+
+      .kids-tasks-scope .entry-date {
+        font-style: italic;
+        font-size: 0.85em;
+      }
+
+      .kids-tasks-scope .entry-type {
+        background: var(--kt-surface-variant);
+        padding: 2px var(--kt-space-xs);
+        border-radius: var(--kt-radius-sm);
+      }
+
+      .kids-tasks-scope .entry-points {
+        font-weight: 700;
+        font-size: 1.1em;
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        border-radius: var(--kt-radius-md);
+        flex-shrink: 0;
+      }
+
+      .kids-tasks-scope .entry-points.plus {
+        color: var(--kt-points-plus);
+      }
+
+      .kids-tasks-scope .entry-points.minus {
+        color: var(--kt-points-minus);
+      }
+
       .kids-tasks-scope .entry-icon {
         font-size: 1.5em;
         width: 40px;
@@ -5225,51 +5269,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-size: 0.75em;
           font-weight: bold;
         }
-        
-        .entry-title {
-          display: flex;
-          flex-direction: row;
-        }
-
-        .entry-content {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .entry-description {
-          font-weight: 600;
-          color: var(--primary-text-color, #212121);
-          margin-bottom: var(--kt-space-xs);
-          line-height: 1.3;
-        }
-
-        .entry-date {
-          font-style: italic;
-          font-size: 0.85em;
-        }
-
-        .entry-type {
-          background: var(--kt-surface-variant);
-          padding: 2px var(--kt-space-xs);
-          border-radius: var(--kt-radius-sm);
-        }
-
-        .entry-points {
-          font-weight: 700;
-          font-size: 1.1em;
-          padding: var(--kt-space-xs) var(--kt-space-sm);
-          border-radius: var(--kt-radius-md);
-          flex-shrink: 0;
-        }
-
-        .entry-points.plus {
-          color: var(--kt-points-plus);
-        }
-
-        .entry-points.minus {
-          color: var(--kt-points-minus);
-        }
-
 
         .task-actions-compact {
           display: flex;
