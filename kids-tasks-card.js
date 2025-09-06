@@ -171,16 +171,6 @@ class KidsTasksStyleManager {
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
-      .kids-tasks-scope .kt-child-name-header--compact {
-        font-size: 1.1em;
-        margin: 0 0 8px 0;
-      }
-      
-      .kids-tasks-scope .kt-child-name-header--large {
-        font-size: 1.5em;
-        margin: 0 0 16px 0;
-      }
-      
       /* Composant Level Badge - Badge de niveau standardisé */
       .kids-tasks-scope .kt-level-badge {
         position: absolute;
