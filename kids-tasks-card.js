@@ -68,6 +68,10 @@ class KidsTasksStyleManager {
         --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
         --kt-overlay: rgba(0, 0, 0, 0.5);
         
+        /* Surfaces et bordures */
+        --kt-surface-variant: var(--secondary-background-color, #fafafa);
+        --kt-border-thin: 1px solid var(--divider-color, #e0e0e0);
+        
         /* Avatar et cosmétiques */
         --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
         --kt-cosmetic-border: rgba(0,0,0,0.1);
@@ -271,6 +275,82 @@ class KidsTasksStyleManager {
         justify-content: center;
         color: rgba(0, 0, 0, 0.4);
         border: 2px solid var(--kt-cosmetic-border);
+      }
+      
+      /* === INTERFACE HISTORIQUE === */
+      .kids-tasks-scope .child-history-container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .kids-tasks-scope .history-header {
+        padding: var(--kt-space-lg);
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        margin-bottom: var(--kt-space-lg);
+      }
+      
+      .kids-tasks-scope .history-content {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      
+      .kids-tasks-scope .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .kids-tasks-scope .history-entry {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+        padding: var(--kt-space-md);
+        background: var(--card-background-color, #fff);
+        border: var(--kt-border-thin);
+        border-radius: var(--kt-radius-lg);
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .kids-tasks-scope .history-entry:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+      
+      .kids-tasks-scope .entry-icon {
+        font-size: 1.5em;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-round);
+        flex-shrink: 0;
+      }
+      
+      .kids-tasks-scope .empty-history {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color, #757575);
+      }
+      
+      .kids-tasks-scope .empty-icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+      
+      .kids-tasks-scope .current-stats {
+        display: flex;
+        gap: var(--kt-space-md);
+      }
+      
+      .kids-tasks-scope .current-stats .stat {
+        background: var(--kt-surface-variant);
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        border-radius: var(--kt-radius-md);
+        font-size: 0.9em;
+        font-weight: 600;
       }
     `;
   }
@@ -524,6 +604,9 @@ class KidsTasksBaseCard extends HTMLElement {
       }
     });
     
+    // Sauvegarder le style overflow du body
+    const originalOverflow = document.body.style.overflow;
+    
     const dialog = document.createElement('ha-dialog');
     dialog.setAttribute('open', '');
     dialog.setAttribute('hide-actions', '');
@@ -542,6 +625,7 @@ class KidsTasksBaseCard extends HTMLElement {
     dialog.style.zIndex = '99999';
     
     dialog._cardInstance = this;
+    dialog._originalOverflow = originalOverflow;
     document.body.appendChild(dialog);
 
     dialog.addEventListener('closed', () => {
@@ -556,6 +640,13 @@ class KidsTasksBaseCard extends HTMLElement {
       dialog.close();
       if (dialog.parentNode) {
         dialog.parentNode.removeChild(dialog);
+      }
+      // Restaurer le style overflow original du body
+      if (dialog._originalOverflow !== undefined) {
+        document.body.style.overflow = dialog._originalOverflow;
+      } else {
+        // Si pas de style original, remettre à auto pour permettre le scroll
+        document.body.style.overflow = 'auto';
       }
     }
   }
@@ -767,6 +858,10 @@ class KidsTasksBaseCard extends HTMLElement {
         --kt-shadow-medium: rgba(0, 0, 0, 0.2);
         --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
         --kt-overlay: rgba(0, 0, 0, 0.5);
+        
+        /* Surfaces et bordures */
+        --kt-surface-variant: var(--secondary-background-color, #fafafa);
+        --kt-border-thin: 1px solid var(--divider-color, #e0e0e0);
         
         /* Avatar et cosmétiques */
         --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
