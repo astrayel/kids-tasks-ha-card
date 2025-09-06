@@ -163,7 +163,7 @@ class KidsTasksStyleManager {
       
       /* Composant Child Name Header - En-tête nom d'enfant */
       .kids-tasks-scope .kt-child-name-header {
-        font-size: 1.3em;
+        font-size: 2em;
         font-weight: 700;
         text-align: center;
         margin: 0 0 12px 0;
@@ -1134,7 +1134,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       /* Réduire les jauges quand les boutons sont présents */
-      .child-card.unified:has(.btn-close) .gauges-section {
+      .child-card:has(.btn-close) .gauges-section {
         padding-right: 80px;
         max-width: calc(100% - 80px);
       }
@@ -1497,22 +1497,22 @@ class KidsTasksBaseCard extends HTMLElement {
         }
         
         /* Force les containers à prendre toute la largeur */
-        .child-card.unified {
+        .child-card {
           width: 100% !important;
           margin-left: 0 !important;
           margin-right: 0 !important;
         }
         
-        .child-card.unified .header {
+        .child-card .header {
           width: 100% !important;
           margin: 0 !important;
         }
         
-        .child-card.unified .header-content {
+        .child-card .header-content {
           width: 100% !important;
         }
         
-        .child-card.unified .gauges-section {
+        .child-card .gauges-section {
           width: 100% !important;
           flex: 1 !important;
         }
@@ -1520,7 +1520,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
 
       /* === AFFICHAGE UNIFIÉ DES ENFANTS === */
-      .child-card.unified {
+      .child-card {
         position: relative;
         background: var(--card-background-color, #fff);
         border-radius: var(--kt-radius-lg);
@@ -1530,7 +1530,7 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-bottom: var(--kt-space-md);
       }
       
-      .child-card.unified:hover {
+      .child-card:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px var(--kt-shadow-medium);
       }
@@ -1604,14 +1604,6 @@ class KidsTasksBaseCard extends HTMLElement {
         object-fit: cover !important;
         border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .kt-child-name-header {
-        font-size: 1.3em;
-        font-weight: 700;
-        text-align: center;
-        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
       .kt-level-badge {
@@ -1944,7 +1936,7 @@ class KidsTasksBaseCard extends HTMLElement {
   renderChildCard(child, showActions = false, showDragHandle = false) {
     // Protection contre les enfants undefined/null
     if (!child) {
-      return '<div class="child-card unified"><div class="error">Erreur: enfant non trouvé</div></div>';
+      return '<div class="child-card"><div class="error">Erreur: enfant non trouvé</div></div>';
     }
     
     try {
@@ -1972,7 +1964,7 @@ class KidsTasksBaseCard extends HTMLElement {
       };
 
       return `
-        <div class="child-card unified" data-child-id="${child.id || 'unknown'}">
+        <div class="child-card kids-tasks-scope" data-child-id="${child.id || 'unknown'}">
           ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
           ${showActions ? '<div class="child-border"></div>' : ''}
           ${showActions ? `<button class="btn-close" data-action="remove-child" data-id="${child.id || 'unknown'}" title="Supprimer l'enfant">×</button>` : ''}
@@ -2004,7 +1996,7 @@ class KidsTasksBaseCard extends HTMLElement {
       `;
     } catch (error) {
       console.error('Erreur dans renderChildCard:', error, 'Child data:', child);
-      return `<div class="child-card unified"><div class="error">Erreur rendu: ${error.message}</div></div>`;
+      return `<div class="child-card"><div class="error">Erreur rendu: ${error.message}</div></div>`;
     }
   }
 
@@ -4163,7 +4155,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
                 return result;
               } catch (error) {
                 console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
-                return `<div class="child-card unified"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
+                return `<div class="child-card"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
               }
             }).join('')}
           </div>
@@ -4241,7 +4233,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
                 return result;
               } catch (error) {
                 console.error(`Erreur lors du rendu de l'enfant gestion ${index}:`, error, child);
-                return `<div class="child-card unified"><div class="error">Erreur enfant gestion ${index}: ${error.message}</div></div>`;
+                return `<div class="child-card"><div class="error">Erreur enfant gestion ${index}: ${error.message}</div></div>`;
               }
             }).join('')}
           </div>
