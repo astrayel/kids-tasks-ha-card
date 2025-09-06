@@ -188,12 +188,13 @@ class KidsTasksStyleManager {
       .kids-tasks-scope .entry-content {
         display: flex;
         flex-direction: row;
+        padding-left: 2em;
       }
 
       .kids-tasks-scope .entry-description {
         font-weight: 600;
         color: var(--primary-text-color, #212121);
-        padding-left: 8px;
+        padding-left: 1em;
       }
 
       .kids-tasks-scope .entry-date {
