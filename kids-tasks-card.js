@@ -165,27 +165,12 @@ class KidsTasksStyleManager {
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       
-      /* Composant Child Name Header - En-tête nom d'enfant */
-      .kids-tasks-scope .kt-child-name-header {
-        font-size: 2em;
-        font-weight: 700;
-        text-align: center;
-        margin: 0 0 12px 0;
-        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
       /* Composant Child Info - Conteneur d'informations enfant pour modales */
       .kids-tasks-scope .kt-child-info {
         display: flex;
         align-items: center;
         gap: var(--kt-space-lg);
         margin-bottom: var(--kt-space-lg);
-      }
-      
-      .kids-tasks-scope .kt-child-info--compact {
-        gap: var(--kt-space-md);
-        margin-bottom: var(--kt-space-md);
       }
       
       /* Composant Child Details - Détails complémentaires */
@@ -410,22 +395,11 @@ class KidsTasksStyleManager {
       
       /* Composant Child Name Header - En-tête nom d'enfant */
       .kt-child-name-header {
-        font-size: 1.3em;
+        font-size: 2em;
         font-weight: 700;
         text-align: center;
-        margin: 0 0 12px 0;
         color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
-      .kt-child-name-header--compact {
-        font-size: 1.1em;
-        margin: 0 0 8px 0;
-      }
-      
-      .kt-child-name-header--large {
-        font-size: 1.5em;
-        margin: 0 0 16px 0;
       }
       
       /* Composant Level Badge - Badge de niveau standardisé */
@@ -450,11 +424,6 @@ class KidsTasksStyleManager {
         align-items: center;
         gap: var(--kt-space-lg);
         margin-bottom: var(--kt-space-lg);
-      }
-      
-      .kt-child-info--compact {
-        gap: var(--kt-space-md);
-        margin-bottom: var(--kt-space-md);
       }
       
       /* Composant Child Details - Détails complémentaires */
