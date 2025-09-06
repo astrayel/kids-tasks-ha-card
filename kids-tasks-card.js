@@ -1618,24 +1618,17 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       .kt-level-badge {
+        position: absolute;
+        top: 100px;
         border-radius: var(--kt-radius-md);
         font-size: 0.8em;
         font-weight: 600;
         text-align: center;
         z-index: 2;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 12px;
-        min-width: 60px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .kt-level-badge--child-card {
-        position: absolute;
-        top: 80px;
         background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        color: white;
+        backdrop-filter: blur(10px);
         padding: var(--kt-space-xs) 8px;
+        min-width: 60px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       }
       
