@@ -149,7 +149,6 @@ class KidsTasksStyleManager {
       }
       
       .kids-tasks-scope .history-header {
-        padding: var(--kt-space-lg);
         border-bottom: 1px solid var(--divider-color, #e0e0e0);
         margin-bottom: var(--kt-space-lg);
       }
@@ -162,14 +161,16 @@ class KidsTasksStyleManager {
       .kids-tasks-scope .history-list {
         display: flex;
         flex-direction: column;
-        gap: var(--kt-space-sm);
+        gap: var(--kt-space-xs);
       }
       
       .kids-tasks-scope .history-entry {
         display: flex;
+        flex-direction: column;
         border: var(--kt-border-thin);
         border-radius: var(--kt-radius-lg);
         transition: all var(--kt-transition-fast);
+        padding-left: 36px;
       }
       
       .kids-tasks-scope .history-entry:hover {
@@ -181,6 +182,7 @@ class KidsTasksStyleManager {
         display: flex;
         flex-direction: row;
         place-items: center;
+        padding: 4px 0px 0px 4px;
       }
 
       .kids-tasks-scope .entry-content {
@@ -224,13 +226,9 @@ class KidsTasksStyleManager {
 
       .kids-tasks-scope .entry-icon {
         font-size: 1.5em;
-        width: 40px;
-        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--kt-surface-variant);
-        border-radius: var(--kt-radius-round);
         flex-shrink: 0;
       }
       
@@ -269,6 +267,7 @@ class KidsTasksStyleManager {
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: var(--kt-space-xs);
       }
       
       /* Composant Avatar Container - Conteneur pour avatar + badge */
