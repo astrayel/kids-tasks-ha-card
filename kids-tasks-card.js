@@ -1025,7 +1025,10 @@ class KidsTasksBaseCard extends HTMLElement {
       .task-main { /* flex-content utility class */ }
 
       .task-info { flex: 1; }
-      
+      .task-icon {
+        font-size: 32px;
+      }
+
       .task-meta {
         display: flex;
         gap: var(--kt-space-md);
