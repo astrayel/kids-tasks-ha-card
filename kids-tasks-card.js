@@ -302,10 +302,6 @@ class KidsTasksStyleManager {
       
       .kids-tasks-scope .history-entry {
         display: flex;
-        align-items: center;
-        gap: var(--kt-space-md);
-        padding: var(--kt-space-md);
-        background: var(--card-background-color, #fff);
         border: var(--kt-border-thin);
         border-radius: var(--kt-radius-lg);
         transition: all var(--kt-transition-fast);
@@ -319,29 +315,30 @@ class KidsTasksStyleManager {
       .kids-tasks-scope .entry-title {
         display: flex;
         flex-direction: row;
+        place-items: center;
       }
 
       .kids-tasks-scope .entry-content {
-        flex: 1;
-        min-width: 0;
+        display: flex;
+        flex-direction: row;
       }
 
       .kids-tasks-scope .entry-description {
         font-weight: 600;
         color: var(--primary-text-color, #212121);
-        margin-bottom: var(--kt-space-xs);
-        line-height: 1.3;
+        padding-left: 8px;
       }
 
       .kids-tasks-scope .entry-date {
         font-style: italic;
-        font-size: 0.85em;
+        font-size: 0.6em;
+        align-self: center;
       }
 
       .kids-tasks-scope .entry-type {
-        background: var(--kt-surface-variant);
         padding: 2px var(--kt-space-xs);
         border-radius: var(--kt-radius-sm);
+        align-self: center;
       }
 
       .kids-tasks-scope .entry-points {
@@ -3473,7 +3470,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>  
           <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
           <span class="entry-date">(${dateStr} à ${timeStr})</span>
-        </div>
         </div>
       </div>
     `;
