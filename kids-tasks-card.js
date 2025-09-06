@@ -113,84 +113,6 @@ class KidsTasksStyleManager {
       /* Composants KT-* avec préfixe pour dialogs */
       ${this.getCoreKTStyles().replace(/\.kt-/g, '.kids-tasks-scope .kt-')}
       
-      /* === STYLES KT-* MANUELS (À SUPPRIMER) === */
-      /* Composant Avatar Section - Structure de base pour avatar + nom */
-      .kids-tasks-scope .kt-avatar-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--kt-space-sm);
-      }
-      
-      /* Composant Avatar Container - Conteneur pour avatar + badge */
-      .kids-tasks-scope .kt-avatar-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--kt-space-xs);
-      }
-      
-      /* Composant Avatar - Styles de base pour l'avatar */
-      .kids-tasks-scope .kt-avatar {
-        font-size: 3em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--kt-radius-round);
-        background: var(--kt-avatar-background);
-        border: 2px solid var(--kt-cosmetic-background);
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .kids-tasks-scope .kt-avatar--small {
-        font-size: 1.5em;
-      }
-      
-      .kids-tasks-scope .kt-avatar--large {
-        font-size: 4em;
-      }
-      
-      .kids-tasks-scope .kt-avatar--extra-large {
-        font-size: 6em;
-      }
-      
-      /* Images dans l'avatar */
-      .kids-tasks-scope .kt-avatar img {
-        width: 2em;
-        height: 2em;
-        border-radius: var(--kt-radius-round) !important;
-        object-fit: cover !important;
-        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      /* Composant Child Info - Conteneur d'informations enfant pour modales */
-      .kids-tasks-scope .kt-child-info {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-lg);
-        margin-bottom: var(--kt-space-lg);
-      }
-      
-      /* Composant Child Details - Détails complémentaires */
-      .kids-tasks-scope .kt-child-details {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .kids-tasks-scope .kt-child-details .current-stats {
-        display: flex;
-        gap: var(--kt-space-md);
-        flex-wrap: wrap;
-      }
-      
-      .kids-tasks-scope .kt-child-details .current-stats .stat {
-        font-weight: 600;
-        font-size: 0.9em;
-        color: var(--secondary-text-color, #666);
-      }
       
       /* Classes utilitaires */
       .kids-tasks-scope .avatar-placeholder {
@@ -347,7 +269,6 @@ class KidsTasksStyleManager {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: var(--kt-space-sm);
       }
       
       /* Composant Avatar Container - Conteneur pour avatar + badge */
@@ -1358,115 +1279,6 @@ class KidsTasksBaseCard extends HTMLElement {
         color: var(--secondary-text-color, #757575);
       }
       
-      /* === INTERFACE HISTORIQUE === */
-      .child-history-container {
-        max-width: 600px;
-        margin: 0 auto;
-      }
-      
-      .history-header {
-        padding: var(--kt-space-lg);
-        border-bottom: 1px solid var(--divider-color, #e0e0e0);
-        margin-bottom: var(--kt-space-lg);
-      }
-      
-      .child-info {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-md);
-      }
-      
-      .child-avatar {
-        font-size: 3em;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--kt-radius-round);
-        background: var(--kt-surface-variant);
-      }
-      
-      .child-details h3 {
-        margin: 0 0 var(--kt-space-sm) 0;
-        color: var(--primary-text-color, #212121);
-        font-size: 1.4em;
-      }
-      
-      .current-stats {
-        display: flex;
-        gap: var(--kt-space-md);
-      }
-      
-      .current-stats .stat {
-        background: var(--kt-surface-variant);
-        padding: var(--kt-space-xs) var(--kt-space-sm);
-        border-radius: var(--kt-radius-md);
-        font-size: 0.9em;
-        font-weight: 600;
-      }
-      
-      .history-content {
-        max-height: 400px;
-        overflow-y: auto;
-      }
-      
-      .history-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .history-entry {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-md);
-        padding: var(--kt-space-md);
-        background: var(--card-background-color, #fff);
-        border: var(--kt-border-thin);
-        border-radius: var(--kt-radius-lg);
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .history-entry:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--kt-shadow-light);
-      }
-      
-      .entry-icon {
-        font-size: 1.5em;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--kt-surface-variant);
-        border-radius: var(--kt-radius-round);
-        flex-shrink: 0;
-      }
-      
-      .empty-history {
-        text-align: center;
-        padding: var(--kt-space-xl);
-        color: var(--secondary-text-color, #757575);
-      }
-      
-      .empty-icon {
-        font-size: 3em;
-        margin-bottom: var(--kt-space-md);
-        opacity: 0.6;
-      }
-      
-      .history-btn {
-        background: var(--kt-info);
-        color: white;
-        border: 1px solid #2196f3;
-      }
-      
-      .history-btn:hover {
-        background: #1976d2;
-        transform: scale(1.05);
-      }
       
       .section {
         margin: var(--kt-space-xl) 0;
@@ -1497,7 +1309,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .header {
         background: linear-gradient(135deg, var(--custom-child-gradient-start, var(--header-color)) 0%, var(--custom-child-gradient-end, var(--secondary-color)) 100%);
         color: var(--custom-child-text-color, var(--header-text-color));
-        padding: 20px;
+        padding: 10px;
         position: relative;
       }
 
@@ -7171,13 +6983,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           overflow: hidden;
           max-width: 100%;
           position: relative;
-        }
-        
-        .avatar-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 80px;
         }
         
         .no-avatar-section {
