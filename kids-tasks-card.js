@@ -1568,6 +1568,101 @@ class KidsTasksBaseCard extends HTMLElement {
         cursor: grabbing;
       }
 
+      /* === COMPOSANTS KT-* POUR SHADOW DOM === */
+      .kt-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-sm);
+      }
+      
+      .kt-avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-xs);
+      }
+      
+      .kt-avatar {
+        font-size: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        background: var(--kt-avatar-background);
+        border: 2px solid var(--kt-cosmetic-background);
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .kt-avatar--large {
+        font-size: 4em;
+      }
+      
+      .kt-avatar img {
+        width: 2em;
+        height: 2em;
+        border-radius: var(--kt-radius-round) !important;
+        object-fit: cover !important;
+        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .kt-child-name-header {
+        font-size: 1.3em;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .kt-level-badge {
+        border-radius: var(--kt-radius-md);
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 12px;
+        min-width: 60px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .kt-level-badge--child-card {
+        position: absolute;
+        top: 80px;
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-lg);
+        margin-bottom: var(--kt-space-lg);
+      }
+      
+      .kt-child-details {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .kt-child-details .current-stats {
+        display: flex;
+        gap: var(--kt-space-md);
+        flex-wrap: wrap;
+      }
+      
+      .kt-child-details .current-stats .stat {
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--secondary-text-color, #666);
+      }
       
       /* Alias pour compatibilité */
       .child-name-header {
