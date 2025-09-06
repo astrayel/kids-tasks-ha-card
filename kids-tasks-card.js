@@ -110,6 +110,10 @@ class KidsTasksStyleManager {
         font-family: var(--kt-font-family);
       }
       
+      /* Composants KT-* avec préfixe pour dialogs */
+      ${this.getCoreKTStyles().replace(/\.kt-/g, '.kids-tasks-scope .kt-')}
+      
+      /* === STYLES KT-* MANUELS (À SUPPRIMER) === */
       /* Composant Avatar Section - Structure de base pour avatar + nom */
       .kids-tasks-scope .kt-avatar-section {
         display: flex;
@@ -362,6 +366,150 @@ class KidsTasksStyleManager {
         border-radius: var(--kt-radius-md);
         font-size: 0.9em;
         font-weight: 600;
+      }
+    `;
+  }
+  
+  // Méthode centrale pour les styles kt-* (source unique de vérité)
+  static getCoreKTStyles() {
+    return `
+      /* Composant Avatar Section - Structure de base pour avatar + nom */
+      .kt-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-sm);
+      }
+      
+      /* Composant Avatar Container - Conteneur pour avatar + badge */
+      .kt-avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kt-space-xs);
+      }
+      
+      /* Composant Avatar - Styles de base pour l'avatar */
+      .kt-avatar {
+        font-size: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kt-radius-round);
+        background: var(--kt-avatar-background);
+        border: 2px solid var(--kt-cosmetic-background);
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .kt-avatar--small {
+        font-size: 1.5em;
+      }
+      
+      .kt-avatar--large {
+        font-size: 4em;
+      }
+      
+      .kt-avatar--extra-large {
+        font-size: 6em;
+      }
+      
+      /* Images dans l'avatar */
+      .kt-avatar img {
+        width: 2em;
+        height: 2em;
+        border-radius: var(--kt-radius-round) !important;
+        object-fit: cover !important;
+        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      /* Composant Child Name Header - En-tête nom d'enfant */
+      .kt-child-name-header {
+        font-size: 1.3em;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      }
+      
+      .kt-child-name-header--compact {
+        font-size: 1.1em;
+        margin: 0 0 8px 0;
+      }
+      
+      .kt-child-name-header--large {
+        font-size: 1.5em;
+        margin: 0 0 16px 0;
+      }
+      
+      /* Composant Level Badge - Badge de niveau standardisé */
+      .kt-level-badge {
+        border-radius: var(--kt-radius-md);
+        font-size: 0.8em;
+        font-weight: 600;
+        text-align: center;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: var(--kt-space-xs) 12px;
+        min-width: 60px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .kt-level-badge--modal {
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--child-card {
+        position: absolute;
+        top: 80px;
+        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+        color: white;
+        padding: var(--kt-space-xs) 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .kt-level-badge--compact {
+        font-size: 0.7em;
+        padding: 2px 8px;
+        min-width: 40px;
+      }
+      
+      /* Composant Child Info - Conteneur d'informations enfant pour modales */
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-lg);
+        margin-bottom: var(--kt-space-lg);
+      }
+      
+      .kt-child-info--compact {
+        gap: var(--kt-space-md);
+        margin-bottom: var(--kt-space-md);
+      }
+      
+      /* Composant Child Details - Détails complémentaires */
+      .kt-child-details {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+      
+      .kt-child-details .current-stats {
+        display: flex;
+        gap: var(--kt-space-md);
+        flex-wrap: wrap;
+      }
+      
+      .kt-child-details .current-stats .stat {
+        font-weight: 600;
+        font-size: 0.9em;
+        color: var(--secondary-text-color, #666);
       }
     `;
   }
@@ -1559,82 +1707,8 @@ class KidsTasksBaseCard extends HTMLElement {
       }
 
       /* === COMPOSANTS KT-* POUR SHADOW DOM === */
-      .kt-avatar-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
+      ${KidsTasksStyleManager.getCoreKTStyles()}
       
-      .kt-avatar-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .kt-avatar {
-        font-size: 3em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--kt-radius-round);
-        background: var(--kt-avatar-background);
-        border: 2px solid var(--kt-cosmetic-background);
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .kt-avatar--large {
-        font-size: 4em;
-      }
-      
-      .kt-avatar img {
-        width: 2em;
-        height: 2em;
-        border-radius: var(--kt-radius-round) !important;
-        object-fit: cover !important;
-        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .kt-level-badge {
-        position: absolute;
-        top: 100px;
-        border-radius: var(--kt-radius-md);
-        font-size: 0.8em;
-        font-weight: 600;
-        text-align: center;
-        z-index: 2;
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 8px;
-        min-width: 60px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
-      .kt-child-info {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-lg);
-        margin-bottom: var(--kt-space-lg);
-      }
-      
-      .kt-child-details {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .kt-child-details .current-stats {
-        display: flex;
-        gap: var(--kt-space-md);
-        flex-wrap: wrap;
-      }
-      
-      .kt-child-details .current-stats .stat {
-        font-weight: 600;
-        font-size: 0.9em;
-        color: var(--secondary-text-color, #666);
-      }
       
       .child-info {
         /* Alias vers kt-child-info */
