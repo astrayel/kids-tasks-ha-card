@@ -461,7 +461,7 @@ class KidsTasksStyleManager {
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1;
+        z-index: 3;
         opacity: 0;
         transition: all var(--kt-transition-medium);
       }
@@ -570,6 +570,10 @@ class KidsTasksBaseCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this._initialized = false;
     
+    // Variables pour interactions tactiles
+    this._longPressTimer = null;
+    this._isLongPressing = false;
+    
     // Injecter les styles globaux dès le premier chargement
     KidsTasksStyleManager.injectGlobalStyles();
   }
@@ -644,47 +648,53 @@ class KidsTasksBaseCard extends HTMLElement {
     if (this._longPressListenersAdded) return;
     this._longPressListenersAdded = true;
     
-    let longPressTimer = null;
-    let isLongPressing = false;
-    
-    this.shadowRoot.addEventListener('pointerdown', (e) => {
+    // Utiliser les variables de classe pour éviter les conflits
+    const handlePointerDown = (e) => {
       const longPressItem = e.target.closest('.kt-long-press-item');
-      if (longPressItem) {
-        isLongPressing = false;
-        longPressTimer = setTimeout(() => {
-          isLongPressing = true;
+      if (longPressItem && !longPressItem.querySelector('.kt-delete-confirmation:not(.hidden)')) {
+        this._isLongPressing = false;
+        
+        // Nettoyer les anciens timers
+        if (this._longPressTimer) {
+          clearTimeout(this._longPressTimer);
+        }
+        
+        this._longPressTimer = setTimeout(() => {
+          this._isLongPressing = true;
           longPressItem.classList.add('long-pressing');
           this.showDeleteConfirmation(longPressItem);
-          // Retour haptique si disponible
+          // Retour haptique
           if (navigator.vibrate) {
             navigator.vibrate(50);
           }
-        }, 500); // 500ms pour l'appui long
+        }, 500);
       }
-    });
+    };
+
+    const handlePointerUp = (e) => {
+      if (this._longPressTimer) {
+        clearTimeout(this._longPressTimer);
+        this._longPressTimer = null;
+      }
+    };
+
+    const handlePointerMove = (e) => {
+      // Annuler l'appui long si mouvement détecté
+      if (this._longPressTimer) {
+        clearTimeout(this._longPressTimer);
+        this._longPressTimer = null;
+      }
+    };
     
-    this.shadowRoot.addEventListener('pointerup', (e) => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-      
-      // Nettoyer l'état d'appui long après un délai
-      setTimeout(() => {
-        const longPressingItems = this.shadowRoot.querySelectorAll('.long-pressing');
-        longPressingItems.forEach(item => {
-          item.classList.remove('long-pressing');
-        });
-      }, 100);
-    });
+    // Ajouter les listeners pour desktop et mobile
+    this.shadowRoot.addEventListener('pointerdown', handlePointerDown);
+    this.shadowRoot.addEventListener('pointerup', handlePointerUp);  
+    this.shadowRoot.addEventListener('pointermove', handlePointerMove);
     
-    this.shadowRoot.addEventListener('pointermove', (e) => {
-      // Annuler l'appui long si l'utilisateur bouge trop
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-    });
+    // Ajouter support tactile spécifique pour mobile
+    this.shadowRoot.addEventListener('touchstart', handlePointerDown, { passive: false });
+    this.shadowRoot.addEventListener('touchend', handlePointerUp);
+    this.shadowRoot.addEventListener('touchmove', handlePointerMove, { passive: false });
   }
 
   showDeleteConfirmation(item) {
@@ -708,7 +718,9 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       if (cancelBtn) {
-        cancelBtn.onclick = () => {
+        cancelBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           this.hideDeleteConfirmation(item);
         };
       }
@@ -726,6 +738,12 @@ class KidsTasksBaseCard extends HTMLElement {
       confirmation.classList.add('hidden');
     }
     item.classList.remove('long-pressing');
+    
+    // Empêcher les clics pendant 200ms après fermeture
+    item.style.pointerEvents = 'none';
+    setTimeout(() => {
+      item.style.pointerEvents = '';
+    }, 200);
   }
 
   addSwipeListeners() {
@@ -826,23 +844,35 @@ class KidsTasksBaseCard extends HTMLElement {
       }
     }, 3000);
     
-    // Gérer les clics sur les boutons d'action
+    // Gérer les clics sur les boutons d'action - toujours réattacher
     const actionButton = item.querySelector(direction === 'left' ? '.kt-reject-action' : '.kt-validate-action');
-    if (actionButton && !actionButton._clickHandlerAdded) {
-      actionButton._clickHandlerAdded = true;
-      actionButton.onclick = () => {
+    if (actionButton) {
+      // Nettoyer les anciens listeners pour éviter les doublons
+      const oldHandler = actionButton.onclick;
+      actionButton.onclick = null;
+      
+      actionButton.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const taskId = item.dataset.taskId;
         const action = actionButton.dataset.action;
+        
         
         if (taskId && action) {
           this.handleValidationAction(action, taskId);
           this.animateTaskAction(item, direction);
         }
       };
+      
+      // Marquer le bouton comme ayant un handler
+      actionButton._clickHandlerAdded = true;
     }
   }
 
   handleValidationAction(action, taskId) {
+    if (!this._hass) return;
+    
     if (action === 'validate-task') {
       this._hass.callService('kids_tasks', 'validate_task', {
         task_id: taskId
