@@ -1192,7 +1192,7 @@ class KidsTasksBaseCard extends HTMLElement {
         border-left: 3px solid var(--kt-info);
       }
       
-      .task-actions {
+      .actions {
         display: flex;
         gap: var(--kt-space-sm);
         margin-top: var(--kt-space-sm);
@@ -1525,7 +1525,7 @@ class KidsTasksBaseCard extends HTMLElement {
           padding: var(--kt-space-lg);
         }
         
-        .task-actions {
+        .actions {
           align-self: flex-end;
         }
         
@@ -1994,7 +1994,7 @@ class KidsTasksBaseCard extends HTMLElement {
           </div>
           
           ${showActions ? `
-            <div class="task-actions" style="flex-direction: column; gap: 4px;">
+            <div class="actions" style="flex-direction: column; gap: 4px;">
               <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
             </div>
@@ -4127,7 +4127,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
           ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
         </div>
-        <div class="task-actions">
+        <div class="actions">
           <button class="btn btn-secondary btn-sm" data-action="edit-task" data-id="${task.id}">Modifier</button>
           <button class="btn btn-danger btn-sm" data-action="remove-task" data-id="${task.id}">×</button>
         </div>
@@ -4202,7 +4202,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </div>
           ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
         </div>
-        <div class="reward-actions">
+        <div class="actions">
           <button class="btn btn-secondary btn-sm" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
           <button class="btn btn-danger btn-sm" data-action="remove-reward" data-id="${reward.id}">×</button>
         </div>
@@ -4840,7 +4840,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-weight: bold;
         }
 
-        .task-actions {
+        .actions {
           display: flex;
           gap: 4px;
           flex-shrink: 0;
@@ -5079,7 +5079,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           vertical-align: middle;
         }
         
-        .task-actions {
+        .actions {
           /* display inherited from base */
           position: absolute;
           right: 8px;
@@ -5088,31 +5088,31 @@ class KidsTasksCard extends KidsTasksBaseCard {
           justify-content: end;
         }
         
-        .task-actions .btn {
+        .actions .btn {
           padding: 6px 12px;
           font-size: 0.85em;
           min-width: 65px;
         }
         
-        .task-actions .edit-btn {
+        .actions .edit-btn {
           background-color: var(--kt-success);
           color: white;
           border: 1px solid #4caf50;
           order: 2;
         }
         
-        .task-actions .edit-btn:hover {
+        .actions .edit-btn:hover {
           background-color: #45a049;
         }
         
-        .task-actions .delete-btn {
+        .actions .delete-btn {
           background-color: var(--kt-error);
           color: white;
           border: 1px solid #f44336;
           order: 1;
         }
         
-        .task-actions .delete-btn:hover {
+        .actions .delete-btn:hover {
           background-color: #d32f2f;
         }
         
@@ -5495,12 +5495,12 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: var(--kt-space-lg); }*/
           
-          .task-actions {
+          .actions {
             /* position, display, flex-direction, justify-content, right, bottom inherited from non-responsive definition */
             min-width: auto;
           }
           
-          .task-actions .btn {
+          .actions .btn {
             min-width: 70px;
           }
           
@@ -6853,8 +6853,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .task-deadline {
           color: var(--warning-color);
         }
-        
-        /* .task-actions inherited from base class */
         
         .btn-task {
           padding: 10px 16px;
