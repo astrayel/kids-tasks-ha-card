@@ -370,6 +370,187 @@ class KidsTasksStyleManager {
         font-size: 0.9em;
         color: var(--secondary-text-color, #666);
       }
+
+      /* === INTERACTIONS TACTILES === */
+      
+      /* Composants cliquables */
+      .kt-clickable-item {
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+      }
+
+      .kt-clickable-item:hover {
+        background-color: var(--kt-surface-variant);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .kt-clickable-item:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px var(--kt-shadow-light);
+      }
+
+      /* Appui long */
+      .kt-long-press-item {
+        position: relative;
+      }
+
+      .kt-long-press-item.long-pressing {
+        animation: kt-pulse 0.6s ease-in-out;
+      }
+
+      @keyframes kt-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+
+      .kt-delete-confirmation {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(244, 67, 54, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--kt-space-md);
+        border-radius: var(--kt-radius-md);
+        z-index: 10;
+      }
+
+      .kt-delete-confirmation.hidden {
+        display: none;
+      }
+
+      .kt-confirm-delete {
+        background: var(--kt-error);
+        color: white;
+        border: none;
+        padding: var(--kt-space-sm) var(--kt-space-md);
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+      }
+
+      .kt-cancel-delete {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+        padding: var(--kt-space-sm) var(--kt-space-md);
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+      }
+
+      /* Gestes de glissement */
+      .kt-swipeable-item {
+        position: relative;
+        overflow: hidden;
+        touch-action: pan-y;
+      }
+
+      .kt-swipe-actions-left,
+      .kt-swipe-actions-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        opacity: 0;
+        transition: all var(--kt-transition-medium);
+      }
+
+      .kt-swipe-actions-left {
+        left: 0;
+        background: var(--kt-error);
+      }
+
+      .kt-swipe-actions-right {
+        right: 0;
+        background: var(--kt-success);
+      }
+
+      .kt-swipeable-item.swiping-left .kt-swipe-actions-left,
+      .kt-swipeable-item.swiping-right .kt-swipe-actions-right {
+        opacity: 1;
+      }
+
+      .kt-swipeable-item .kt-task-content {
+        position: relative;
+        z-index: 2;
+        background: var(--card-background-color, white);
+        transition: transform var(--kt-transition-medium);
+      }
+
+      .kt-swipeable-item.swiping-left .kt-task-content {
+        transform: translateX(-80px);
+      }
+
+      .kt-swipeable-item.swiping-right .kt-task-content {
+        transform: translateX(80px);
+      }
+
+      .kt-reject-action,
+      .kt-validate-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: var(--kt-font-size-sm);
+        padding: var(--kt-space-sm);
+        border-radius: var(--kt-radius-sm);
+        min-width: 60px;
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+      }
+
+      .kt-reject-action:hover,
+      .kt-validate-action:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .kt-reject-action .icon,
+      .kt-validate-action .icon {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      /* Feedback visuel */
+      .kt-task-item.editing {
+        outline: 2px solid var(--kt-primary);
+        outline-offset: 2px;
+      }
+
+      .kt-validation-task.validated {
+        animation: kt-slideOutRight 0.3s ease-out forwards;
+      }
+
+      .kt-validation-task.rejected {
+        animation: kt-slideOutLeft 0.3s ease-out forwards;
+      }
+
+      @keyframes kt-slideOutRight {
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes kt-slideOutLeft {
+        to {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+      }
     `;
   }
   
@@ -399,15 +580,24 @@ class KidsTasksBaseCard extends HTMLElement {
     if (!this._initialized && hass) {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
+      this.initTouchInteractions();
       this.render();
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
       this.render();
+      // Réinitialiser les interactions tactiles après le rendu
+      if (this._initialized) {
+        setTimeout(() => this.initTouchInteractions(), 100);
+      }
     }
   }
 
   handleClick(event) {
     const target = event.target.closest('[data-action]');
     if (!target) return;
+
+    // Ne pas traiter les clics pendant un appui long
+    const longPressItem = target.closest('.long-pressing');
+    if (longPressItem) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -421,6 +611,258 @@ class KidsTasksBaseCard extends HTMLElement {
     } else {
       this.handleAction(action, id, event);
     }
+  }
+
+  // === INTERACTIONS TACTILES ===
+  initTouchInteractions() {
+    // Nettoyer les anciens listeners s'ils existent
+    this.cleanupTouchInteractions();
+    
+    // Gestion du clic simple pour édition
+    this.addClickListeners();
+    
+    // Gestion de l'appui long pour suppression
+    this.addLongPressListeners();
+    
+    // Gestion des gestes de glissement pour validation
+    this.addSwipeListeners();
+  }
+
+  cleanupTouchInteractions() {
+    // Réinitialiser les flags pour permettre un nouveau ajout des listeners
+    this._longPressListenersAdded = false;
+    this._swipeListenersAdded = false;
+  }
+
+  addClickListeners() {
+    // Le clic simple est déjà géré par handleClick existant
+    // Nous devons juste nous assurer qu'il ne se déclenche pas lors d'un appui long
+  }
+
+  addLongPressListeners() {
+    // Éviter d'ajouter plusieurs fois les mêmes listeners
+    if (this._longPressListenersAdded) return;
+    this._longPressListenersAdded = true;
+    
+    let longPressTimer = null;
+    let isLongPressing = false;
+    
+    this.shadowRoot.addEventListener('pointerdown', (e) => {
+      const longPressItem = e.target.closest('.kt-long-press-item');
+      if (longPressItem) {
+        isLongPressing = false;
+        longPressTimer = setTimeout(() => {
+          isLongPressing = true;
+          longPressItem.classList.add('long-pressing');
+          this.showDeleteConfirmation(longPressItem);
+          // Retour haptique si disponible
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
+        }, 500); // 500ms pour l'appui long
+      }
+    });
+    
+    this.shadowRoot.addEventListener('pointerup', (e) => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      
+      // Nettoyer l'état d'appui long après un délai
+      setTimeout(() => {
+        const longPressingItems = this.shadowRoot.querySelectorAll('.long-pressing');
+        longPressingItems.forEach(item => {
+          item.classList.remove('long-pressing');
+        });
+      }, 100);
+    });
+    
+    this.shadowRoot.addEventListener('pointermove', (e) => {
+      // Annuler l'appui long si l'utilisateur bouge trop
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    });
+  }
+
+  showDeleteConfirmation(item) {
+    const confirmation = item.querySelector('.kt-delete-confirmation');
+    if (confirmation) {
+      confirmation.classList.remove('hidden');
+      
+      // Gérer les boutons de confirmation
+      const confirmBtn = confirmation.querySelector('.kt-confirm-delete');
+      const cancelBtn = confirmation.querySelector('.kt-cancel-delete');
+      
+      if (confirmBtn) {
+        confirmBtn.onclick = () => {
+          const deleteAction = item.dataset.deleteAction;
+          const id = item.dataset.id;
+          if (deleteAction && id) {
+            this.handleAction(deleteAction, id);
+          }
+          this.hideDeleteConfirmation(item);
+        };
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.onclick = () => {
+          this.hideDeleteConfirmation(item);
+        };
+      }
+      
+      // Auto-masquer après 3 secondes
+      setTimeout(() => {
+        this.hideDeleteConfirmation(item);
+      }, 3000);
+    }
+  }
+
+  hideDeleteConfirmation(item) {
+    const confirmation = item.querySelector('.kt-delete-confirmation');
+    if (confirmation) {
+      confirmation.classList.add('hidden');
+    }
+    item.classList.remove('long-pressing');
+  }
+
+  addSwipeListeners() {
+    // Éviter d'ajouter plusieurs fois les mêmes listeners
+    if (this._swipeListenersAdded) return;
+    this._swipeListenersAdded = true;
+    
+    let startX = 0;
+    let currentX = 0;
+    let isTracking = false;
+    let currentItem = null;
+    
+    this.shadowRoot.addEventListener('pointerdown', (e) => {
+      const swipeableItem = e.target.closest('.kt-swipeable-item');
+      if (swipeableItem) {
+        startX = e.clientX;
+        currentX = startX;
+        isTracking = true;
+        currentItem = swipeableItem;
+        const taskContent = currentItem.querySelector('.kt-task-content');
+        if (taskContent) {
+          taskContent.style.transition = 'none';
+        }
+      }
+    });
+    
+    this.shadowRoot.addEventListener('pointermove', (e) => {
+      if (!isTracking || !currentItem) return;
+      
+      e.preventDefault();
+      currentX = e.clientX;
+      const deltaX = currentX - startX;
+      const taskContent = currentItem.querySelector('.kt-task-content');
+      
+      if (taskContent) {
+        // Limiter le mouvement
+        const maxSwipe = 80;
+        const clampedDelta = Math.max(-maxSwipe, Math.min(maxSwipe, deltaX));
+        
+        taskContent.style.transform = `translateX(${clampedDelta}px)`;
+        
+        // Afficher/masquer les actions selon la direction
+        if (clampedDelta < -20) {
+          currentItem.classList.add('swiping-left');
+          currentItem.classList.remove('swiping-right');
+        } else if (clampedDelta > 20) {
+          currentItem.classList.add('swiping-right');
+          currentItem.classList.remove('swiping-left');
+        } else {
+          currentItem.classList.remove('swiping-left', 'swiping-right');
+        }
+      }
+    });
+    
+    this.shadowRoot.addEventListener('pointerup', (e) => {
+      if (!isTracking || !currentItem) return;
+      
+      const deltaX = currentX - startX;
+      const threshold = 40;
+      
+      // Restaurer les transitions
+      const taskContent = currentItem.querySelector('.kt-task-content');
+      if (taskContent) {
+        taskContent.style.transition = '';
+      }
+      
+      if (Math.abs(deltaX) < threshold) {
+        // Revenir à la position originale
+        this.resetSwipePosition(currentItem);
+      } else if (deltaX > threshold) {
+        // Glissement vers la droite - montrer l'action de validation
+        this.showSwipeAction(currentItem, 'right');
+      } else if (deltaX < -threshold) {
+        // Glissement vers la gauche - montrer l'action de rejet
+        this.showSwipeAction(currentItem, 'left');
+      }
+      
+      isTracking = false;
+      currentItem = null;
+    });
+  }
+
+  resetSwipePosition(item) {
+    const taskContent = item.querySelector('.kt-task-content');
+    if (taskContent) {
+      taskContent.style.transform = '';
+    }
+    item.classList.remove('swiping-left', 'swiping-right');
+  }
+
+  showSwipeAction(item, direction) {
+    item.classList.add(`swiping-${direction}`);
+    
+    // Auto-reset après 3 secondes si pas d'action
+    setTimeout(() => {
+      if (item.classList.contains(`swiping-${direction}`)) {
+        this.resetSwipePosition(item);
+      }
+    }, 3000);
+    
+    // Gérer les clics sur les boutons d'action
+    const actionButton = item.querySelector(direction === 'left' ? '.kt-reject-action' : '.kt-validate-action');
+    if (actionButton && !actionButton._clickHandlerAdded) {
+      actionButton._clickHandlerAdded = true;
+      actionButton.onclick = () => {
+        const taskId = item.dataset.taskId;
+        const action = actionButton.dataset.action;
+        
+        if (taskId && action) {
+          this.handleValidationAction(action, taskId);
+          this.animateTaskAction(item, direction);
+        }
+      };
+    }
+  }
+
+  handleValidationAction(action, taskId) {
+    if (action === 'validate-task') {
+      this._hass.callService('kids_tasks', 'validate_task', {
+        task_id: taskId
+      });
+    } else if (action === 'reject-task') {
+      this._hass.callService('kids_tasks', 'reject_task', {
+        task_id: taskId
+      });
+    }
+  }
+
+  animateTaskAction(item, direction) {
+    item.classList.add(direction === 'left' ? 'rejected' : 'validated');
+    
+    // Retirer l'élément après l'animation
+    setTimeout(() => {
+      if (item.parentNode) {
+        item.remove();
+      }
+    }, 300);
   }
 
   // Méthode abstraite à implémenter dans les classes filles
@@ -826,6 +1268,93 @@ class KidsTasksBaseCard extends HTMLElement {
       }
     }
     return child.avatar || '👶';
+  }
+
+  generateCustomStyles(child) {
+    if (!child || !child.card_customizations) {
+      return '';
+    }
+
+    const customizations = child.card_customizations;
+    const childId = child.id;
+    let customCSS = '';
+
+    // Couleurs personnalisées
+    if (customizations.theme_colors) {
+      const colors = customizations.theme_colors;
+      customCSS += `
+        [data-child-id="${childId}"] {`;
+      
+      if (colors.primary) customCSS += `--kt-primary: ${colors.primary};`;
+      if (colors.secondary) customCSS += `--kt-secondary: ${colors.secondary};`;
+      if (colors.background) customCSS += `--card-background-color: ${colors.background};`;
+      if (colors.text) customCSS += `--primary-text-color: ${colors.text};`;
+      if (colors.border) customCSS += `--kt-border-color: ${colors.border};`;
+      
+      customCSS += `}`;
+    }
+
+    // Préférences de layout
+    if (customizations.layout_preferences) {
+      const layout = customizations.layout_preferences;
+      customCSS += `
+        [data-child-id="${childId}"] {`;
+      
+      if (layout.card_width) customCSS += `width: ${layout.card_width};`;
+      if (layout.card_height) customCSS += `height: ${layout.card_height};`;
+      if (layout.border_radius) customCSS += `border-radius: ${layout.border_radius};`;
+      if (layout.padding) customCSS += `padding: ${layout.padding};`;
+      
+      customCSS += `}`;
+
+      if (layout.gauge_style === 'linear') {
+        customCSS += `
+          [data-child-id="${childId}"] .kt-progress-bar {
+            border-radius: 2px;
+          }`;
+      }
+    }
+
+    // Options d'affichage
+    if (customizations.display_options) {
+      const display = customizations.display_options;
+      
+      if (display.hide_coins) {
+        customCSS += `
+          [data-child-id="${childId}"] .coins-display {
+            display: none !important;
+          }`;
+      }
+      
+      if (display.hide_level_badge) {
+        customCSS += `
+          [data-child-id="${childId}"] .kt-level-badge {
+            display: none !important;
+          }`;
+      }
+      
+      if (display.compact_mode) {
+        customCSS += `
+          [data-child-id="${childId}"] {
+            min-height: auto;
+            padding: var(--kt-space-sm);
+          }
+          [data-child-id="${childId}"] .kt-avatar {
+            width: 40px;
+            height: 40px;
+          }`;
+      }
+    }
+
+    // Styles personnalisés libres
+    if (customizations.custom_css) {
+      customCSS += `
+        [data-child-id="${childId}"] {
+          ${customizations.custom_css}
+        }`;
+    }
+
+    return customCSS ? `<style>${customCSS}</style>` : '';
   }
 
   getAssignedChildrenNames(task) {
@@ -1970,7 +2499,11 @@ class KidsTasksBaseCard extends HTMLElement {
         pointsToNext: pointsToNext
       };
 
+      // Générer les styles personnalisés pour cet enfant
+      const customStyles = this.generateCustomStyles(child);
+      
       return `
+        ${customStyles}
         <div class="child-card kids-tasks-scope" data-child-id="${child.id || 'unknown'}">
           ${showDragHandle ? '<div class="drag-handle">⋮⋮</div>' : ''}
           ${showActions ? '<div class="child-border"></div>' : ''}
@@ -1997,6 +2530,7 @@ class KidsTasksBaseCard extends HTMLElement {
             <div class="actions" style="flex-direction: column; gap: 4px;">
               <button class="btn btn-info btn-icon history-btn" data-action="show-child-history" data-id="${child.id || 'unknown'}" title="Historique des points">📊</button>
               <button class="btn btn-secondary btn-icon edit-btn" data-action="edit-child" data-id="${child.id || 'unknown'}">Modifier</button>
+              <button class="btn btn-primary btn-icon customize-btn" data-action="customize-child-card" data-id="${child.id || 'unknown'}" title="Personnaliser la carte">🎨</button>
             </div>
           ` : ''}
         </div>
@@ -4112,7 +4646,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     return `
-      <div class="task hover-card ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
+      <div class="task hover-card kt-clickable-item kt-long-press-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}" 
+           data-action="edit-task" 
+           data-id="${task.id}"
+           data-delete-action="remove-task">
         <div class="item-icon">${taskIcon}</div>
         <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
@@ -4127,9 +4664,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
           ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
           ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
         </div>
-        <div class="actions">
-          <button class="btn btn-secondary btn-sm" data-action="edit-task" data-id="${task.id}">Modifier</button>
-          <button class="btn btn-danger btn-sm" data-action="remove-task" data-id="${task.id}">×</button>
+        
+        <!-- État de confirmation pour suppression (masqué par défaut) -->
+        <div class="kt-delete-confirmation hidden">
+          <button class="kt-confirm-delete">Supprimer</button>
+          <button class="kt-cancel-delete">Annuler</button>
         </div>
       </div>
     `;
@@ -4192,7 +4731,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
     
     return `
-      <div class="reward-item hover-card">
+      <div class="reward-item hover-card kt-clickable-item kt-long-press-item"
+           data-action="edit-reward" 
+           data-id="${reward.id}"
+           data-delete-action="remove-reward">
         <div class="item-icon">${rewardIcon}</div>
         <div class="reward-main">
           <div class="reward-name">${reward.name}</div>
@@ -4202,9 +4744,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </div>
           ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
         </div>
-        <div class="actions">
-          <button class="btn btn-secondary btn-sm" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
-          <button class="btn btn-danger btn-sm" data-action="remove-reward" data-id="${reward.id}">×</button>
+        
+        <!-- État de confirmation pour suppression (masqué par défaut) -->
+        <div class="kt-delete-confirmation hidden">
+          <button class="kt-confirm-delete">Supprimer</button>
+          <button class="kt-cancel-delete">Annuler</button>
         </div>
       </div>
     `;
@@ -4272,31 +4816,42 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }
     
     return `
-      <div class="validation-task">
-        <div class="validation-task-icon">${taskIcon}</div>
-        <div class="validation-task-content flex-content">
-          <div class="validation-task-header">
-            <div class="validation-task-title">${task.name}</div>
-            <div class="validation-task-age">${ageText}</div>
-          </div>
-          <div class="validation-task-meta">
-            <span class="validation-child">${childName}</span>
-            <span class="validation-rewards">
-              ${task.points !== 0 ? `${task.points > 0 ? '+' : ''}${task.points}🎫` : ''}
-              ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}🪙` : ''}
-              ${task.penalty_points ? ` ${task.penalty_points}🎫` : ''}
-            </span>
-            <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
-          </div>
-          ${task.description ? `<div class="validation-task-description">${task.description}</div>` : ''}
+      <div class="validation-task kt-swipeable-item" data-task-id="${task.id}">
+        <!-- Actions révélées par glissement vers la gauche (rejeter) -->
+        <div class="kt-swipe-actions-left">
+          <button class="kt-reject-action" data-action="reject-task">
+            <span class="icon">✗</span>
+            <span class="label">Rejeter</span>
+          </button>
         </div>
-        <div class="validation-task-actions">
-          <button class="btn btn-success btn-validation" data-action="validate-task" data-id="${task.id}">
-            ✅ Valider
+        
+        <!-- Actions révélées par glissement vers la droite (valider) -->
+        <div class="kt-swipe-actions-right">
+          <button class="kt-validate-action" data-action="validate-task">
+            <span class="icon">✓</span>
+            <span class="label">Valider</span>
           </button>
-          <button class="btn btn-danger btn-validation" data-action="reject-task" data-id="${task.id}">
-            ❌ Rejeter
-          </button>
+        </div>
+
+        <!-- Contenu principal de la tâche -->
+        <div class="kt-task-content">
+          <div class="validation-task-icon">${taskIcon}</div>
+          <div class="validation-task-content flex-content">
+            <div class="validation-task-header">
+              <div class="validation-task-title">${task.name}</div>
+              <div class="validation-task-age">${ageText}</div>
+            </div>
+            <div class="validation-task-meta">
+              <span class="validation-child">${childName}</span>
+              <span class="validation-rewards">
+                ${task.points !== 0 ? `${task.points > 0 ? '+' : ''}${task.points}🎫` : ''}
+                ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}🪙` : ''}
+                ${task.penalty_points ? ` ${task.penalty_points}🎫` : ''}
+              </span>
+              <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
+            </div>
+            ${task.description ? `<div class="validation-task-description">${task.description}</div>` : ''}
+          </div>
         </div>
       </div>
     `;
