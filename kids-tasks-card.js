@@ -1458,14 +1458,14 @@ class KidsTasksBaseCard extends HTMLElement {
     const completed = completedToday !== undefined ? completedToday : (stats.completedToday || 0);
     const total = totalTasksToday !== undefined ? totalTasksToday : (stats.totalTasksToday || 0);
     
-    const renderGauge = (label, text, fillClass, width, barExtra = '') => {
+    const renderGauge = (label, text, fillClass, width) => {
     return `
       <div class="gauge">
         <div class="gauge-header">
           <div class="gauge-label">${label}</div>
           <div class="gauge-text">${text}</div>
         </div>
-        <div class="gauge-bar${barExtra}">
+        <div class="gauge-bar">
           <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
         </div>
       </div>
@@ -1483,8 +1483,7 @@ class KidsTasksBaseCard extends HTMLElement {
       `Niveau ${stats.level}`, 
       `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`, 
       'level-progress', 
-      (stats.pointsInCurrentLevel / stats.pointsToNextLevel) * 100,
-      useHeader ? ' circular' : ''
+      (stats.pointsInCurrentLevel / stats.pointsToNextLevel) * 100
     );
     
     gaugesHtml += renderGauge(
