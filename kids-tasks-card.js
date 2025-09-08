@@ -45,6 +45,7 @@ class KidsTasksStyleManager {
         /* Status unifié */
         --kt-status-todo: var(--kt-warning);
         --kt-status-progress: var(--kt-info);
+        --kt-status-pending: #ff9800;
         --kt-status-completed: var(--kt-success);
         --kt-status-validated: var(--kt-success);
         --kt-status-failed: var(--kt-error);
@@ -61,6 +62,11 @@ class KidsTasksStyleManager {
         --kt-rarity-rare: var(--kt-info);
         --kt-rarity-epic: var(--kt-secondary);
         --kt-rarity-legendary: var(--kt-warning);
+        
+        /* Notifications */
+        --kt-notification-success: var(--kt-success);
+        --kt-notification-error: var(--kt-error);
+        --kt-notification-info: var(--kt-info);
         
         /* Effets visuels */
         --kt-shadow-light: rgba(0, 0, 0, 0.1);
@@ -944,84 +950,13 @@ class KidsTasksBaseCard extends HTMLElement {
   getGlobalVariables() {
     return `
       :host {
-        /* Couleurs système unifiées */
-        --kt-primary: var(--primary-color, #3f51b5);
-        --kt-secondary: var(--accent-color, #ff4081);
-        --kt-success: #4caf50;
-        --kt-warning: #ff9800;
-        --kt-error: #f44336;
-        --kt-info: #2196f3;
+        /* Variables spécifiques à :host (non-globales) */
         
-        /* Status unifié */
-        --kt-status-todo: var(--kt-warning);
-        --kt-status-progress: var(--kt-info);
-        --kt-status-pending: #ff9800;
-        --kt-status-validated: var(--kt-success);
-        --kt-status-failed: var(--kt-error);
-        
-        /* Monnaies et points */
-        --kt-points-color: var(--kt-success);
-        --kt-coins-color: #9C27B0;
-        --kt-penalty-color: var(--kt-error);
-        
-        /* Raretés cosmétiques */
-        --kt-rarity-common: #9e9e9e;
-        --kt-rarity-rare: var(--kt-info);
-        --kt-rarity-epic: #9c27b0;
-        --kt-rarity-legendary: var(--kt-warning);
-        
-        /* Notifications */
-        --kt-notification-success: var(--kt-success);
-        --kt-notification-error: var(--kt-error);
-        --kt-notification-info: var(--kt-info);
-        
-        /* Effets visuels */
-        --kt-shadow-light: rgba(0, 0, 0, 0.1);
-        --kt-shadow-medium: rgba(0, 0, 0, 0.2);
-        --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
-        --kt-overlay: rgba(0, 0, 0, 0.5);
-        
-        /* Surfaces et bordures */
-        --kt-surface-variant: var(--secondary-background-color, #fafafa);
-        --kt-border-thin: 1px solid var(--divider-color, #e0e0e0);
-        
-        /* Avatar et cosmétiques */
-        --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-        --kt-cosmetic-border: rgba(0,0,0,0.1);
-        --kt-cosmetic-background: rgba(255,255,255,0.1);
-        
-        /* Gradients réutilisables */
+        /* Gradients réutilisables (spécifiques à :host) */
         --kt-gradient-primary: linear-gradient(135deg, var(--primary-color, #1976d2), var(--accent-color, #ff4081));
         --kt-gradient-success: linear-gradient(135deg, #4CAF50, #8BC34A);
         --kt-gradient-neutral: var(--kt-gradient-neutral);
         --kt-gradient-avatar: var(--kt-avatar-background);
-        
-        /* Espacements standardisés */
-        --kt-space-xs: 4px;
-        --kt-space-sm: 8px;
-        --kt-space-md: 12px;
-        --kt-space-lg: 16px;
-        --kt-space-xl: 24px;
-        
-        /* Rayons de courbure standardisés */
-        --kt-radius-sm: 8px;
-        --kt-radius-md: 12px;
-        --kt-radius-lg: 16px;
-        --kt-radius-xl: 20px;
-        --kt-radius-round: 50%;
-        
-        /* Transitions communes */
-        --kt-transition-fast: 0.2s ease;
-        --kt-transition-medium: 0.3s ease;
-        --kt-transition-slow: 0.5s ease;
-        
-        /* Polices et tailles */
-        --kt-font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-        --kt-font-size-xs: 0.75em;
-        --kt-font-size-sm: 0.85em;
-        --kt-font-size-md: 1em;
-        --kt-font-size-lg: 1.2em;
-        --kt-font-size-xl: 1.5em;
       }
     `;
   }
@@ -1051,7 +986,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .btn:hover, .hover-lift:hover { transform: translateY(-1px); box-shadow: 0 2px 4px var(--kt-shadow-medium); }
       .hover-card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-      .flex-content { flex: 1; min-width: 0; }
+      .flex-content { min-width: 0; }
       .btn:active { transform: translateY(0); }
       .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
       
