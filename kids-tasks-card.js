@@ -570,9 +570,10 @@ class KidsTasksBaseCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this._initialized = false;
     
-    // Variables pour interactions tactiles
-    this._longPressTimer = null;
-    this._isLongPressing = false;
+    // Variables pour interactions tactiles (nouveau système robuste)
+    this._touchStates = new WeakMap(); // État par élément
+    this._touchControllers = new Map(); // Controllers pour cleanup
+    this._isMobile = this._detectMobileDevice();
     
     // Injecter les styles globaux dès le premier chargement
     KidsTasksStyleManager.injectGlobalStyles();
@@ -588,9 +589,9 @@ class KidsTasksBaseCard extends HTMLElement {
       this.render();
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
       this.render();
-      // Réinitialiser les interactions tactiles après le rendu
+      // Réinitialiser immédiatement les interactions tactiles
       if (this._initialized) {
-        setTimeout(() => this.initTouchInteractions(), 100);
+        this.initTouchInteractions();
       }
     }
   }
@@ -602,6 +603,10 @@ class KidsTasksBaseCard extends HTMLElement {
     // Ne pas traiter les clics pendant un appui long
     const longPressItem = target.closest('.long-pressing');
     if (longPressItem) return;
+
+    // Vérifier si un appui long est en cours sur cet élément
+    const touchState = this._touchStates.get(target.closest('.kt-long-press-item'));
+    if (touchState && touchState.isActive) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -617,84 +622,140 @@ class KidsTasksBaseCard extends HTMLElement {
     }
   }
 
-  // === INTERACTIONS TACTILES ===
+  // === INTERACTIONS TACTILES ROBUSTES ===
+  
+  _detectMobileDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }
+
   initTouchInteractions() {
-    // Nettoyer les anciens listeners s'ils existent
-    this.cleanupTouchInteractions();
+    // Nettoyer complètement les anciens listeners
+    this._cleanupTouchInteractions();
     
-    // Gestion du clic simple pour édition
-    this.addClickListeners();
-    
-    // Gestion de l'appui long pour suppression
-    this.addLongPressListeners();
+    // Initialiser le nouveau système d'appui long
+    this._initLongPressSystem();
     
     // Gestion des gestes de glissement pour validation
     this.addSwipeListeners();
   }
 
-  cleanupTouchInteractions() {
-    // Réinitialiser les flags pour permettre un nouveau ajout des listeners
+  _cleanupTouchInteractions() {
+    // Nettoyer tous les controllers existants
+    for (const controller of this._touchControllers.values()) {
+      controller.abort();
+    }
+    this._touchControllers.clear();
+    
+    // Nettoyer tous les états
+    this._touchStates = new WeakMap();
+    
+    // Reset flags
     this._longPressListenersAdded = false;
     this._swipeListenersAdded = false;
   }
 
-  addClickListeners() {
-    // Le clic simple est déjà géré par handleClick existant
-    // Nous devons juste nous assurer qu'il ne se déclenche pas lors d'un appui long
-  }
-
-  addLongPressListeners() {
-    // Éviter d'ajouter plusieurs fois les mêmes listeners
+  _initLongPressSystem() {
     if (this._longPressListenersAdded) return;
     this._longPressListenersAdded = true;
-    
-    // Utiliser les variables de classe pour éviter les conflits
-    const handlePointerDown = (e) => {
+
+    // Créer un AbortController pour ce système
+    const controller = new AbortController();
+    this._touchControllers.set('longpress', controller);
+    const signal = controller.signal;
+
+    // Choisir les événements selon le type d'appareil
+    const events = this._isMobile 
+      ? { down: 'touchstart', up: 'touchend', move: 'touchmove' }
+      : { down: 'pointerdown', up: 'pointerup', move: 'pointermove' };
+
+    // Handler unifié pour début d'appui
+    const handleStart = (e) => {
       const longPressItem = e.target.closest('.kt-long-press-item');
-      if (longPressItem && !longPressItem.querySelector('.kt-delete-confirmation:not(.hidden)')) {
-        this._isLongPressing = false;
-        
-        // Nettoyer les anciens timers
-        if (this._longPressTimer) {
-          clearTimeout(this._longPressTimer);
-        }
-        
-        this._longPressTimer = setTimeout(() => {
-          this._isLongPressing = true;
+      if (!longPressItem || longPressItem.querySelector('.kt-delete-confirmation:not(.hidden)')) {
+        return;
+      }
+
+      // Position initiale pour calcul du mouvement
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      if (!clientX || !clientY) return;
+
+      // État isolé pour cet élément
+      const state = {
+        timer: null,
+        startX: clientX,
+        startY: clientY,
+        isActive: true,
+        element: longPressItem
+      };
+
+      // Nettoyer l'ancien état s'il existe
+      const oldState = this._touchStates.get(longPressItem);
+      if (oldState && oldState.timer) {
+        clearTimeout(oldState.timer);
+      }
+
+      // Démarrer le timer
+      state.timer = setTimeout(() => {
+        if (state.isActive && this._touchStates.get(longPressItem) === state) {
           longPressItem.classList.add('long-pressing');
           this.showDeleteConfirmation(longPressItem);
-          // Retour haptique
-          if (navigator.vibrate) {
-            navigator.vibrate(50);
+          if (navigator.vibrate) navigator.vibrate(50);
+        }
+      }, 500);
+
+      // Stocker l'état
+      this._touchStates.set(longPressItem, state);
+    };
+
+    // Handler pour fin d'appui
+    const handleEnd = (e) => {
+      const longPressItem = e.target.closest('.kt-long-press-item');
+      if (!longPressItem) return;
+
+      const state = this._touchStates.get(longPressItem);
+      if (state) {
+        if (state.timer) {
+          clearTimeout(state.timer);
+        }
+        state.isActive = false;
+        this._touchStates.delete(longPressItem);
+      }
+    };
+
+    // Handler pour mouvement avec seuil intelligent
+    const handleMove = (e) => {
+      const longPressItem = e.target.closest('.kt-long-press-item');
+      if (!longPressItem) return;
+
+      const state = this._touchStates.get(longPressItem);
+      if (!state || !state.isActive) return;
+
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      if (clientX && clientY) {
+        // Calculer la distance depuis le point initial
+        const deltaX = Math.abs(clientX - state.startX);
+        const deltaY = Math.abs(clientY - state.startY);
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Seuil de tolérance : 8px pour éviter annulations intempestives
+        if (distance > 8) {
+          if (state.timer) {
+            clearTimeout(state.timer);
           }
-        }, 500);
+          state.isActive = false;
+          this._touchStates.delete(longPressItem);
+        }
       }
     };
 
-    const handlePointerUp = (e) => {
-      if (this._longPressTimer) {
-        clearTimeout(this._longPressTimer);
-        this._longPressTimer = null;
-      }
-    };
-
-    const handlePointerMove = (e) => {
-      // Annuler l'appui long si mouvement détecté
-      if (this._longPressTimer) {
-        clearTimeout(this._longPressTimer);
-        this._longPressTimer = null;
-      }
-    };
-    
-    // Ajouter les listeners pour desktop et mobile
-    this.shadowRoot.addEventListener('pointerdown', handlePointerDown);
-    this.shadowRoot.addEventListener('pointerup', handlePointerUp);  
-    this.shadowRoot.addEventListener('pointermove', handlePointerMove);
-    
-    // Ajouter support tactile spécifique pour mobile
-    this.shadowRoot.addEventListener('touchstart', handlePointerDown, { passive: false });
-    this.shadowRoot.addEventListener('touchend', handlePointerUp);
-    this.shadowRoot.addEventListener('touchmove', handlePointerMove, { passive: false });
+    // Attacher les événements avec cleanup automatique
+    this.shadowRoot.addEventListener(events.down, handleStart, { signal });
+    this.shadowRoot.addEventListener(events.up, handleEnd, { signal });
+    this.shadowRoot.addEventListener(events.move, handleMove, { signal });
   }
 
   showDeleteConfirmation(item) {
@@ -739,6 +800,16 @@ class KidsTasksBaseCard extends HTMLElement {
     }
     item.classList.remove('long-pressing');
     
+    // Nettoyer l'état tactile associé
+    const state = this._touchStates.get(item);
+    if (state) {
+      if (state.timer) {
+        clearTimeout(state.timer);
+      }
+      state.isActive = false;
+      this._touchStates.delete(item);
+    }
+    
     // Empêcher les clics pendant 200ms après fermeture
     item.style.pointerEvents = 'none';
     setTimeout(() => {
@@ -750,6 +821,11 @@ class KidsTasksBaseCard extends HTMLElement {
     // Éviter d'ajouter plusieurs fois les mêmes listeners
     if (this._swipeListenersAdded) return;
     this._swipeListenersAdded = true;
+
+    // Créer un AbortController pour les gestes de glissement
+    const controller = new AbortController();
+    this._touchControllers.set('swipe', controller);
+    const signal = controller.signal;
     
     let startX = 0;
     let currentX = 0;
@@ -768,7 +844,7 @@ class KidsTasksBaseCard extends HTMLElement {
           taskContent.style.transition = 'none';
         }
       }
-    });
+    }, { signal });
     
     this.shadowRoot.addEventListener('pointermove', (e) => {
       if (!isTracking || !currentItem) return;
@@ -796,7 +872,7 @@ class KidsTasksBaseCard extends HTMLElement {
           currentItem.classList.remove('swiping-left', 'swiping-right');
         }
       }
-    });
+    }, { signal });
     
     this.shadowRoot.addEventListener('pointerup', (e) => {
       if (!isTracking || !currentItem) return;
@@ -823,7 +899,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       isTracking = false;
       currentItem = null;
-    });
+    }, { signal });
   }
 
   resetSwipePosition(item) {
