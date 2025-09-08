@@ -583,9 +583,9 @@ class KidsTasksBaseCard extends HTMLElement {
         
       case 'background':
         if (catalogData.css_gradient) {
-          return `<div class="cosmetic-background-preview" style="background: ${catalogData.css_gradient};"></div>`;
+          return `<div style="background: ${catalogData.css_gradient};"></div>`;
         }
-        return `<div class="cosmetic-background-preview"></div>`;
+        return `<div></div>`;
         
       case 'outfit':
         if (catalogData.pixel_art && typeof catalogData.pixel_art === 'string' && catalogData.pixel_art.endsWith('.png')) {
@@ -964,14 +964,6 @@ class KidsTasksBaseCard extends HTMLElement {
       .task-icon {
         font-size: 32px;
       }
-
-      .task-meta {
-        display: flex;
-        gap: var(--kt-space-md);
-        align-items: center;
-        font-size: var(--kt-font-size-sm);
-        color: var(--secondary-text-color, #757575);
-      }
       
       .task-description {
         margin-top: var(--kt-space-sm);
@@ -1028,15 +1020,6 @@ class KidsTasksBaseCard extends HTMLElement {
       .reward-square.cosmetic.affordable {
         border-color: var(--kt-coins-color);
         background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(156,39,176,0.1) 100%);
-      }
-      
-      .reward-icon-large {
-        font-size: 2.5em;
-        margin-bottom: var(--kt-space-sm);
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
       
       .reward-name {
@@ -1140,7 +1123,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
       
       /* Stats compactes sur une ligne */
-      .stats-grid-compact {
+      .stats-grid {
         display: flex;
         gap: var(--kt-space-md);
         margin: var(--kt-space-lg) 0;
@@ -1358,16 +1341,6 @@ class KidsTasksBaseCard extends HTMLElement {
           border-left: 3px solid #9c27b0;
         }
         
-        .reward-icon-large {
-          font-size: 4em;
-          width: 64px;
-          height: 64px;
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
         /* Tasks responsive styles */
         .task {
           padding: 6px 8px;
@@ -1478,44 +1451,26 @@ class KidsTasksBaseCard extends HTMLElement {
 
   // Assemblage final de tous les styles
   // Méthode commune pour générer les jauges
-  renderGauges(stats, compact = false, includeCoins = false, completedToday, totalTasksToday) {
+  renderGauges(stats, includeCoins = false, completedToday, totalTasksToday) {
     if (!stats) return '';
-    
-    const gaugeClass = compact ? 'gauge-compact' : 'gauge';
-    const labelClass = compact ? 'gauge-label-compact' : 'gauge-label';
-    const textClass = compact ? 'gauge-text-compact' : 'gauge-text';
-    const barClass = compact ? 'gauge-bar-compact' : 'gauge-bar';
-    const useHeader = !compact; // La version non-compacte utilise gauge-header
     
     // Utiliser les valeurs passées ou celles dans stats
     const completed = completedToday !== undefined ? completedToday : (stats.completedToday || 0);
     const total = totalTasksToday !== undefined ? totalTasksToday : (stats.totalTasksToday || 0);
     
     const renderGauge = (label, text, fillClass, width, barExtra = '') => {
-      if (useHeader) {
-        return `
-          <div class="${gaugeClass}">
-            <div class="gauge-header">
-              <div class="${labelClass}">${label}</div>
-              <div class="${textClass}">${text}</div>
-            </div>
-            <div class="${barClass}${barExtra}">
-              <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
-            </div>
-          </div>
-        `;
-      } else {
-        return `
-          <div class="${gaugeClass}">
-            <div class="${labelClass}">${label}</div>
-            <div class="${textClass}">${text}</div>
-            <div class="${barClass}">
-              <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
-            </div>
-          </div>
-        `;
-      }
-    };
+    return `
+      <div class="gauge">
+        <div class="gauge-header">
+          <div class="gauge-label">${label}</div>
+          <div class="gauge-text">${text}</div>
+        </div>
+        <div class="gauge-bar${barExtra}">
+          <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
+        </div>
+      </div>
+    `;
+    }
     
     let gaugesHtml = renderGauge(
       'Points totaux', 
@@ -1548,7 +1503,6 @@ class KidsTasksBaseCard extends HTMLElement {
         Math.min(stats.coins, 100)
       );
     }
-    
     return gaugesHtml;
   }
   
@@ -1650,9 +1604,37 @@ class KidsTasksBaseCard extends HTMLElement {
         return task.weekly_days.includes(todayName);
       }
       
-      return task.frequency === 'daily' || 
-             (task.frequency === 'weekly' && dayOfWeek === 1) ||
-             (task.frequency === 'monthly' && today.getDate() === 1);
+      // Logique corrigée pour les tâches périodiques
+      if (task.frequency === 'daily') {
+        return true;
+      }
+      
+      // Pour les tâches hebdomadaires : visible toute la semaine jusqu'à validation
+      if (task.frequency === 'weekly') {
+        // Si la tâche est déjà validée cette semaine, ne pas l'afficher
+        if (task.status === 'validated' && task.last_validated_at) {
+          const lastValidated = new Date(task.last_validated_at);
+          const startOfWeek = new Date(today);
+          startOfWeek.setDate(today.getDate() - dayOfWeek + 1); // Lundi de cette semaine
+          startOfWeek.setHours(0, 0, 0, 0);
+          return lastValidated < startOfWeek;
+        }
+        return true; // Visible toute la semaine si pas encore validée
+      }
+      
+      // Pour les tâches mensuelles : visible tout le mois jusqu'à validation
+      if (task.frequency === 'monthly') {
+        // Si la tâche est déjà validée ce mois, ne pas l'afficher
+        if (task.status === 'validated' && task.last_validated_at) {
+          const lastValidated = new Date(task.last_validated_at);
+          const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          return lastValidated < startOfMonth;
+        }
+        return true; // Visible tout le mois si pas encore validée
+      }
+      
+      // Pour les autres fréquences (once, none)
+      return task.frequency === 'once' || task.frequency === 'none';
     }
     
     // Logique pour la carte parent
@@ -1790,7 +1772,7 @@ class KidsTasksBaseCard extends HTMLElement {
               </div>
               
               <div class="gauges-section">
-                ${this.renderGauges(stats, false, true)}
+                ${this.renderGauges(stats, true)}
               </div>
             </div>
           </div>
@@ -2867,6 +2849,83 @@ class KidsTasksCard extends KidsTasksBaseCard {
         .avatar-option.selected {
           border-color: var(--accent-color);
           background: rgba(255, 64, 129, 0.1);
+        }
+        
+        /* Styles spécifiques pour le modal de détail des récompenses */
+        .reward-detail-content {
+          text-align: center;
+          padding: var(--kt-space-lg, 16px);
+        }
+        
+        .reward-modal-icon {
+          font-size: 4em;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .reward-modal-icon ha-icon {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+        }
+        
+        .reward-modal-name {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .reward-modal-price {
+          font-size: 1.2em;
+          color: var(--primary-color, #6b73ff);
+          font-weight: bold;
+          margin-bottom: 16px;
+        }
+        
+        .reward-modal-description {
+          color: var(--primary-text-color, #212121);
+          line-height: 1.5;
+          margin-bottom: 24px;
+          font-weight: 500;
+        }
+        
+        .btn-modal {
+          padding: var(--kt-space-md, 12px) 24px;
+          border: none;
+          border-radius: var(--kt-radius-xl, 20px);
+          cursor: pointer;
+          transition: all 0.2s;
+          font-weight: 500;
+          font-size: 1em;
+        }
+        
+        .btn-modal-purchase {
+          background: var(--success-color, #4CAF50);
+          color: white;
+        }
+        
+        .btn-modal-purchase:hover {
+          background: #45a049;
+          transform: translateY(-1px);
+        }
+        
+        .btn-modal-purchase:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+          transform: none;
+        }
+        
+        .btn-modal-cancel {
+          background: var(--secondary-background-color, #f5f5f5);
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .btn-modal-cancel:hover {
+          background: var(--divider-color, #e0e0e0);
         }
       </style>
       <div class="kids-tasks-scope">
@@ -3979,7 +4038,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
       <div class="section">
         <h2>${this.title}</h2>
-        <div class="stats-grid-compact">
+        <div class="stats-grid">
           <div class="stat-card compact">
             <div class="stat-icon small">👶</div>
             <div class="stat-info compact">
@@ -4159,18 +4218,18 @@ class KidsTasksCard extends KidsTasksBaseCard {
         <div class="task-icon">${taskIcon}</div>
         <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
-          <div class="task-meta-compact">
+          <div class="task-meta">
             <span class="assigned-child">${childName}</span>
             <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
             <span class="task-category">${this.getCategoryLabel(task.category)}</span>
           </div>
         </div>
-        <div class="task-rewards-compact">
+        <div class="task-rewards">
           ${task.points > 0 ? `<span class="reward-points">+${task.points}🎫</span>` : ''}
           ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
           ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
         </div>
-        <div class="task-actions-compact">
+        <div class="task-actions">
           <button class="btn btn-secondary btn-sm" data-action="edit-task" data-id="${task.id}">Modifier</button>
           <button class="btn btn-danger btn-sm" data-action="remove-task" data-id="${task.id}">×</button>
         </div>
@@ -4187,8 +4246,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <button class="btn btn-primary add-btn" data-action="add-reward">Ajouter</button>
         </h2>
         ${rewards.length > 0 ? `
-          <div class="reward-list-compact">
-            ${rewards.map(reward => this.renderRewardItemCompact(reward)).join('')}
+          <div class="reward-list">
+            ${rewards.map(reward => this.renderRewardItem(reward)).join('')}
           </div>
         ` : `
           <div class="empty-state">
@@ -4231,21 +4290,21 @@ class KidsTasksCard extends KidsTasksBaseCard {
     };
   }
 
-  renderRewardItemCompact(reward) {
+  renderRewardItem(reward) {
     const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
     
     return `
       <div class="reward-item hover-card">
-        <div class="reward-icon-compact">${rewardIcon}</div>
-        <div class="reward-main-compact">
-          <div class="reward-name-compact">${reward.name}</div>
-          <div class="reward-meta-compact">
+        <div class="reward-icon">${rewardIcon}</div>
+        <div class="reward-main">
+          <div class="reward-name">${reward.name}</div>
+          <div class="reward-meta">
             ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
             ${reward.remaining_quantity !== null ? ` • ${reward.remaining_quantity} restant(s)` : ''}
           </div>
-          ${reward.description ? `<div class="reward-description-compact">${reward.description}</div>` : ''}
+          ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
         </div>
-        <div class="reward-actions-compact">
+        <div class="reward-actions">
           <button class="btn btn-secondary btn-sm" data-action="edit-reward" data-id="${reward.id}">Modifier</button>
           <button class="btn btn-danger btn-sm" data-action="remove-reward" data-id="${reward.id}">×</button>
         </div>
@@ -4391,22 +4450,22 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </div>
         </h2>
         
-        <div class="cosmetics-simple-grid">
+        <div class="cosmetics-grid">
           ${cosmeticsRewards.map(cosmetic => `
-            <div class="cosmetic-simple-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
-              <div class="cosmetic-simple-preview">
+            <div class="cosmetic-item rarity-${cosmetic.cosmetic_data?.rarity || 'common'}" data-cosmetic-id="${cosmetic.id}">
+              <div class="cosmetic-preview">
                 ${this.renderCosmeticItemPreview(cosmetic.cosmetic_data, cosmetic.name)}
-                 <div class="cosmetic-simple-rarity kt-level-badge rarity-${cosmetic.cosmetic_data?.rarity || 'common'}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
+                 <div class="cosmetic-rarity kt-level-badge rarity-${cosmetic.cosmetic_data?.rarity || 'common'}">${this.getCosmeticRarityLabel(cosmetic.cosmetic_data?.rarity || 'common')}</div>
               </div>
-              <div class="cosmetic-simple-info">
-                <div class="cosmetic-simple-name">${cosmetic.name}</div>
-                <div class="cosmetic-simple-cost">
+              <div class="cosmetic-info">
+                <div class="cosmetic-name">${cosmetic.name}</div>
+                <div class="cosmetic-cost">
                   ${cosmetic.cost > 0 ? `${cosmetic.cost}🎫` : ''}
                   ${cosmetic.coin_cost > 0 ? `${cosmetic.cost > 0 ? ' + ' : ''}${cosmetic.coin_cost} 🪙` : ''}
                   ${cosmetic.cost === 0 && cosmetic.coin_cost === 0 ? 'Gratuit' : ''}
                 </div>
               </div>
-              <div class="cosmetic-simple-actions">
+              <div class="cosmetic-actions">
                 <ha-select label="Donner à..." class="cosmetic-give-select" data-cosmetic-id="${cosmetic.id}">
                   ${children.map(child => `
                     <ha-list-item value="${child.id}"> ${child.name}</ha-list-item>
@@ -4830,45 +4889,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           height: auto;
         }
         
-        .child-gauges-compact {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          margin-top: 8px;
-        }
-        
-        .gauge-compact {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        
-        .gauge-label-compact {
-          font-size: 0.7em;
-          font-weight: 600;
-          color: var(--secondary-text-color);
-        }
-        
-        .gauge-text-compact {
-          font-size: 0.65em;
-          font-weight: bold;
-          color: var(--primary-text-color);
-          text-align: right;
-        }
-        
-        .gauge-bar-compact {
-          height: 8px;
-          background: var(--divider-color, #e0e0e0);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        
-        .gauge-fill-compact {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.6s ease;
-        }
-        
         /* .task styles inherited from base class */
         .task-top-row {
           display: flex;
@@ -4888,7 +4908,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-weight: bold;
           color: var(--primary-text-color, #212121);
         }
-        .task-meta { font-size: 0.85em; color: var(--secondary-text-color, #757575); }
               
         .task-name {
           font-weight: 600;
@@ -4897,7 +4916,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           margin-bottom: 2px;
         }
         
-        .task-meta-compact {
+        .task-meta {
           display: flex;
           gap: 8px;
           font-size: 0.75em;
@@ -4905,13 +4924,13 @@ class KidsTasksCard extends KidsTasksBaseCard {
           flex-wrap: wrap;
         }
         
-        .task-meta-compact span {
+        .task-meta span {
           background: rgba(0,0,0,0.05);
           padding: 1px 6px;
           border-radius: var(--kt-radius-sm);
         }
         
-        .task-rewards-compact {
+        .task-rewards {
           display: flex;
           gap: 4px;
           margin: 0 8px;
@@ -4945,7 +4964,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           font-weight: bold;
         }
 
-        .task-actions-compact {
+        .task-actions {
           display: flex;
           gap: 4px;
           flex-shrink: 0;
@@ -4958,7 +4977,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         /* Styles pour les récompenses compactes */
-        .reward-list-compact {
+        .reward-list {
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -4974,48 +4993,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           transition: all 0.3s ease;
           min-height: 50px;
         }
-        
-        /* Reward hover effect handled by hover-card utility class */
-        
-        .reward-icon-compact {
-          font-size: 1.2em;
-          margin-right: 12px;
-          flex-shrink: 0;
-        }
-        
-        .reward-main-compact {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        .reward-name-compact {
-          font-weight: 600;
-          color: var(--primary-text-color, #212121);
-          font-size: 0.9em;
-          margin-bottom: 2px;
-        }
-        
-        .reward-meta-compact {
-          display: flex;
-          gap: 8px;
-          font-size: 0.75em;
-          color: var(--secondary-text-color, #757575);
-          flex-wrap: wrap;
-        }
-        
-        .reward-description-compact {
-          font-size: 0.75em;
-          color: var(--secondary-text-color, #757575);
-          margin-top: 2px;
-          line-height: 1.3;
-        }
-        
-        .reward-actions-compact {
-          display: flex;
-          gap: 4px;
-          flex-shrink: 0;
-        }
-        
         
         /* Styles pour l'onglet Validation */
         .validation-tasks-list {
@@ -5537,7 +5514,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           color: var(--primary-text-color, #212121);
         }
         
-        .cosmetic-simple-item {
+        .cosmetic-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -5551,46 +5528,46 @@ class KidsTasksCard extends KidsTasksBaseCard {
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .cosmetic-simple-item.rarity-common {
+        .cosmetic-item.rarity-common {
           border-left-color: var(--kt-rarity-common);
         }
 
-        .cosmetic-simple-item.rarity-rare {
+        .cosmetic-item.rarity-rare {
           border-left-color: var(--custom-rarity-rare)
         }
 
-        .cosmetic-simple-item.rarity-epic {
+        .cosmetic-item.rarity-epic {
           border-left-color: var(--custom-rarity-epic);
         }
 
-        .cosmetic-simple-item.rarity-legendary {
+        .cosmetic-item.rarity-legendary {
           border-left-color: var(-- custom-rarity-legendary);
         }
 
-        .cosmetic-simple-rarity {
+        .cosmetic-rarity {
           position: relative;
           top: -8px;
           place-self: center;
         }
 
-        .cosmetic-simple-rarity.rarity-common {
+        .cosmetic-rarity.rarity-common {
           background: var(--kt-rarity-common);
           color: white;
         }
-        .cosmetic-simple-rarity.rarity-rare {
+        .cosmetic-rarity.rarity-rare {
           background: var(--custom-rarity-rare);
           color: white;
         }
-        .cosmetic-simple-rarity.rarity-epic {
+        .cosmetic-rarity.rarity-epic {
           background: var(--custom-rarity-epic);
           color: white;
         }
-        .cosmetic-simple-rarity.rarity-legendary {
+        .cosmetic-rarity.rarity-legendary {
           background: var(--custom-rarity-legendary);
           color: white;
         }
 
-        .cosmetic-simple-item:hover {
+        .cosmetic-item:hover {
           background: var(--card-background-color, #fff);
           box-shadow: 0 4px 8px rgba(0,0,0,0.15);
           transform: translateY(-1px);
@@ -5618,7 +5595,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           }
           
           /* Stats compactes sur mobile - FORCER une seule ligne */
-          .stats-grid-compact {
+          .stats-grid {
             flex-direction: row;
             flex-wrap: nowrap;
             gap: var(--kt-space-xs);
@@ -5702,13 +5679,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             flex-direction: column;
             align-items: flex-start;
           }
-          
-          .task-meta {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-          
         }
     `;
   }
@@ -6775,7 +6745,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             ${this.config.show_progress ? `<div class="gauges-section">
                 ${(() => {
                   stats.coins = child.coins || 0; // Ajouter les coins aux stats
-                  return this.renderGauges(stats, false, true);
+                  return this.renderGauges(stats, true);
                 })()}
               </div>` : ''}
           </div>
@@ -7124,21 +7094,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         
-        .reward-icon-large {
-          /* display, align-items, justify-content inherited from base */
-          font-size: 4em;
-          margin-bottom: 8px;
-          width: 64px;
-          height: 64px;
-        }
-        
-        .reward-icon-large ha-icon {
-          display: flex !important;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto;
-        }
-        
         .reward-name {
           font-weight: bold;
           font-size: 1em;
@@ -7318,7 +7273,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           font-weight: 500;
         }
         
-        .task-action-compact {
+        .task-action {
           flex-shrink: 0;
         }
 
@@ -7342,137 +7297,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background-color: #e8f5e8;
           color: #2e7d32;
           border: 1px solid #4caf50;
-        }
-        
-        
-        /* Modal de détail des récompenses */
-        .reward-modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 10000;
-          backdrop-filter: blur(5px);
-        }
-        
-        .reward-modal-content {
-          background: var(--card-background-color, #fff);
-          border-radius: var(--kt-radius-lg);
-          padding: var(--kt-space-xl);
-          max-width: 400px;
-          width: 90%;
-          max-height: 80vh;
-          overflow-y: auto;
-          position: relative;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        
-        .reward-modal-close {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          background: none;
-          border: none;
-          font-size: 1.5em;
-          cursor: pointer;
-          color: var(--secondary-text-color, #757575);
-          width: 32px;
-          height: 32px;
-          border-radius: var(--kt-radius-round);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-        }
-        
-        .reward-modal-close:hover {
-          background: var(--secondary-background-color, #f5f5f5);
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .reward-modal-icon {
-          font-size: 4em;
-          text-align: center;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .reward-modal-icon ha-icon {
-          display: flex !important;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto;
-        }
-        
-        .reward-modal-name {
-          font-size: 1.5em;
-          font-weight: bold;
-          text-align: center;
-          margin-bottom: 8px;
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .reward-modal-price {
-          font-size: 1.2em;
-          color: var(--primary-color);
-          font-weight: bold;
-          text-align: center;
-          margin-bottom: 16px;
-        }
-        
-        .reward-modal-description {
-          color: var(--secondary-text-color, #757575);
-          line-height: 1.5;
-          margin-bottom: 24px;
-          text-align: center;
-        }
-        
-        .reward-modal-actions {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-        }
-        
-        .btn-modal {
-          padding: var(--kt-space-md) 24px;
-          border: none;
-          border-radius: var(--kt-radius-xl);
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 1em;
-        }
-        
-        .btn-modal-purchase {
-          background: var(--success-color, #4CAF50);
-          color: white;
-        }
-        
-        .btn-modal-purchase:hover {
-          background: #45a049;
-          transform: translateY(-1px);
-        }
-        
-        .btn-modal-purchase:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-          transform: none;
-        }
-        
-        .btn-modal-cancel {
-          background: var(--secondary-background-color, #f5f5f5);
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .btn-modal-cancel:hover {
-          background: var(--divider-color, #e0e0e0);
         }
       </style>
     `;
@@ -7528,7 +7352,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   `}
                 </div>
               </div>
-              <div class="task-action-compact">
+              <div class="task-action">
                 ${task.status === 'todo' ? `
                   <button class="btn btn-complete" 
                           data-action="complete_task" 
@@ -7588,7 +7412,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   <div class="task-main flex-content">
                     <div class="task-name-row">
                       <div class="task-name">${task.name}</div>
-                      ${task.last_validated_at ? `<div class="task-validation-compact" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
+                      ${task.last_validated_at ? `<div class="task-validation" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                     <div class="task-points">
                       ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
@@ -7596,8 +7420,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                       ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                   </div>
-                  <div class="task-action-compact">
-                    <span class="task-result-compact success">🎉</span>
+                  <div class="task-action">
+                    <span class="task-result success">🎉</span>
                   </div>
                 </div>
               `).join('')}
@@ -7622,8 +7446,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                       ${task.penalty_applied_at ? ` • Pénalité le ${new Date(task.penalty_applied_at).toLocaleDateString('fr-FR')}` : ''}
                     </div>
                   </div>
-                  <div class="task-action-compact">
-                    <span class="task-result-compact penalty">😞</span>
+                  <div class="task-action">
+                    <span class="task-result penalty">😞</span>
                   </div>
                 </div>
               `).join('')}
@@ -7769,7 +7593,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           <div class="reward-square affordable ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon-large">
+            <div class="reward-icon">
               ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name">${reward.name}</div>
@@ -7784,7 +7608,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           <div class="reward-square ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon-large" style="opacity: 0.5">
+            <div class="reward-icon" style="opacity: 0.5">
               ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
@@ -7979,170 +7803,30 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const child = this.getChild();
     const canAfford = reward.cost <= child.points && reward.coin_cost <= (child.coins || 0);
 
-    const modal = document.createElement('div');
-    modal.className = 'reward-modal';
-    
-    // Copier les styles CSS nécessaires depuis le shadow DOM
-    const style = document.createElement('style');
-    style.textContent = `
-      .reward-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        backdrop-filter: blur(5px);
-        font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-      }
-      .reward-modal-content {
-        background: var(--card-background-color, #fff);
-        border-radius: var(--kt-radius-lg);
-        padding: var(--kt-space-xl);
-        max-width: 400px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        position: relative;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      }
-      .reward-modal-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        font-size: 1.5em;
-        cursor: pointer;
-        color: #757575;
-        width: 32px;
-        height: 32px;
-        border-radius: var(--kt-radius-round);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-      }
-      .reward-modal-close:hover {
-        background: #f5f5f5;
-        color: #212121;
-      }
-      .reward-modal-icon {
-        font-size: 4em;
-        text-align: center;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      .reward-modal-icon ha-icon {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto;
-      }
-      .reward-modal-name {
-        font-size: 1.5em;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 8px;
-        color: var(--primary-text-color, #212121);
-      }
-      .reward-modal-price {
-        font-size: 1.2em;
-        color: ${this.computedStyle?.getPropertyValue('--custom-dashboard-primary')?.trim() || '#6b73ff'};
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .reward-modal-description {
-        color: var(--primary-text-color, #212121);
-        line-height: 1.5;
-        margin-bottom: 24px;
-        text-align: center;
-        font-weight: 500;
-      }
-      .reward-modal-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-      }
-      .btn-modal-purchase {
-        background: #4CAF50;
-        color: white;
-      }
-      .btn-modal-purchase:hover {
-        background: #45a049;
-        transform: translateY(-1px);
-      }
-      .btn-modal-purchase:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-        transform: none;
-      }
-      .btn-modal-cancel {
-        background: #f5f5f5;
-        color: #212121;
-      }
-      .btn-modal-cancel:hover {
-        background: #e0e0e0;
-      }
-    `;
-    
-    modal.innerHTML = `
-      <div class="reward-modal-content">
-        <button class="reward-modal-close" data-action="close_modal">×</button>
+    // Créer le contenu HTML pour le modal
+    const content = `
+      <div class="reward-detail-content">
         <div class="reward-modal-icon">${reward.cosmetic_data || reward.category === 'cosmetic' ? this.renderCosmeticPreviewLarge(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}</div>
         <div class="reward-modal-name">${reward.name}</div>
         <div class="reward-modal-price">${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''}</div>
         ${reward.description ? `<div class="reward-modal-description">${reward.description}</div>` : ''}
-        <div class="reward-modal-actions">
-          <button class="btn-modal btn-modal-cancel" data-action="close_modal">Annuler</button>
-          <button class="btn-modal btn-modal-purchase" 
+        <div class="dialog-actions">
+          <button type="button" class="btn-modal btn-modal-cancel" onclick="this.closest('ha-dialog').close()">Annuler</button>
+          <button type="button" class="btn-modal btn-modal-purchase" 
                   data-action="claim_reward" 
                   data-id="${reward.id}"
-                  ${!canAfford ? 'disabled' : ''}>
+                  ${!canAfford ? 'disabled' : ''}
+                  onclick="this.closest('ha-dialog').close(); this.closest('ha-dialog')._cardInstance.handleAction('claim_reward', '${reward.id}')">
             ${canAfford ? `Acheter (${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''})` : 'Pas assez de monnaie'}
           </button>
         </div>
       </div>
     `;
-    
-    // Ajouter les styles au modal
-    modal.appendChild(style);
 
-    // Ajouter des gestionnaires d'événements au modal
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        this.closeModal();
-      }
-    });
-
-    modal.addEventListener('click', (e) => {
-      const action = e.target.dataset.action;
-      if (action === 'close_modal') {
-        this.closeModal();
-      } else if (action === 'claim_reward') {
-        this.closeModal();
-        this.handleAction(action, e.target.dataset.id);
-      }
-    });
-
-    document.body.appendChild(modal);
-    this.currentModal = modal;
+    // Utiliser showModal() pour créer le dialog
+    this.showModal(content, `Détail de la récompense`);
   }
 
-  closeModal() {
-    if (this.currentModal) {
-      document.body.removeChild(this.currentModal);
-      this.currentModal = null;
-    }
-  }
 }
 
 // Enregistrer le composant enfant
@@ -8530,72 +8214,15 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           font-size: 0.95em;
           line-height: 1.4;
         }
-        
-        .cosmetic-items-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 20px;
-          margin-top: 16px;
-        }
-        
-        .cosmetic-item {
-          display: flex;
-          flex-direction: column;
-          background: var(--card-background-color, white);
-          border: 2px solid var(--divider-color, #e0e0e0);
-          border-radius: var(--kt-radius-lg);
-          padding: 20px;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        
-        .cosmetic-item:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        }
-        
-        .cosmetic-item.owned {
-          border-color: var(--success-color, #4caf50);
-          background: rgba(76, 175, 80, 0.05);
-        }
-        
-        .cosmetic-item.active {
-          border-color: var(--primary-color, #3f51b5);
-          background: rgba(63, 81, 181, 0.1);
-          box-shadow: 0 4px 16px rgba(63, 81, 181, 0.3);
-        }
-        
-        .cosmetic-item.default-item {
-          background: linear-gradient(135deg, #f5f5f5, #eeeeee);
-          border-color: #bdbdbd;
-        }
-        
-        .cosmetic-item.empty-category {
-          justify-content: center;
-          align-items: center;
-          min-height: 120px;
-          text-align: center;
-          color: var(--secondary-text-color, #757575);
-        }
-        
-        .cosmetic-preview {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 80px;
-          margin-bottom: 16px;
-          border-radius: var(--kt-radius-sm);
-          position: relative;
-        }
 
-        .cosmetics-simple-grid {
+        .cosmetics-grid {
           display: flex;
           flex-direction: column;
           gap: 12px;
           margin-top: 16px;
         }
 
-        .cosmetic-simple-item {
+        .cosmetic-item {
           display: flex;
           align-items: center;
           gap: 16px;
@@ -8608,54 +8235,54 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .cosmetic-simple-item.rarity-common {
+        .cosmetic-item.rarity-common {
           border-left-color: #9e9e9e;
         }
 
-        .cosmetic-simple-item.rarity-rare {
+        .cosmetic-item.rarity-rare {
           border-left-color: #2196f3;
         }
 
-        .cosmetic-simple-item.rarity-epic {
+        .cosmetic-item.rarity-epic {
           border-left-color: #9c27b0;
         }
 
-        .cosmetic-simple-item.rarity-legendary {
+        .cosmetic-item.rarity-legendary {
           border-left-color: var(--kt-warning);
         }
 
-        .cosmetic-simple-item:hover {
+        .cosmetic-item:hover {
           background: var(--card-background-color, #fff);
           box-shadow: 0 4px 8px rgba(0,0,0,0.15);
           transform: translateY(-1px);
         }
 
-        .cosmetic-simple-preview {
+        .cosmetic-preview {
           flex-shrink: 0;
         }
 
-        .cosmetic-simple-info {
+        .cosmetic-info {
           flex-grow: 1;
         }
 
-        .cosmetic-simple-name {
+        .cosmetic-name {
           font-weight: 600;
           margin-bottom: 4px;
         }
 
-        .cosmetic-simple-rarity {
+        .cosmetic-rarity {
           font-size: 0.85em;
           color: var(--secondary-text-color, #757575);
           margin-bottom: 4px;
         }
 
-        .cosmetic-simple-cost {
+        .cosmetic-cost {
           font-size: 0.9em;
           font-weight: 500;
           color: var(--primary-color, #1976d2);
         }
 
-        .cosmetic-simple-actions {
+        .cosmetic-actions {
           display: flex;
           flex-direction: row;
           gap: 12px;
