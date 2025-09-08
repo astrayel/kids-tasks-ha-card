@@ -4868,6 +4868,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-left: 3px solid #4CAF50;
           transition: all 0.3s ease;
           min-height: 50px;
+          position: relative;
         }
         
         /* Styles pour l'onglet Validation */
