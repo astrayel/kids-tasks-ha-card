@@ -483,8 +483,8 @@ class KidsTasksStyleManager {
 
       .kt-swipeable-item .kt-task-content {
         position: relative;
+        width: 100%;
         z-index: 2;
-        background: var(--card-background-color, white);
         transition: transform var(--kt-transition-medium);
       }
 
@@ -598,7 +598,11 @@ class KidsTasksBaseCard extends HTMLElement {
 
   handleClick(event) {
     const target = event.target.closest('[data-action]');
-    if (!target) return;
+    if (!target) {
+      // Si clic à côté, fermer toutes les confirmations ouvertes
+      this._hideAllDeleteConfirmations();
+      return;
+    }
 
     // Ne pas traiter les clics pendant un appui long
     const longPressItem = target.closest('.long-pressing');
@@ -607,6 +611,11 @@ class KidsTasksBaseCard extends HTMLElement {
     // Vérifier si un appui long est en cours sur cet élément
     const touchState = this._touchStates.get(target.closest('.kt-long-press-item'));
     if (touchState && touchState.isActive) return;
+
+    // Si ce n'est pas un bouton de confirmation, fermer les autres confirmations
+    if (!target.classList.contains('kt-confirm-delete') && !target.classList.contains('kt-cancel-delete')) {
+      this._hideAllDeleteConfirmations();
+    }
 
     event.preventDefault();
     event.stopPropagation();
@@ -759,6 +768,9 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   showDeleteConfirmation(item) {
+    // D'abord, nettoyer toutes les autres confirmations ouvertes
+    this._hideAllDeleteConfirmations(item);
+    
     const confirmation = item.querySelector('.kt-delete-confirmation');
     if (confirmation) {
       confirmation.classList.remove('hidden');
@@ -815,6 +827,19 @@ class KidsTasksBaseCard extends HTMLElement {
     setTimeout(() => {
       item.style.pointerEvents = '';
     }, 200);
+  }
+
+  _hideAllDeleteConfirmations(exceptItem = null) {
+    // Trouver tous les éléments avec confirmations ouvertes
+    const openConfirmations = this.shadowRoot.querySelectorAll('.kt-delete-confirmation:not(.hidden)');
+    
+    openConfirmations.forEach(confirmation => {
+      const parentItem = confirmation.closest('.kt-long-press-item');
+      // Ne pas fermer la confirmation de l'élément actuel
+      if (parentItem && parentItem !== exceptItem) {
+        this.hideDeleteConfirmation(parentItem);
+      }
+    });
   }
 
   addSwipeListeners() {
@@ -4924,7 +4949,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return `
       <div class="validation-task kt-swipeable-item" data-task-id="${task.id}">
         <!-- Actions révélées par glissement vers la gauche (rejeter) -->
-        <div class="kt-swipe-actions-left">
+        <div class="kt-swipe-actions-right">
           <button class="kt-reject-action" data-action="reject-task">
             <span class="icon">✗</span>
             <span class="label">Rejeter</span>
