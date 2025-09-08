@@ -176,7 +176,6 @@ class KidsTasksStyleManager {
         border: var(--kt-border-thin);
         border-radius: var(--kt-radius-lg);
         transition: all var(--kt-transition-fast);
-        padding-left: 36px;
       }
       
       .kids-tasks-scope .history-entry:hover {
@@ -1179,8 +1178,8 @@ class KidsTasksBaseCard extends HTMLElement {
       .task-main { /* flex-content utility class */ }
 
       .task-info { flex: 1; }
-      .task-icon {
-        font-size: 32px;
+      .item-icon {
+        font-size: 2em;
       }
       
       .task-description {
@@ -4114,7 +4113,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     return `
       <div class="task hover-card ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}">
-        <div class="task-icon">${taskIcon}</div>
+        <div class="item-icon">${taskIcon}</div>
         <div class="task-main flex-content">
           <div class="task-name">${task.name}</div>
           <div class="task-meta">
@@ -4194,7 +4193,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     return `
       <div class="reward-item hover-card">
-        <div class="reward-icon">${rewardIcon}</div>
+        <div class="item-icon">${rewardIcon}</div>
         <div class="reward-main">
           <div class="reward-name">${reward.name}</div>
           <div class="reward-meta">
@@ -4702,28 +4701,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           flex-shrink: 0;
         }
         
-        .reward-icon { 
-          font-size: 2.5em; 
-          margin-right: 16px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center;
-          min-width: 3em;
-          min-height: 3em;
-          flex-shrink: 0;
-          padding-top: 8px;
-          height: 100%;
-          pointer-events: none;
-        }
-        .reward-icon img {
-          width: 3em !important;
-          height: 3em !important;
-          border-radius: var(--kt-radius-round) !important;
-          object-fit: cover !important;
-          border: 2px solid var(--kt-cosmetic-background);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          flex-shrink: 0;
-        }
         .reward-info { 
           flex: 1; 
           display: flex;
@@ -5531,23 +5508,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
             font-size: 2em !important;
             margin-right: 12px !important;
             flex-shrink: 0;
-          }
-          
-          .reward-icon {
-            font-size: 1.5em !important;
-            margin-right: 12px !important;
-            min-width: 2em !important;
-            min-height: 2em !important;
-          }
-          
-          .reward-icon img {
-            width: 2em !important;
-            height: 2em !important;
-          }
-          
-          .reward-icon ha-icon {
-            width: 2em !important;
-            height: 2em !important;
           }
           
           .child-info {
@@ -7212,7 +7172,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           
           return `
             <div class="task ${task.status} ${delayClass}">
-              <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+              <div class="item-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
               <div class="task-main flex-content">
                 <div class="task-name">${task.name}</div>
                 <div class="task-points">
@@ -7281,7 +7241,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             <div class="task-list">
               ${completedTasks.map(task => `
                 <div class="task completed ${isChildCard ? 'success-border' : ''}">
-                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="item-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main flex-content">
                     <div class="task-name-row">
                       <div class="task-name">${task.name}</div>
@@ -7311,7 +7271,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             <div class="task-list">
               ${missedTasks.map(task => `
                 <div class="task missed">
-                  <div class="task-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
+                  <div class="item-icon">${this.safeGetCategoryIcon(task, '📋')}</div>
                   <div class="task-main flex-content">
                     <div class="task-name">${task.name}</div>
                     <div class="task-points">
@@ -7466,7 +7426,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           <div class="reward-square affordable ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon">
+            <div class="item-icon">
               ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name">${reward.name}</div>
@@ -7481,7 +7441,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           <div class="reward-square ${getCurrencyClass(reward)} ${reward.cosmetic_data || reward.category === 'cosmetic' ? 'cosmetic' : 'regular'}" 
                data-action="show_reward_detail" 
                data-id="${reward.id}">
-            <div class="reward-icon" style="opacity: 0.5">
+            <div class="item-icon" style="opacity: 0.5">
               ${reward.cosmetic_data || isCosmetic(reward) ? this.renderCosmeticPreview(reward.cosmetic_data, reward.name) : this.safeGetCategoryIcon(reward, '🎁')}
             </div>
             <div class="reward-name" style="opacity: 0.5">${reward.name}</div>
