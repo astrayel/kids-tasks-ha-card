@@ -5006,7 +5006,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </button>
         </div>
 
-        <!-- Contenu principal de la tâche -->
+        <!-- Contenu principal utilisant exactement le même layout que renderTaskItem -->
         <div class="kt-task-content">
           <div class="item-icon">${taskIcon}</div>
           <div class="task-main flex-content">
@@ -5014,6 +5014,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             <div class="task-meta">
               <span class="assigned-child">${childName}</span>
               ${ageText ? `<span class="task-age">${ageText}</span>` : ''}
+              <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
               <span class="task-category">${this.getCategoryLabel(task.category)}</span>
             </div>
             ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
