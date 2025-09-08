@@ -497,7 +497,8 @@ class KidsTasksStyleManager {
       }
 
       .kt-reject-action,
-      .kt-validate-action {
+      .kt-validate-action,
+      .kt-delete-action {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -514,12 +515,14 @@ class KidsTasksStyleManager {
       }
 
       .kt-reject-action:hover,
-      .kt-validate-action:hover {
+      .kt-validate-action:hover,
+      .kt-delete-action:hover {
         background: rgba(255, 255, 255, 0.2);
       }
 
       .kt-reject-action .icon,
-      .kt-validate-action .icon {
+      .kt-validate-action .icon,
+      .kt-delete-action .icon {
         font-size: 20px;
         font-weight: bold;
       }
@@ -530,11 +533,11 @@ class KidsTasksStyleManager {
         outline-offset: 2px;
       }
 
-      .kt-validation-task.validated {
+      .task.validated {
         animation: kt-slideOutRight 0.3s ease-out forwards;
       }
 
-      .kt-validation-task.rejected {
+      .task.rejected {
         animation: kt-slideOutLeft 0.3s ease-out forwards;
       }
 
@@ -611,6 +614,12 @@ class KidsTasksBaseCard extends HTMLElement {
     // Vérifier si un appui long est en cours sur cet élément
     const touchState = this._touchStates.get(target.closest('.kt-long-press-item'));
     if (touchState && touchState.isActive) return;
+
+    // Ne pas traiter les clics pendant ou juste après un glissement
+    const swipeableItem = target.closest('.kt-swipeable-item');
+    if (swipeableItem && (swipeableItem.classList.contains('swiping-left') || swipeableItem.classList.contains('swiping-right'))) {
+      return;
+    }
 
     // Si ce n'est pas un bouton de confirmation, fermer les autres confirmations
     if (!target.classList.contains('kt-confirm-delete') && !target.classList.contains('kt-cancel-delete')) {
@@ -888,8 +897,11 @@ class KidsTasksBaseCard extends HTMLElement {
         
         // Afficher/masquer les actions selon la direction
         if (clampedDelta < -20) {
-          currentItem.classList.add('swiping-left');
-          currentItem.classList.remove('swiping-right');
+          // Seulement montrer l'action gauche si c'est une tâche de validation avec bouton rejet
+          if (currentItem.querySelector('.kt-reject-action')) {
+            currentItem.classList.add('swiping-left');
+            currentItem.classList.remove('swiping-right');
+          }
         } else if (clampedDelta > 20) {
           currentItem.classList.add('swiping-right');
           currentItem.classList.remove('swiping-left');
@@ -915,11 +927,16 @@ class KidsTasksBaseCard extends HTMLElement {
         // Revenir à la position originale
         this.resetSwipePosition(currentItem);
       } else if (deltaX > threshold) {
-        // Glissement vers la droite - montrer l'action de validation
+        // Glissement vers la droite - validation ou suppression selon le type d'élément
         this.showSwipeAction(currentItem, 'right');
       } else if (deltaX < -threshold) {
-        // Glissement vers la gauche - montrer l'action de rejet
-        this.showSwipeAction(currentItem, 'left');
+        // Glissement vers la gauche - rejet (seulement pour validation) ou rien pour tâches/récompenses
+        if (currentItem.querySelector('.kt-reject-action')) {
+          this.showSwipeAction(currentItem, 'left');
+        } else {
+          // Pour les tâches/récompenses, glissement gauche = rien
+          this.resetSwipePosition(currentItem);
+        }
       }
       
       isTracking = false;
@@ -946,7 +963,14 @@ class KidsTasksBaseCard extends HTMLElement {
     }, 3000);
     
     // Gérer les clics sur les boutons d'action - toujours réattacher
-    const actionButton = item.querySelector(direction === 'left' ? '.kt-reject-action' : '.kt-validate-action');
+    let actionButton;
+    if (direction === 'left') {
+      actionButton = item.querySelector('.kt-reject-action');
+    } else if (direction === 'right') {
+      // Chercher d'abord les boutons de validation, puis les boutons de suppression
+      actionButton = item.querySelector('.kt-validate-action') || item.querySelector('.kt-delete-action');
+    }
+    
     if (actionButton) {
       // Nettoyer les anciens listeners pour éviter les doublons
       const oldHandler = actionButton.onclick;
@@ -957,12 +981,20 @@ class KidsTasksBaseCard extends HTMLElement {
         e.stopPropagation();
         
         const taskId = item.dataset.taskId;
+        const itemId = item.dataset.taskId || item.dataset.id;
         const action = actionButton.dataset.action;
         
-        
-        if (taskId && action) {
-          this.handleValidationAction(action, taskId);
-          this.animateTaskAction(item, direction);
+        if (itemId && action) {
+          // Gérer les actions de validation
+          if (action === 'validate-task' || action === 'reject-task') {
+            this.handleValidationAction(action, itemId);
+            this.animateTaskAction(item, direction);
+          }
+          // Gérer les actions de suppression
+          else if (action === 'remove-task' || action === 'remove-reward') {
+            this.handleAction(action, { id: itemId });
+            this.animateTaskAction(item, direction);
+          }
         }
       };
       
@@ -4569,7 +4601,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
       ${pendingTasks.length > 0 ? `
         <div class="section">
           <h2>Tâches à valider (${pendingTasks.length})</h2>
-          <div class="validation-tasks-list">
+          <div class="task-list">
             ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
           </div>
         </div>
@@ -4777,29 +4809,33 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
     return `
-      <div class="task hover-card kt-clickable-item kt-long-press-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}" 
-           data-action="edit-task" 
-           data-id="${task.id}"
-           data-delete-action="remove-task">
-        <div class="item-icon">${taskIcon}</div>
-        <div class="task-main flex-content">
-          <div class="task-name">${task.name}</div>
-          <div class="task-meta">
-            <span class="assigned-child">${childName}</span>
-            <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
-            <span class="task-category">${this.getCategoryLabel(task.category)}</span>
-          </div>
-        </div>
-        <div class="task-rewards">
-          ${task.points > 0 ? `<span class="reward-points">+${task.points}🎫</span>` : ''}
-          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
-          ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
-        </div>
+      <div class="task hover-card kt-swipeable-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}" 
+           data-task-id="${task.id}">
         
-        <!-- État de confirmation pour suppression (masqué par défaut) -->
-        <div class="kt-delete-confirmation hidden">
-          <button class="kt-confirm-delete">Supprimer</button>
-          <button class="kt-cancel-delete">Annuler</button>
+        <!-- Action révélée par balayage vers la droite (supprimer) -->
+        <div class="kt-swipe-actions-right">
+          <button class="kt-delete-action" data-action="remove-task">
+            <span class="icon">🗑️</span>
+            <span class="label">Supprimer</span>
+          </button>
+        </div>
+
+        <!-- Contenu principal de la tâche -->
+        <div class="kt-task-content" data-action="edit-task" data-id="${task.id}">
+          <div class="item-icon">${taskIcon}</div>
+          <div class="task-main flex-content">
+            <div class="task-name">${task.name}</div>
+            <div class="task-meta">
+              <span class="assigned-child">${childName}</span>
+              <span class="task-frequency">${this.getFrequencyLabel(task.frequency)}</span>
+              <span class="task-category">${this.getCategoryLabel(task.category)}</span>
+            </div>
+          </div>
+          <div class="task-rewards">
+            ${task.points > 0 ? `<span class="reward-points">+${task.points}🎫</span>` : ''}
+            ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
+            ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -4862,24 +4898,28 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const rewardIcon = this.safeGetCategoryIcon(reward, '🎁');
     
     return `
-      <div class="reward-item hover-card kt-clickable-item kt-long-press-item"
-           data-action="edit-reward" 
-           data-id="${reward.id}"
-           data-delete-action="remove-reward">
-        <div class="item-icon">${rewardIcon}</div>
-        <div class="reward-main">
-          <div class="reward-name">${reward.name}</div>
-          <div class="reward-meta">
-            ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
-            ${reward.remaining_quantity !== null ? ` • ${reward.remaining_quantity} restant(s)` : ''}
-          </div>
-          ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
-        </div>
+      <div class="reward-item hover-card kt-swipeable-item"
+           data-task-id="${reward.id}">
         
-        <!-- État de confirmation pour suppression (masqué par défaut) -->
-        <div class="kt-delete-confirmation hidden">
-          <button class="kt-confirm-delete">Supprimer</button>
-          <button class="kt-cancel-delete">Annuler</button>
+        <!-- Action révélée par balayage vers la droite (supprimer) -->
+        <div class="kt-swipe-actions-right">
+          <button class="kt-delete-action" data-action="remove-reward">
+            <span class="icon">🗑️</span>
+            <span class="label">Supprimer</span>
+          </button>
+        </div>
+
+        <!-- Contenu principal de la récompense -->
+        <div class="kt-task-content" data-action="edit-reward" data-id="${reward.id}">
+          <div class="item-icon">${rewardIcon}</div>
+          <div class="reward-main">
+            <div class="reward-name">${reward.name}</div>
+            <div class="reward-meta">
+              ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
+              ${reward.remaining_quantity !== null ? ` • ${reward.remaining_quantity} restant(s)` : ''}
+            </div>
+            ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -4899,7 +4939,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </h2>
         
         ${pendingTasks.length > 0 ? `
-          <div class="validation-tasks-list">
+          <div class="task-list">
             ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
           </div>
         ` : `
@@ -4929,7 +4969,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     const taskIcon = this.safeGetCategoryIcon(task, '📋');
     
-    // Calculer l'âge de la demande
+    // Calculer l'âge de la demande pour l'afficher dans les métadonnées
     let ageText = '';
     if (task.completed_at) {
       const completedDate = new Date(task.completed_at);
@@ -4947,9 +4987,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }
     
     return `
-      <div class="validation-task kt-swipeable-item" data-task-id="${task.id}">
+      <div class="task hover-card kt-swipeable-item ${task.status} pending-validation" 
+           data-task-id="${task.id}">
+        
         <!-- Actions révélées par glissement vers la gauche (rejeter) -->
-        <div class="kt-swipe-actions-right">
+        <div class="kt-swipe-actions-left">
           <button class="kt-reject-action" data-action="reject-task">
             <span class="icon">✗</span>
             <span class="label">Rejeter</span>
@@ -4966,22 +5008,20 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
         <!-- Contenu principal de la tâche -->
         <div class="kt-task-content">
-          <div class="validation-task-icon">${taskIcon}</div>
-          <div class="validation-task-content flex-content">
-            <div class="validation-task-header">
-              <div class="validation-task-title">${task.name}</div>
-              <div class="validation-task-age">${ageText}</div>
+          <div class="item-icon">${taskIcon}</div>
+          <div class="task-main flex-content">
+            <div class="task-name">${task.name}</div>
+            <div class="task-meta">
+              <span class="assigned-child">${childName}</span>
+              ${ageText ? `<span class="task-age">${ageText}</span>` : ''}
+              <span class="task-category">${this.getCategoryLabel(task.category)}</span>
             </div>
-            <div class="validation-task-meta">
-              <span class="validation-child">${childName}</span>
-              <span class="validation-rewards">
-                ${task.points !== 0 ? `${task.points > 0 ? '+' : ''}${task.points}🎫` : ''}
-                ${task.coins !== 0 ? ` ${task.coins > 0 ? '+' : ''}${task.coins}🪙` : ''}
-                ${task.penalty_points ? ` ${task.penalty_points}🎫` : ''}
-              </span>
-              <span class="validation-category">${this.getCategoryLabel(task.category)}</span>
-            </div>
-            ${task.description ? `<div class="validation-task-description">${task.description}</div>` : ''}
+            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+          </div>
+          <div class="task-rewards">
+            ${task.points > 0 ? `<span class="reward-points">+${task.points}🎫</span>` : ''}
+            ${task.coins > 0 ? `<span class="reward-coins">+${task.coins}🪙</span>` : ''}
+            ${task.penalty_points > 0 ? `<span class="penalty-points">-${task.penalty_points}🎫</span>` : ''}
           </div>
         </div>
       </div>
@@ -5557,180 +5597,29 @@ class KidsTasksCard extends KidsTasksBaseCard {
           position: relative;
         }
         
-        /* Styles pour l'onglet Validation */
-        .validation-tasks-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        
-        .validation-task {
-          display: flex;
-          align-items: center;
-          padding: var(--kt-space-md);
-          background: var(--secondary-background-color, #fafafa);
-          border-radius: var(--kt-radius-sm);
+        /* Styles spécifiques pour les tâches en attente de validation */
+        .task.pending-validation {
           border-left: 4px solid #ff5722;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          transition: all 0.3s ease;
+          background: rgba(255, 87, 34, 0.05);
         }
         
-        .validation-task:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          transform: translateY(-2px);
+        .task.pending-validation:hover {
+          background: rgba(255, 87, 34, 0.1);
         }
         
-        .validation-task-icon {
-          font-size: 1.5em;
-          margin-right: 16px;
-          flex-shrink: 0;
-        }
-        
-        .validation-task-content { /* flex-content utility class */ }
-        
-        .validation-task-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 4px;
-        }
-        
-        .validation-task-title {
-          font-weight: 700;
-          font-size: 1.1em;
-          color: var(--primary-text-color, #212121);
-        }
-        
-        .validation-task-age {
-          font-size: 0.8em;
-          color: var(--secondary-text-color, #757575);
-          font-style: italic;
-        }
-        
-        .validation-task-meta {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 4px;
-          font-size: 0.85em;
-          flex-wrap: wrap;
-        }
-        
-        /* Base badge styles */
-        .validation-child, .validation-rewards, .validation-category, .badge, .cosmetic-rarity {
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-md);
+        /* Style pour l'âge de la demande dans les métadonnées */
+        .task-age {
+          background: rgba(255, 87, 34, 0.1);
+          color: #ff5722;
           font-weight: 600;
         }
         
-        .validation-child {
-          background: var(--kt-info);
-          color: white;
-        }
-        
-        .validation-rewards {
-          background: #4caf50;
-          color: white;
-        }
-        
-        .validation-category {
-          background: rgba(0,0,0,0.1);
-          color: var(--secondary-text-color, #757575);
-          font-weight: normal;
-        }
-        
-        .validation-task-description {
+        /* Description de tâche avec style italique */
+        .task-description {
           font-size: 0.9em;
           color: var(--secondary-text-color, #757575);
           font-style: italic;
           margin-top: 4px;
-        }
-        
-        .validation-task-actions {
-          display: flex;
-          gap: 8px;
-          flex-shrink: 0;
-          margin-left: 16px;
-        }
-        
-        .btn-validation {
-          padding: var(--kt-space-sm) 16px;
-          font-size: 0.85em;
-          font-weight: 600;
-          border-radius: var(--kt-radius-xl);
-          transition: all 0.3s ease;
-          cursor: pointer;
-        }
-        
-        .btn-validation:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        /* Améliorations pour mobile - validations */
-        @media (max-width: 768px) {
-          .validation-task {
-            flex-direction: column;
-            align-items: stretch;
-            padding: var(--kt-space-lg);
-          }
-          
-          .validation-task-icon {
-            margin-right: 0;
-            margin-bottom: 8px;
-            text-align: center;
-            font-size: 1.8em;
-          }
-          
-          .validation-task-header {
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 8px;
-          }
-          
-          .validation-task-title {
-            font-size: 1.2em;
-            margin-bottom: 4px;
-          }
-          
-          .validation-task-age {
-            font-size: 0.85em;
-          }
-          
-          .validation-task-meta {
-            justify-content: center;
-            margin-bottom: 12px;
-          }
-          
-          .validation-task-actions {
-            justify-content: center;
-            gap: 12px;
-            margin-top: 8px;
-            margin-left: 0;
-          }
-          
-          .btn-validation {
-            flex: 1;
-            padding: var(--kt-space-md) 16px;
-            font-size: 0.9em;
-            min-width: 120px;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .validation-task-actions {
-            flex-direction: column;
-            gap: 8px;
-          }
-          
-          .btn-validation {
-            width: 100%;
-          }
-          
-          .validation-task-meta {
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-          }
         }
         
         .badge {
