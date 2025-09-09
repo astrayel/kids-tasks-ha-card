@@ -482,6 +482,7 @@ class KidsTasksStyleManager {
       /* Glissement gauche = rejeter (rouge) */
       .kt-swipeable-item.swiping-left::before {
         content: '✗';
+        font-size: 3em;
         left: 0;
         background: linear-gradient(90deg, var(--kt-error), transparent);
       }
@@ -494,12 +495,14 @@ class KidsTasksStyleManager {
 
       /* Icône spécifique pour validation (tâches pending-validation) */
       .kt-swipeable-item.pending-validation.swiping-right::before {
+        font-size: 3em;
         content: '✓';
         background: linear-gradient(-90deg, var(--kt-success), transparent);
       }
 
       /* Icône spécifique pour suppression (tâches normales et récompenses) */
       .kt-swipeable-item.reward-item.swiping-right::before {
+        font-size: 3em;
         content: '🗑️';
         background: linear-gradient(-90deg, var(--kt-error), transparent);
       }
