@@ -4665,27 +4665,27 @@ class KidsTasksCard extends KidsTasksBaseCard {
         <h2>${this.title}</h2>
         <div class="stats-grid">
           <div class="stat-card compact">
-            <div class="stat-icon small">👶</div>
+            <div class="item-icon">🧒🏻</div>
             <div class="stat-info compact">
-              ${stats.totalChildren} Enfant${stats.totalChildren > 1 ? 's' : ''}
+              ${stats.totalChildren}
             </div>
           </div>
           <div class="stat-card compact">
-            <div class="stat-icon small">📝</div>
+            <div class="item-icon">📝</div>
             <div class="stat-info compact">
-              ${stats.totalTasks} tâches
+              ${stats.totalTasks}
             </div>
           </div>
           <div class="stat-card compact">
-            <div class="stat-icon small">✅</div>
+            <div class="item-icon">✅</div>
             <div class="stat-info compact">
-              ${stats.completedToday} finies<br>aujourd'hui
+              ${stats.completedToday}
             </div>
           </div>
           <div class="stat-card compact clickable" data-action="switch-view" data-id="validation" title="Voir les tâches à valider">
-            <div class="stat-icon small">⏳</div>
+            <div class="item-icon">⏳</div>
             <div class="stat-info compact">
-              ${stats.pendingValidation} à valider
+              ${stats.pendingValidation}
             </div>
           </div>
         </div>
@@ -6052,27 +6052,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           }
           
           /* Stats compactes sur mobile - FORCER une seule ligne */
-          .stats-grid {
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: var(--kt-space-xs);
-            overflow-x: auto;
-          }
-          
-          .stat-card.compact {
-            justify-content: center;
-            min-width: 80px;
-            flex: 1 1 auto;
-            padding: var(--kt-space-xs);
-            flex-direction: column;
-            text-align: center;
-          }
-          
-          .stat-card.compact .stat-icon.small {
-            font-size: 1em;
-            margin-bottom: 2px;
-          }
-          
           .modal-content { width: 95%; margin: 0 auto; }
           .modal-body { padding: var(--kt-space-lg); }*/
           
