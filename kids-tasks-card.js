@@ -450,7 +450,6 @@ class KidsTasksStyleManager {
         position: relative;
         overflow: hidden;
         touch-action: pan-y;
-        font-size: 3em;
       }
 
       .kt-swipeable-item .kt-task-content {
