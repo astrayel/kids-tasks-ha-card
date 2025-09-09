@@ -849,18 +849,18 @@ class KidsTasksBaseCard extends HTMLElement {
     const signal = controller.signal;
     
     let startX = 0;
+    let startY = 0;
     let currentX = 0;
+    let currentY = 0;
     let isTracking = false;
     let currentItem = null;
+    let isHorizontalSwipe = false;
     
     this.shadowRoot.addEventListener('pointerdown', (e) => {
       const swipeableItem = e.target.closest('.kt-swipeable-item');
       if (swipeableItem) {
-        // Empêcher la propagation vers Home Assistant
-        e.preventDefault();
-        e.stopPropagation();
-        
         startX = e.clientX;
+        startY = e.clientY; // Ajouter la position Y de départ
         currentX = startX;
         isTracking = true;
         currentItem = swipeableItem;
@@ -868,17 +868,35 @@ class KidsTasksBaseCard extends HTMLElement {
         if (taskContent) {
           taskContent.style.transition = 'none';
         }
+        // Ne pas preventDefault ici pour permettre le scroll
       }
     }, { signal });
     
     this.shadowRoot.addEventListener('pointermove', (e) => {
       if (!isTracking || !currentItem) return;
       
-      // Empêcher la propagation pendant le glissement
-      e.preventDefault();
-      e.stopPropagation();
       currentX = e.clientX;
+      currentY = e.clientY;
       const deltaX = currentX - startX;
+      const deltaY = currentY - startY;
+      
+      // Déterminer si c'est un swipe horizontal ou vertical au premier mouvement significatif
+      if (!isHorizontalSwipe && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
+        isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
+        if (!isHorizontalSwipe) {
+          // C'est un scroll vertical, arrêter le tracking
+          isTracking = false;
+          currentItem = null;
+          return;
+        }
+      }
+      
+      // Si c'est un swipe horizontal confirmé, empêcher le scroll et traiter le swipe
+      if (isHorizontalSwipe) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
       const taskContent = currentItem.querySelector('.kt-task-content');
       
       if (taskContent) {
@@ -907,9 +925,11 @@ class KidsTasksBaseCard extends HTMLElement {
     this.shadowRoot.addEventListener('pointerup', (e) => {
       if (!isTracking || !currentItem) return;
       
-      // Empêcher la propagation qui cause le changement d'onglet HA
-      e.preventDefault();
-      e.stopPropagation();
+      // Empêcher la propagation seulement si c'était un swipe horizontal
+      if (isHorizontalSwipe) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       
       const deltaX = currentX - startX;
       const threshold = 40;
@@ -938,29 +958,21 @@ class KidsTasksBaseCard extends HTMLElement {
       
       isTracking = false;
       currentItem = null;
+      isHorizontalSwipe = false; // Reset pour le prochain geste
     }, { signal });
     
     // Ajouter aussi les événements touch pour une meilleure compatibilité mobile
-    this.shadowRoot.addEventListener('touchstart', (e) => {
-      const swipeableItem = e.target.closest('.kt-swipeable-item');
-      if (swipeableItem && isTracking) {
-        // Si on est en train de suivre un glissement, empêcher HA de gérer le touch
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, { passive: false, signal });
-    
     this.shadowRoot.addEventListener('touchmove', (e) => {
-      if (isTracking && currentItem) {
-        // Empêcher HA de traiter les mouvements pendant notre glissement
+      if (isTracking && currentItem && isHorizontalSwipe) {
+        // Empêcher HA de traiter les mouvements seulement pendant un swipe horizontal
         e.preventDefault();
         e.stopPropagation();
       }
     }, { passive: false, signal });
     
     this.shadowRoot.addEventListener('touchend', (e) => {
-      if (isTracking && currentItem) {
-        // Empêcher HA de traiter la fin du touch pendant notre glissement
+      if (isTracking && currentItem && isHorizontalSwipe) {
+        // Empêcher HA de traiter la fin du touch seulement après un swipe horizontal
         e.preventDefault();
         e.stopPropagation();
       }
@@ -2049,18 +2061,9 @@ class KidsTasksBaseCard extends HTMLElement {
       /* Stats et métriques */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: var(--kt-space-lg);
-        margin: var(--kt-space-lg) 0;
-      }
-      
-      /* Stats compactes sur une ligne */
-      .stats-grid {
-        display: flex;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: var(--kt-space-md);
-        margin: var(--kt-space-lg) 0;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        margin: var(--kt-space-md) 0;
       }
       
       .stat-card.compact {
