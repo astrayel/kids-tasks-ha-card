@@ -520,11 +520,11 @@ class KidsTasksStyleManager {
         outline-offset: 2px;
       }
 
-      .task.validated {
+      .task.kt-animating-validated {
         animation: kt-slideOutRight 0.3s ease-out forwards;
       }
 
-      .task.rejected {
+      .task.kt-animating-rejected {
         animation: kt-slideOutLeft 0.3s ease-out forwards;
       }
 
@@ -1030,12 +1030,22 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   animateTaskAction(item, direction) {
-    item.classList.add(direction === 'left' ? 'rejected' : 'validated');
+    // Ajouter la classe d'animation temporaire
+    const animationClass = direction === 'left' ? 'kt-animating-rejected' : 'kt-animating-validated';
+    item.classList.add(animationClass);
     
-    // Retirer l'élément après l'animation
+    // Retirer l'élément après l'animation seulement si on est dans la liste de validation
+    const isInValidationList = item.closest('.section')?.querySelector('h2')?.textContent?.includes('Tâches à valider');
+    
     setTimeout(() => {
-      if (item.parentNode) {
+      item.classList.remove(animationClass);
+      
+      if (isInValidationList && item.parentNode) {
+        // Dans la liste de validation, supprimer l'élément après validation/rejet
         item.remove();
+      } else {
+        // Dans les autres listes, juste rafraîchir l'affichage
+        // L'élément sera mis à jour au prochain rendu avec le bon statut
       }
     }, 300);
   }
@@ -4608,7 +4618,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const children = this.getChildren();
     const tasks = this.getTasks();
     const stats = this.getStats();
-    const pendingTasks = tasks.filter(t => t.status === 'pending_validation');
+    const pendingTasks = tasks.filter(t => 
+      t.status === 'pending_validation' && 
+      !t.classList?.contains('validated') && 
+      !t.classList?.contains('rejected')
+    );
 
     return `
       ${pendingTasks.length > 0 ? `
@@ -5592,7 +5606,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
         
         .task.pending-validation:hover {
-          background: rgba(255, 87, 34, 0.1);
+          background: rgba(128, 128, 128, 0.5);
         }
         
         /* Style pour l'âge de la demande dans les métadonnées */
@@ -7270,7 +7284,11 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       return isTodo && isActive;
     });
     
-    const pendingTasks = tasks.filter(t => t.status === 'pending_validation');
+    const pendingTasks = tasks.filter(t => 
+      t.status === 'pending_validation' && 
+      !t.classList?.contains('validated') && 
+      !t.classList?.contains('rejected')
+    );
     
     const completedTasks = tasks.filter(t => {
       const isCompleted = (t.status === 'validated' || t.status === 'completed');
