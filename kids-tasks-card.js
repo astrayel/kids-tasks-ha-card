@@ -2084,7 +2084,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .stat-info.compact {
         text-align: left;
-        font-size: var(--kt-font-size-sm);
+        font-size: var(--kt-font-size-xl);
       }
       
       .stat-item {
@@ -4636,33 +4636,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </div>
         </div>
       ` : ''}
-
-      ${children.length > 0 ? `
-        <div class="section children-grid">
-          <div class="children-dashboard-grid">
-            ${children.map((child, index) => {
-              try {
-                console.log(`Rendu enfant ${index}:`, child);
-                const result = this.renderChildCard(child, false, false);
-                console.log(`Rendu enfant ${index} réussi`);
-                return result;
-              } catch (error) {
-                console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
-                return `<div class="child-card"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
-              }
-            }).join('')}
-          </div>
-        </div>
-      ` : `
-        <div class="empty-state">
-          <div class="empty-state-icon">👶</div>
-          <p>Aucun enfant enregistré</p>
-          <button class="btn btn-primary" data-action="add-child">Ajouter un enfant</button>
-        </div>
-      `}
-
       <div class="section">
-        <h2>${this.title}</h2>
         <div class="stats-grid">
           <div class="stat-card compact">
             <div class="item-icon">🧒🏻</div>
@@ -4690,7 +4664,31 @@ class KidsTasksCard extends KidsTasksBaseCard {
           </div>
         </div>
       </div>
-    `;
+
+      ${children.length > 0 ? `
+        <div class="section children-grid">
+          <div class="children-dashboard-grid">
+            ${children.map((child, index) => {
+              try {
+                console.log(`Rendu enfant ${index}:`, child);
+                const result = this.renderChildCard(child, false, false);
+                console.log(`Rendu enfant ${index} réussi`);
+                return result;
+              } catch (error) {
+                console.error(`Erreur lors du rendu de l'enfant ${index}:`, error, child);
+                return `<div class="child-card"><div class="error">Erreur enfant ${index}: ${error.message}</div></div>`;
+              }
+            }).join('')}
+          </div>
+        </div>
+      ` : `
+        <div class="empty-state">
+          <div class="empty-state-icon">👶</div>
+          <p>Aucun enfant enregistré</p>
+          <button class="btn btn-primary" data-action="add-child">Ajouter un enfant</button>
+        </div>
+      `}
+      `;
   }
 
   getChildrenView() {
@@ -5269,7 +5267,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
           gap: 16px;
           margin-bottom: 24px;
         }
