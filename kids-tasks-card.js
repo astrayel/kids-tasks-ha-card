@@ -498,7 +498,6 @@ class KidsTasksStyleManager {
       }
 
       /* Icône spécifique pour suppression (tâches normales et récompenses) */
-      .kt-swipeable-item.task.swiping-right::before,
       .kt-swipeable-item.reward-item.swiping-right::before {
         content: '🗑️';
         background: linear-gradient(-90deg, var(--kt-error), transparent);
