@@ -461,13 +461,57 @@ class KidsTasksStyleManager {
         transition: transform var(--kt-transition-medium);
       }
 
-      /* Feedback visuel pendant le glissement - arrière-plan coloré */
-      .kt-swipeable-item.swiping-left .kt-task-content {
-        background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), var(--card-background-color, #fff));
+      /* Feedback visuel pendant le glissement */
+      .kt-swipeable-item.swiping-left::before,
+      .kt-swipeable-item.swiping-right::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
       }
 
+      /* Glissement gauche = rejeter (rouge) */
+      .kt-swipeable-item.swiping-left::before {
+        content: '✗';
+        left: 0;
+        background: linear-gradient(90deg, var(--kt-error), transparent);
+      }
+
+      /* Glissement droite = valider/supprimer selon le contexte */
+      .kt-swipeable-item.swiping-right::before {
+        right: 0;
+        background: linear-gradient(-90deg, var(--kt-success), transparent);
+      }
+
+      /* Icône spécifique pour validation (tâches pending-validation) */
+      .kt-swipeable-item.pending-validation.swiping-right::before {
+        content: '✓';
+        background: linear-gradient(-90deg, var(--kt-success), transparent);
+      }
+
+      /* Icône spécifique pour suppression (tâches normales et récompenses) */
+      .kt-swipeable-item.task.swiping-right::before,
+      .kt-swipeable-item.reward-item.swiping-right::before {
+        content: '🗑️';
+        background: linear-gradient(-90deg, var(--kt-error), transparent);
+      }
+
+      .kt-swipeable-item.swiping-left .kt-task-content {
+        background: var(--card-background-color, #fff);
+        transform: translateX(-20px);
+      }
+      
       .kt-swipeable-item.swiping-right .kt-task-content {
-        background: linear-gradient(-90deg, rgba(76, 175, 80, 0.1), var(--card-background-color, #fff));
+        background: var(--card-background-color, #fff);
+        transform: translateX(20px);
       }
 
       /* Feedback visuel */
@@ -5487,7 +5531,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
-          height: 1em;
+          height: 2em;
         }
         
         .reward-coins {
@@ -5497,7 +5541,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
-          height: 1em;
+          height: 2em;
         }
         
         .penalty-points {
@@ -5507,7 +5551,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
-          height: 1em;
+          height: 2em;
         }
 
         .actions {
