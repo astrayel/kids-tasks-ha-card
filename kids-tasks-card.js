@@ -452,79 +452,22 @@ class KidsTasksStyleManager {
         touch-action: pan-y;
       }
 
-      .kt-swipe-actions-left,
-      .kt-swipe-actions-right {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 3;
-        opacity: 0;
-        transition: all var(--kt-transition-medium);
-      }
-
-      .kt-swipe-actions-left {
-        left: 0;
-        background: var(--kt-error);
-      }
-
-      .kt-swipe-actions-right {
-        right: 0;
-        background: var(--kt-success);
-      }
-
-      .kt-swipeable-item.swiping-left .kt-swipe-actions-left,
-      .kt-swipeable-item.swiping-right .kt-swipe-actions-right {
-        opacity: 1;
-      }
-
       .kt-swipeable-item .kt-task-content {
         position: relative;
+        display: flex;
+        flex-direction: row;
         width: 100%;
         z-index: 2;
         transition: transform var(--kt-transition-medium);
       }
 
+      /* Feedback visuel pendant le glissement - arrière-plan coloré */
       .kt-swipeable-item.swiping-left .kt-task-content {
-        transform: translateX(-80px);
+        background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), var(--card-background-color, #fff));
       }
 
       .kt-swipeable-item.swiping-right .kt-task-content {
-        transform: translateX(80px);
-      }
-
-      .kt-reject-action,
-      .kt-validate-action,
-      .kt-delete-action {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        background: transparent;
-        border: none;
-        color: white;
-        font-size: var(--kt-font-size-sm);
-        padding: var(--kt-space-sm);
-        border-radius: var(--kt-radius-sm);
-        min-width: 60px;
-        cursor: pointer;
-        transition: all var(--kt-transition-fast);
-      }
-
-      .kt-reject-action:hover,
-      .kt-validate-action:hover,
-      .kt-delete-action:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-
-      .kt-reject-action .icon,
-      .kt-validate-action .icon,
-      .kt-delete-action .icon {
-        font-size: 20px;
-        font-weight: bold;
+        background: linear-gradient(-90deg, rgba(76, 175, 80, 0.1), var(--card-background-color, #fff));
       }
 
       /* Feedback visuel */
@@ -903,8 +846,8 @@ class KidsTasksBaseCard extends HTMLElement {
         
         // Afficher/masquer les actions selon la direction
         if (clampedDelta < -20) {
-          // Seulement montrer l'action gauche si c'est une tâche de validation avec bouton rejet
-          if (currentItem.querySelector('.kt-reject-action')) {
+          // Seulement montrer l'action gauche pour les tâches de validation
+          if (currentItem.classList.contains('pending-validation')) {
             currentItem.classList.add('swiping-left');
             currentItem.classList.remove('swiping-right');
           }
@@ -937,12 +880,12 @@ class KidsTasksBaseCard extends HTMLElement {
         // Revenir à la position originale
         this.resetSwipePosition(currentItem);
       } else if (deltaX > threshold) {
-        // Glissement vers la droite - validation ou suppression selon le type d'élément
-        this.showSwipeAction(currentItem, 'right');
+        // Glissement vers la droite - exécuter l'action directement
+        this.executeSwipeAction(currentItem, 'right');
       } else if (deltaX < -threshold) {
-        // Glissement vers la gauche - rejet (seulement pour validation) ou rien pour tâches/récompenses
-        if (currentItem.querySelector('.kt-reject-action')) {
-          this.showSwipeAction(currentItem, 'left');
+        // Glissement vers la gauche - exécuter l'action si disponible
+        if (currentItem.classList.contains('pending-validation')) {
+          this.executeSwipeAction(currentItem, 'left');
         } else {
           // Pour les tâches/récompenses, glissement gauche = rien
           this.resetSwipePosition(currentItem);
@@ -988,54 +931,43 @@ class KidsTasksBaseCard extends HTMLElement {
     item.classList.remove('swiping-left', 'swiping-right');
   }
 
-  showSwipeAction(item, direction) {
-    item.classList.add(`swiping-${direction}`);
+  executeSwipeAction(item, direction) {
+    // Déterminer l'action à exécuter selon la direction et le type d'élément
+    let actionToExecute = null;
+    let itemId = item.dataset.taskId || item.dataset.id;
     
-    // Auto-reset après 3 secondes si pas d'action
-    setTimeout(() => {
-      if (item.classList.contains(`swiping-${direction}`)) {
-        this.resetSwipePosition(item);
-      }
-    }, 3000);
-    
-    // Gérer les clics sur les boutons d'action - toujours réattacher
-    let actionButton;
     if (direction === 'left') {
-      actionButton = item.querySelector('.kt-reject-action');
+      // Glissement gauche = rejeter (seulement pour tâches de validation)
+      if (item.classList.contains('pending-validation')) {
+        actionToExecute = 'reject-task';
+      }
     } else if (direction === 'right') {
-      // Chercher d'abord les boutons de validation, puis les boutons de suppression
-      actionButton = item.querySelector('.kt-validate-action') || item.querySelector('.kt-delete-action');
+      // Glissement droite = action principale selon le type d'élément
+      if (item.classList.contains('pending-validation')) {
+        // Tâche de validation = valider
+        actionToExecute = 'validate-task';
+      } else if (item.classList.contains('reward-item')) {
+        // Récompense = supprimer
+        actionToExecute = 'remove-reward';
+      } else if (item.classList.contains('task')) {
+        // Tâche normale = supprimer
+        actionToExecute = 'remove-task';
+      }
     }
     
-    if (actionButton) {
-      // Nettoyer les anciens listeners pour éviter les doublons
-      const oldHandler = actionButton.onclick;
-      actionButton.onclick = null;
+    if (actionToExecute && itemId) {
+      // Exécuter l'action directement
+      if (actionToExecute === 'validate-task' || actionToExecute === 'reject-task') {
+        this.handleValidationAction(actionToExecute, itemId);
+      } else if (actionToExecute === 'remove-task' || actionToExecute === 'remove-reward') {
+        this.handleAction(actionToExecute, { id: itemId });
+      }
       
-      actionButton.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const taskId = item.dataset.taskId;
-        const itemId = item.dataset.taskId || item.dataset.id;
-        const action = actionButton.dataset.action;
-        
-        if (itemId && action) {
-          // Gérer les actions de validation
-          if (action === 'validate-task' || action === 'reject-task') {
-            this.handleValidationAction(action, itemId);
-            this.animateTaskAction(item, direction);
-          }
-          // Gérer les actions de suppression
-          else if (action === 'remove-task' || action === 'remove-reward') {
-            this.handleAction(action, { id: itemId });
-            this.animateTaskAction(item, direction);
-          }
-        }
-      };
-      
-      // Marquer le bouton comme ayant un handler
-      actionButton._clickHandlerAdded = true;
+      // Animer la disparition de l'élément
+      this.animateTaskAction(item, direction);
+    } else {
+      // Pas d'action disponible, revenir à la position normale
+      this.resetSwipePosition(item);
     }
   }
 
@@ -1908,6 +1840,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .task-info { flex: 1; }
       .item-icon {
         font-size: 2em;
+        margin-right: 1em;
       }
       
       .task-description {
@@ -4848,13 +4781,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       <div class="task hover-card kt-swipeable-item ${task.status} ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}" 
            data-task-id="${task.id}">
         
-        <!-- Action révélée par balayage vers la droite (supprimer) -->
-        <div class="kt-swipe-actions-right">
-          <button class="kt-delete-action" data-action="remove-task">
-            <span class="icon">🗑️</span>
-            <span class="label">Supprimer</span>
-          </button>
-        </div>
 
         <!-- Contenu principal de la tâche -->
         <div class="kt-task-content" data-action="edit-task" data-id="${task.id}">
@@ -4937,13 +4863,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       <div class="reward-item hover-card kt-swipeable-item"
            data-task-id="${reward.id}">
         
-        <!-- Action révélée par balayage vers la droite (supprimer) -->
-        <div class="kt-swipe-actions-right">
-          <button class="kt-delete-action" data-action="remove-reward">
-            <span class="icon">🗑️</span>
-            <span class="label">Supprimer</span>
-          </button>
-        </div>
 
         <!-- Contenu principal de la récompense -->
         <div class="kt-task-content" data-action="edit-reward" data-id="${reward.id}">
@@ -5026,21 +4945,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
       <div class="task hover-card kt-swipeable-item ${task.status} pending-validation" 
            data-task-id="${task.id}">
         
-        <!-- Actions révélées par glissement vers la gauche (rejeter) -->
-        <div class="kt-swipe-actions-left">
-          <button class="kt-reject-action" data-action="reject-task">
-            <span class="icon">✗</span>
-            <span class="label">Rejeter</span>
-          </button>
-        </div>
-        
-        <!-- Actions révélées par glissement vers la droite (valider) -->
-        <div class="kt-swipe-actions-right">
-          <button class="kt-validate-action" data-action="validate-task">
-            <span class="icon">✓</span>
-            <span class="label">Valider</span>
-          </button>
-        </div>
 
         <!-- Contenu principal utilisant exactement le même layout que renderTaskItem -->
         <div class="kt-task-content">
@@ -5583,6 +5487,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
+          height: 1em;
         }
         
         .reward-coins {
@@ -5592,6 +5497,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
+          height: 1em;
         }
         
         .penalty-points {
@@ -5601,6 +5507,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-size: 0.75em;
           font-weight: bold;
+          height: 1em;
         }
 
         .actions {
