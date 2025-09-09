@@ -450,6 +450,7 @@ class KidsTasksStyleManager {
         position: relative;
         overflow: hidden;
         touch-action: pan-y;
+        font-size: 3em;
       }
 
       .kt-swipeable-item .kt-task-content {
@@ -504,12 +505,10 @@ class KidsTasksStyleManager {
       }
 
       .kt-swipeable-item.swiping-left .kt-task-content {
-        background: var(--card-background-color, #fff);
         transform: translateX(-20px);
       }
       
       .kt-swipeable-item.swiping-right .kt-task-content {
-        background: var(--card-background-color, #fff);
         transform: translateX(20px);
       }
 
