@@ -869,6 +869,10 @@ class KidsTasksBaseCard extends HTMLElement {
     this.shadowRoot.addEventListener('pointerdown', (e) => {
       const swipeableItem = e.target.closest('.kt-swipeable-item');
       if (swipeableItem) {
+        // Empêcher la propagation vers Home Assistant
+        e.preventDefault();
+        e.stopPropagation();
+        
         startX = e.clientX;
         currentX = startX;
         isTracking = true;
@@ -883,7 +887,9 @@ class KidsTasksBaseCard extends HTMLElement {
     this.shadowRoot.addEventListener('pointermove', (e) => {
       if (!isTracking || !currentItem) return;
       
+      // Empêcher la propagation pendant le glissement
       e.preventDefault();
+      e.stopPropagation();
       currentX = e.clientX;
       const deltaX = currentX - startX;
       const taskContent = currentItem.querySelector('.kt-task-content');
@@ -914,6 +920,10 @@ class KidsTasksBaseCard extends HTMLElement {
     this.shadowRoot.addEventListener('pointerup', (e) => {
       if (!isTracking || !currentItem) return;
       
+      // Empêcher la propagation qui cause le changement d'onglet HA
+      e.preventDefault();
+      e.stopPropagation();
+      
       const deltaX = currentX - startX;
       const threshold = 40;
       
@@ -942,6 +952,32 @@ class KidsTasksBaseCard extends HTMLElement {
       isTracking = false;
       currentItem = null;
     }, { signal });
+    
+    // Ajouter aussi les événements touch pour une meilleure compatibilité mobile
+    this.shadowRoot.addEventListener('touchstart', (e) => {
+      const swipeableItem = e.target.closest('.kt-swipeable-item');
+      if (swipeableItem && isTracking) {
+        // Si on est en train de suivre un glissement, empêcher HA de gérer le touch
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false, signal });
+    
+    this.shadowRoot.addEventListener('touchmove', (e) => {
+      if (isTracking && currentItem) {
+        // Empêcher HA de traiter les mouvements pendant notre glissement
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false, signal });
+    
+    this.shadowRoot.addEventListener('touchend', (e) => {
+      if (isTracking && currentItem) {
+        // Empêcher HA de traiter la fin du touch pendant notre glissement
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false, signal });
   }
 
   resetSwipePosition(item) {
