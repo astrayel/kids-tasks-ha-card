@@ -3729,10 +3729,18 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }, 100);
   }
 
-  async showChildHistory(childId) {
+  async renderChildHistoryContainer(childId, options = {}) {
+    // Options par défaut
+    const defaultOptions = {
+      showHeader: true,
+      maxEntries: 20,
+      containerClass: ''
+    };
+    const config = { ...defaultOptions, ...options };
+
     if (!childId) {
       console.error('ID enfant manquant pour l\'affichage de l\'historique');
-      return;
+      return `<div class="error">Erreur: ID enfant manquant</div>`;
     }
 
     // Récupérer les données de l'enfant
@@ -3741,7 +3749,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     
     if (!child) {
       console.error(`Enfant avec l'ID ${childId} introuvable`);
-      return;
+      return `<div class="error">Erreur: Enfant non trouvé</div>`;
     }
 
     // Récupérer l'historique via le service backend
@@ -3749,7 +3757,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     try {
       await this._hass.callService('kids_tasks', 'get_child_history', {
         child_id: childId,
-        limit: 20
+        limit: config.maxEntries
       });
       
       // Fallback to sensor data since services don't return data directly
@@ -3770,30 +3778,35 @@ class KidsTasksCard extends KidsTasksBaseCard {
       }
     }
 
-    const content = `
-      <div class="child-history-container">
-        <div class="history-header">
-          <div class="kt-child-info">
-            <div class="kt-avatar-section">
-              <div class="kt-child-name-header">${child.name}</div>
-              <div class="kt-avatar-container">
-                <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
-                <div class="kt-level-badge">Niveau ${child.level || 1}</div>
+    // Limiter le nombre d'entrées
+    const limitedHistoryData = historyData.slice(0, config.maxEntries);
+
+    return `
+      <div class="child-history-container ${config.containerClass}">
+        ${config.showHeader ? `
+          <div class="history-header">
+            <div class="kt-child-info">
+              <div class="kt-avatar-section">
+                <div class="kt-child-name-header">${child.name}</div>
+                <div class="kt-avatar-container">
+                  <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
+                  <div class="kt-level-badge">Niveau ${child.level || 1}</div>
+                </div>
               </div>
-            </div>
-            <div class="kt-child-details">
-              <div class="current-stats">
-                <span class="stat">${child.points || 0} 🎫</span>
-                <span class="stat">${child.coins || 0} 🪙</span>
+              <div class="kt-child-details">
+                <div class="current-stats">
+                  <span class="stat">${child.points || 0} 🎫</span>
+                  <span class="stat">${child.coins || 0} 🪙</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ` : ''}
         
         <div class="history-content">
-          ${historyData.length > 0 ? `
+          ${limitedHistoryData.length > 0 ? `
             <div class="history-list">
-              ${historyData.map(entry => this.renderHistoryEntry(entry)).join('')}
+              ${limitedHistoryData.map(entry => this.renderHistoryEntry(entry)).join('')}
             </div>
           ` : `
             <div class="empty-history">
@@ -3803,14 +3816,36 @@ class KidsTasksCard extends KidsTasksBaseCard {
             </div>
           `}
         </div>
-        
-        <div class="dialog-actions">
-          <ha-button onclick="this.closest('ha-dialog').close()">Fermer</ha-button>
-        </div>
+      </div>
+    `;
+  }
+
+  async showChildHistory(childId) {
+    // Utiliser la nouvelle fonction réutilisable pour générer le conteneur d'historique
+    const historyContainer = await this.renderChildHistoryContainer(childId, {
+      showHeader: true,
+      maxEntries: 20,
+      containerClass: 'modal-history'
+    });
+    
+    // Si erreur, historyContainer contient déjà le message d'erreur
+    if (historyContainer.includes('class="error"')) {
+      return;
+    }
+    
+    // Récupérer le nom de l'enfant pour le titre
+    const children = this.getChildren();
+    const child = children.find(c => c.id === childId);
+    const childName = child ? child.name : 'Enfant';
+    
+    const content = `
+      ${historyContainer}
+      <div class="dialog-actions">
+        <ha-button onclick="this.closest('ha-dialog').close()">Fermer</ha-button>
       </div>
     `;
 
-    this.showModal(content, `Historique - ${child.name}`);
+    this.showModal(content, `Historique - ${childName}`);
   }
 
   renderHistoryEntry(entry) {
@@ -7148,6 +7183,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   data-action="switch_tab" data-id="bonus">Bonus</button>
           ${this.config.show_rewards ? `<button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
                   data-action="switch_tab" data-id="rewards">Récompenses</button>` : ''}
+          <button class="tab ${this.currentTab === 'history' ? 'active' : ''}" 
+                  data-action="switch_tab" data-id="history">Historique</button>
         </div>
         <div class="content">
           ${this.renderTabContent(taskCategories, rewards, stats, child)}
@@ -7687,6 +7724,50 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           color: #2e7d32;
           border: 1px solid #4caf50;
         }
+
+        /* Styles pour l'onglet historique */
+        .tab-history {
+          padding: var(--kt-space-md);
+        }
+
+        .loading-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color, #757575);
+        }
+
+        .loading-icon {
+          font-size: 2em;
+          margin-bottom: var(--kt-space-md);
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+
+        .tab-history .history-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .tab-history .history-entry {
+          padding: var(--kt-space-sm);
+          background: var(--secondary-background-color, #fafafa);
+          border-radius: var(--kt-radius-sm);
+          border-left: 3px solid var(--kt-primary);
+        }
+
+        .tab-history .empty-history {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color, #757575);
+        }
       </style>
     `;
   }
@@ -7702,6 +7783,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         return this.renderTasksTab(taskCategories.bonus);
       case 'rewards':
         return this.renderRewardsTab(rewards, child.points);
+      case 'history':
+        return this.renderHistoryTab();
       default:
         return this.renderTasksTab(taskCategories.todo.concat(taskCategories.pending));
     }
@@ -8180,6 +8263,50 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
       default:
         return '🎨';
+    }
+  }
+
+  // Onglet de l'historique  
+  renderHistoryTab() {
+    // Utiliser la méthode de la classe de base pour générer le conteneur d'historique
+    // Note: Cette méthode est async, donc on retourne une promesse
+    if (!this.config.child_id) {
+      return this.emptySection('⚠️', 'Erreur de configuration', 'ID enfant manquant.');
+    }
+
+    // Pour éviter les problèmes avec les méthodes async dans le rendu, 
+    // on utilise un placeholder qui sera remplacé après le rendu
+    this.loadHistoryContent();
+    
+    return `
+      <div id="history-content-placeholder">
+        <div class="loading-placeholder">
+          <div class="loading-icon">📈</div>
+          <p>Chargement de l'historique...</p>
+        </div>
+      </div>
+    `;
+  }
+
+  async loadHistoryContent() {
+    try {
+      const historyContainer = await this.renderChildHistoryContainer(this.config.child_id, {
+        showHeader: false,
+        maxEntries: 15,
+        containerClass: 'tab-history'
+      });
+      
+      // Remplacer le placeholder par le contenu réel
+      const placeholder = this.shadowRoot.querySelector('#history-content-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = historyContainer;
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+      const placeholder = this.shadowRoot.querySelector('#history-content-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = this.emptySection('❌', 'Erreur', 'Impossible de charger l\'historique.');
+      }
     }
   }
 
