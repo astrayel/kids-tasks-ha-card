@@ -6797,6 +6797,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     // État pour les onglets
     this.currentTab = 'tasks';
     
+    // Initialiser le filtre des tâches sur 'active'
+    this.tasksFilter = 'active';
+    
     // Re-rendre la carte si elle est déjà initialisée avec les nouvelles couleurs
     if (this._initialized && this._hass) {
       this.render();
@@ -6804,12 +6807,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   handleClick(event) {
-    // Logique spécifique pour les filtres de récompenses dans la carte enfant
+    // Logique spécifique pour les filtres dans la carte enfant
     const target = event.target.closest('[data-action]');
-    if (target && target.dataset.action === 'filter-rewards') {
+    if (target && (target.dataset.action === 'filter-rewards' || target.dataset.action === 'filter-tasks')) {
       event.preventDefault();
       event.stopPropagation();
-      this.handleAction('filter-rewards', target.dataset.filter, event);
+      this.handleAction(target.dataset.action, target.dataset.filter, event);
       return;
     }
     
@@ -6850,6 +6853,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         case 'filter-rewards':
           // Utiliser l'ID passé (qui contient le filtre) au lieu de l'événement
           this.rewardsFilter = id;
+          this.render();
+          break;
+          
+        case 'filter-tasks':
+          // Utiliser l'ID passé (qui contient le filtre) au lieu de l'événement
+          this.tasksFilter = id;
           this.render();
           break;
           
@@ -7180,10 +7189,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         <div class="tabs">
           <button class="tab ${this.currentTab === 'tasks' ? 'active' : ''}" 
                   data-action="switch_tab" data-id="tasks">Tâches</button>
-          <button class="tab ${this.currentTab === 'past' ? 'active' : ''}" 
-                  data-action="switch_tab" data-id="past">Passées</button>
-          <button class="tab ${this.currentTab === 'bonus' ? 'active' : ''}" 
-                  data-action="switch_tab" data-id="bonus">Bonus</button>
           ${this.config.show_rewards ? `<button class="tab ${this.currentTab === 'rewards' ? 'active' : ''}" 
                   data-action="switch_tab" data-id="rewards">Récompenses</button>` : ''}
           <button class="tab ${this.currentTab === 'history' ? 'active' : ''}" 
@@ -7784,29 +7789,67 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   renderTabContent(taskCategories, rewards, stats, child) {
     switch (this.currentTab) {
       case 'tasks':
-        return this.renderTasksTab(taskCategories.todo.concat(taskCategories.pending));
-      case 'past':
-        return this.renderPastTab(taskCategories.completed.concat(taskCategories.past));
-      case 'bonus':
-        return this.renderTasksTab(taskCategories.bonus);
+        return this.renderTasksTab(taskCategories);
       case 'rewards':
         return this.renderRewardsTab(rewards, child.points);
       case 'history':
         return this.renderHistoryTab();
       default:
-        return this.renderTasksTab(taskCategories.todo.concat(taskCategories.pending));
+        return this.renderTasksTab(taskCategories);
     }
   }
 
-  // Onglet des tâches actives
-  renderTasksTab(tasks) {
-    if (tasks.length === 0) {
-      return emptySection('🎉', 'Toutes les tâches sont terminées !', 'Bravo ! Tu as tout fini.');
+  // Onglet des tâches avec sélecteur de filtres
+  renderTasksTab(taskCategories) {
+    const currentFilter = this.tasksFilter || 'active';
+    let displayTasks = [];
+    let activeTasks = taskCategories.todo.concat(taskCategories.pending);
+    let bonusTasks = taskCategories.bonus;
+    let pastTasks = taskCategories.completed.concat(taskCategories.past);
+    let allTasks = activeTasks.concat(bonusTasks).concat(pastTasks);
+    
+    switch (currentFilter) {
+      case 'active':
+        displayTasks = activeTasks;
+        break;
+      case 'bonus':
+        displayTasks = bonusTasks;
+        break;
+      case 'past':
+        displayTasks = pastTasks;
+        break;
+      case 'all':
+        displayTasks = allTasks;
+        break;
+      default:
+        displayTasks = activeTasks;
     }
 
     return `
-      <div class="task-list">
-        ${tasks.map(task => {
+      <!-- Sélecteur de filtres -->
+      <div class="filters">
+        <button class="filter-btn ${currentFilter === 'active' ? 'active' : ''}" 
+                data-action="filter-tasks" data-filter="active">
+          Actives (${activeTasks.length})
+        </button>
+        <button class="filter-btn ${currentFilter === 'bonus' ? 'active' : ''}" 
+                data-action="filter-tasks" data-filter="bonus">
+          Bonus (${bonusTasks.length})
+        </button>
+        <button class="filter-btn ${currentFilter === 'past' ? 'active' : ''}" 
+                data-action="filter-tasks" data-filter="past">
+          Passées (${pastTasks.length})
+        </button>
+        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" 
+                data-action="filter-tasks" data-filter="all">
+          Toutes (${allTasks.length})
+        </button>
+      </div>
+
+      ${displayTasks.length === 0 ? 
+        this.emptySection('🎉', 'Aucune tâche dans cette catégorie !', '') : 
+        `<div class="task-list">
+          ${displayTasks.map(task => {
           // Déterminer la classe de retard
           let delayClass = '';
           if (task.deadline_passed && task.status === 'todo') {
@@ -7852,7 +7895,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             </div>
           `;
         }).join('')}
-      </div>
+      </div>`}
     `;
   }
 
