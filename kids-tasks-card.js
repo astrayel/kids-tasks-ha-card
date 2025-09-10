@@ -5265,7 +5265,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
           gap: 16px;
           margin-bottom: 24px;
         }
@@ -6039,7 +6038,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           /*.content { padding: var(--kt-space-lg); }
           .nav-tab { font-size: 11px; padding: var(--kt-space-sm) 4px; }
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
-          .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
           
           /* Optimisation dashboard pour mobile */
           .children-dashboard-grid {
