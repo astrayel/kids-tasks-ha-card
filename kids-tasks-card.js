@@ -8275,46 +8275,76 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   // Onglet de l'historique  
   renderHistoryTab() {
-    // Utiliser la méthode de la classe de base pour générer le conteneur d'historique
-    // Note: Cette méthode est async, donc on retourne une promesse
     if (!this.config.child_id) {
       return this.emptySection('⚠️', 'Erreur de configuration', 'ID enfant manquant.');
     }
 
-    // Pour éviter les problèmes avec les méthodes async dans le rendu, 
-    // on utilise un placeholder qui sera remplacé après le rendu
-    this.loadHistoryContent();
-    
+    // Récupérer l'historique des points
+    const child = this.getChild();
+    if (!child) {
+      return this.emptySection('❌', 'Erreur', 'Enfant introuvable.');
+    }
+
+    let historyData = [];
+    try {
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+      
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+    }
+
+    if (historyData.length === 0) {
+      return this.emptySection('📈', 'Aucun historique', 'Les actions sur les points apparaîtront ici.');
+    }
+
+    // Limiter à 15 entrées
+    const limitedHistoryData = historyData.slice(0, 15);
+
     return `
-      <div id="history-content-placeholder">
-        <div class="loading-placeholder">
-          <div class="loading-icon">📈</div>
-          <p>Chargement de l'historique...</p>
-        </div>
+      <div class="task-list">
+        ${limitedHistoryData.map(entry => this.renderHistoryAsTask(entry)).join('')}
       </div>
     `;
   }
 
-  async loadHistoryContent() {
-    try {
-      const historyContainer = await this.renderChildHistoryContainer(this.config.child_id, {
-        showHeader: false,
-        maxEntries: 15,
-        containerClass: 'tab-history'
-      });
-      
-      // Remplacer le placeholder par le contenu réel
-      const placeholder = this.shadowRoot.querySelector('#history-content-placeholder');
-      if (placeholder) {
-        placeholder.innerHTML = historyContainer;
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
-      const placeholder = this.shadowRoot.querySelector('#history-content-placeholder');
-      if (placeholder) {
-        placeholder.innerHTML = this.emptySection('❌', 'Erreur', 'Impossible de charger l\'historique.');
-      }
+  // Convertir une entrée d'historique en format tâche
+  renderHistoryAsTask(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'success' : 'penalty';
+    const actionIcon = this.getActionIcon(entry.action_type);
+    
+    // Déterminer la classe de la tâche basée sur le type d'action
+    let taskClass = 'completed';
+    if (entry.points_delta < 0) {
+      taskClass = 'missed';
     }
+
+    return `
+      <div class="task ${taskClass}">
+        <div class="item-icon">${actionIcon}</div>
+        <div class="task-main flex-content">
+          <div class="task-name-row">
+            <div class="task-name">${entry.description || 'Action inconnue'}</div>
+            <div class="task-validation">${dateStr} à ${timeStr}</div>
+          </div>
+          <div class="task-points">
+            <span style="color: ${entry.points_delta > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">${pointsDisplay} 🎫</span>
+            <span style="color: var(--secondary-text-color, #757575); font-size: 0.9em;">${this.getActionTypeLabel(entry.action_type)}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          <span class="task-result ${pointsClass}">${entry.points_delta > 0 ? '🎉' : '😞'}</span>
+        </div>
+      </div>
+    `;
   }
 
   // Méthodes pour le modal des récompenses
