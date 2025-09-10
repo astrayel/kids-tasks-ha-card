@@ -6113,11 +6113,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
             text-align: left;
           }
           
-          /* Styles supplémentaires pour les cartes individuelles */
-          .header {
-            padding: var(--kt-space-lg);
-          }
-          
+          /* Styles supplémentaires pour les cartes individuelles */          
           .rewards-grid {
             grid-template-columns: 1fr;
           }
