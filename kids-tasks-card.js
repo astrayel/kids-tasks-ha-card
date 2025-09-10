@@ -2743,6 +2743,30 @@ class KidsTasksBaseCard extends HTMLElement {
     </style>`;
   }
 
+  renderHistoryEntry(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'plus' : 'minus';
+    const actionIcon = this.getActionIcon(entry.action_type);
+
+    return `
+      <div class="history-entry">
+        <div class="entry-title">
+          <div class="entry-icon">${actionIcon}</div>
+          <div class="entry-description">${entry.description || 'Action inconnue'}</div>
+        </div>
+        <div class="entry-content">
+          <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>  
+          <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
+          <span class="entry-date">(${dateStr} à ${timeStr})</span>
+        </div>
+      </div>
+    `;
+  }
+
   async renderChildHistoryContainer(childId, options = {}) {
     // Options par défaut
     const defaultOptions = {
@@ -3848,30 +3872,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     `;
 
     this.showModal(content, `Historique - ${childName}`);
-  }
-
-  renderHistoryEntry(entry) {
-    const date = new Date(entry.timestamp);
-    const dateStr = date.toLocaleDateString('fr-FR');
-    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    
-    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
-    const pointsClass = entry.points_delta > 0 ? 'plus' : 'minus';
-    const actionIcon = this.getActionIcon(entry.action_type);
-
-    return `
-      <div class="history-entry">
-        <div class="entry-title">
-          <div class="entry-icon">${actionIcon}</div>
-          <div class="entry-description">${entry.description || 'Action inconnue'}</div>
-        </div>
-        <div class="entry-content">
-          <div class="entry-points ${pointsClass}">${pointsDisplay} 🎫</div>  
-          <span class="entry-type">${this.getActionTypeLabel(entry.action_type)}</span>
-          <span class="entry-date">(${dateStr} à ${timeStr})</span>
-        </div>
-      </div>
-    `;
   }
 
   getActionIcon(actionType) {
