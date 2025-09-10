@@ -2781,6 +2781,20 @@ class KidsTasksBaseCard extends HTMLElement {
     return icons[actionType] || icons['default'];
   }
 
+  getActionTypeLabel(actionType) {
+    const labels = {
+      'task_completed': 'Tâche terminée',
+      'task_validated': 'Tâche validée',
+      'task_penalty': 'Pénalité',
+      'reward_claimed': 'Récompense',
+      'manual_adjustment': 'Ajustement',
+      'level_up': 'Montée niveau',
+      'bonus_points': 'Points bonus',
+      'default': 'Autre'
+    };
+    return labels[actionType] || labels['default'];
+  }
+
   async renderChildHistoryContainer(childId, options = {}) {
     // Options par défaut
     const defaultOptions = {
@@ -3886,20 +3900,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     `;
 
     this.showModal(content, `Historique - ${childName}`);
-  }
-
-  getActionTypeLabel(actionType) {
-    const labels = {
-      'task_completed': 'Tâche terminée',
-      'task_validated': 'Tâche validée',
-      'task_penalty': 'Pénalité',
-      'reward_claimed': 'Récompense',
-      'manual_adjustment': 'Ajustement',
-      'level_up': 'Montée niveau',
-      'bonus_points': 'Points bonus',
-      'default': 'Autre'
-    };
-    return labels[actionType] || labels['default'];
   }
 
   showTaskForm(taskId = null) {
