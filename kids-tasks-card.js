@@ -1906,7 +1906,6 @@ class KidsTasksBaseCard extends HTMLElement {
       .task-info { flex: 1; }
       .item-icon {
         font-size: 2em;
-        margin-right: 1em;
       }
       
       .task-description {
@@ -2061,7 +2060,6 @@ class KidsTasksBaseCard extends HTMLElement {
       /* Stats et métriques */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: var(--kt-space-md);
         margin: var(--kt-space-md) 0;
       }
@@ -2072,7 +2070,7 @@ class KidsTasksBaseCard extends HTMLElement {
         gap: var(--kt-space-sm);
         padding: var(--kt-space-sm) var(--kt-space-md);
         flex: 1;
-        min-width: 120px;
+        min-width: 80px;
         flex-direction: row;
       }
       
