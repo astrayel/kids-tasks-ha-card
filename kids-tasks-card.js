@@ -456,6 +456,7 @@ class KidsTasksStyleManager {
         position: relative;
         display: flex;
         flex-direction: row;
+        justify-content: space-between;
         width: 100%;
         z-index: 2;
         transition: transform var(--kt-transition-medium);
@@ -1901,7 +1902,10 @@ class KidsTasksBaseCard extends HTMLElement {
         margin-bottom: var(--kt-space-sm);
       }
       
-      .task-main { /* flex-content utility class */ }
+      .task-main { 
+        display: flex;
+        margin-left: 2em;
+       }
 
       .task-info { flex: 1; }
       .item-icon {
@@ -2062,6 +2066,7 @@ class KidsTasksBaseCard extends HTMLElement {
         display: grid;
         gap: var(--kt-space-md);
         margin: var(--kt-space-md) 0;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
       }
       
       .stat-card.compact {
@@ -5263,12 +5268,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
           align-items: center;
         }
         
-        .stats-grid {
-          display: grid;
-          gap: 16px;
-          margin-bottom: 24px;
-        }
-        
         .stat-card {
           padding: var(--kt-space-lg);
           background: var(--secondary-background-color, #fafafa);
@@ -5525,8 +5524,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .task-meta span {
           background: rgba(0,0,0,0.05);
-          padding: 1px 6px;
+          padding: 1px 1px;
           border-radius: var(--kt-radius-sm);
+          font-size: var(--kt-font-size-sm);
         }
         
         .task-rewards {
