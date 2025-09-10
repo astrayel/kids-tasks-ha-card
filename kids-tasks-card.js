@@ -1724,7 +1724,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .btn-info { background: var(--kt-info); color: white; }
       
       .filter-btn {
-        padding: var(--kt-space-sm) var(--kt-space-lg);
+        padding: var(--kt-space-xs) var(--kt-space-sm);
         border: 2px solid var(--divider-color, #e0e0e0);
         background: var(--card-background-color, #fff);
         border-radius: var(--kt-radius-xl);
@@ -2223,7 +2223,7 @@ class KidsTasksBaseCard extends HTMLElement {
       .filters {
         display: flex;
         gap: var(--kt-space-sm);
-        margin: var(--kt-space-lg) 0;
+        margin: var(--kt-space-sm) 0;
         flex-wrap: wrap;
       }
 
@@ -7432,12 +7432,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           background: var(--primary-color);
           opacity: 0.05;
           z-index: -1;
-        }
-        
-        /* Contenu */
-        .content {
-          /* padding and background inherited from base */
-          min-height: 400px;
         }
         
         /* Tâches */    
