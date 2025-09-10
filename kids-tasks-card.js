@@ -2783,8 +2783,8 @@ class KidsTasksBaseCard extends HTMLElement {
 
   getActionTypeLabel(actionType) {
     const labels = {
-      'task_completed': 'Tâche terminée',
-      'task_validated': 'Tâche validée',
+      'task_completed': 'Terminée',
+      'task_validated': 'Validée',
       'task_penalty': 'Pénalité',
       'reward_claimed': 'Récompense',
       'manual_adjustment': 'Ajustement',
