@@ -2742,6 +2742,98 @@ class KidsTasksBaseCard extends HTMLElement {
       ${this.getSpecificStyles()}
     </style>`;
   }
+
+  async renderChildHistoryContainer(childId, options = {}) {
+    // Options par défaut
+    const defaultOptions = {
+      showHeader: true,
+      maxEntries: 20,
+      containerClass: ''
+    };
+    const config = { ...defaultOptions, ...options };
+
+    if (!childId) {
+      console.error('ID enfant manquant pour l\'affichage de l\'historique');
+      return `<div class="error">Erreur: ID enfant manquant</div>`;
+    }
+
+    // Récupérer les données de l'enfant
+    const children = this.getChildren();
+    const child = children.find(c => c.id === childId);
+    
+    if (!child) {
+      console.error(`Enfant avec l'ID ${childId} introuvable`);
+      return `<div class="error">Erreur: Enfant non trouvé</div>`;
+    }
+
+    // Récupérer l'historique via le service backend
+    let historyData = [];
+    try {
+      await this._hass.callService('kids_tasks', 'get_child_history', {
+        child_id: childId,
+        limit: config.maxEntries
+      });
+      
+      // Fallback to sensor data since services don't return data directly
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+      
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+      // Fallback to sensor if service fails
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+      
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    }
+
+    // Limiter le nombre d'entrées
+    const limitedHistoryData = historyData.slice(0, config.maxEntries);
+
+    return `
+      <div class="child-history-container ${config.containerClass}">
+        ${config.showHeader ? `
+          <div class="history-header">
+            <div class="kt-child-info">
+              <div class="kt-avatar-section">
+                <div class="kt-child-name-header">${child.name}</div>
+                <div class="kt-avatar-container">
+                  <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
+                  <div class="kt-level-badge">Niveau ${child.level || 1}</div>
+                </div>
+              </div>
+              <div class="kt-child-details">
+                <div class="current-stats">
+                  <span class="stat">${child.points || 0} 🎫</span>
+                  <span class="stat">${child.coins || 0} 🪙</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="history-content">
+          ${limitedHistoryData.length > 0 ? `
+            <div class="history-list">
+              ${limitedHistoryData.map(entry => this.renderHistoryEntry(entry)).join('')}
+            </div>
+          ` : `
+            <div class="empty-history">
+              <div class="empty-icon">📈</div>
+              <p>Aucun historique disponible</p>
+              <small>Les actions sur les points apparaîtront ici</small>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
 }
 
 class KidsTasksCard extends KidsTasksBaseCard {
@@ -3729,96 +3821,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     }, 100);
   }
 
-  async renderChildHistoryContainer(childId, options = {}) {
-    // Options par défaut
-    const defaultOptions = {
-      showHeader: true,
-      maxEntries: 20,
-      containerClass: ''
-    };
-    const config = { ...defaultOptions, ...options };
-
-    if (!childId) {
-      console.error('ID enfant manquant pour l\'affichage de l\'historique');
-      return `<div class="error">Erreur: ID enfant manquant</div>`;
-    }
-
-    // Récupérer les données de l'enfant
-    const children = this.getChildren();
-    const child = children.find(c => c.id === childId);
-    
-    if (!child) {
-      console.error(`Enfant avec l'ID ${childId} introuvable`);
-      return `<div class="error">Erreur: Enfant non trouvé</div>`;
-    }
-
-    // Récupérer l'historique via le service backend
-    let historyData = [];
-    try {
-      await this._hass.callService('kids_tasks', 'get_child_history', {
-        child_id: childId,
-        limit: config.maxEntries
-      });
-      
-      // Fallback to sensor data since services don't return data directly
-      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
-      const historyEntity = this._hass.states[historyEntityId];
-      
-      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
-        historyData = historyEntity.attributes.points_history;
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération de l\'historique:', error);
-      // Fallback to sensor if service fails
-      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
-      const historyEntity = this._hass.states[historyEntityId];
-      
-      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
-        historyData = historyEntity.attributes.points_history;
-      }
-    }
-
-    // Limiter le nombre d'entrées
-    const limitedHistoryData = historyData.slice(0, config.maxEntries);
-
-    return `
-      <div class="child-history-container ${config.containerClass}">
-        ${config.showHeader ? `
-          <div class="history-header">
-            <div class="kt-child-info">
-              <div class="kt-avatar-section">
-                <div class="kt-child-name-header">${child.name}</div>
-                <div class="kt-avatar-container">
-                  <div class="kt-avatar kt-avatar--large">${this.getAvatar(child)}</div>
-                  <div class="kt-level-badge">Niveau ${child.level || 1}</div>
-                </div>
-              </div>
-              <div class="kt-child-details">
-                <div class="current-stats">
-                  <span class="stat">${child.points || 0} 🎫</span>
-                  <span class="stat">${child.coins || 0} 🪙</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ` : ''}
-        
-        <div class="history-content">
-          ${limitedHistoryData.length > 0 ? `
-            <div class="history-list">
-              ${limitedHistoryData.map(entry => this.renderHistoryEntry(entry)).join('')}
-            </div>
-          ` : `
-            <div class="empty-history">
-              <div class="empty-icon">📈</div>
-              <p>Aucun historique disponible</p>
-              <small>Les actions sur les points apparaîtront ici</small>
-            </div>
-          `}
-        </div>
-      </div>
-    `;
-  }
 
   async showChildHistory(childId) {
     // Utiliser la nouvelle fonction réutilisable pour générer le conteneur d'historique
@@ -4967,7 +4969,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="reward-main">
             <div class="reward-name">${reward.name}</div>
             <div class="reward-meta">
-              ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} coins` : ''} • ${this.getCategoryLabel(reward.category)}
+              ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''} • ${this.getCategoryLabel(reward.category)}
               ${reward.remaining_quantity !== null ? ` • ${reward.remaining_quantity} restant(s)` : ''}
             </div>
             ${reward.description ? `<div class="reward-description">${reward.description}</div>` : ''}
@@ -7690,8 +7692,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .task-name-row {
           display: flex;
           flex-direction: column;
-          align-items: left;
-          gap: 0.5em;
         }
         
         .task-points {
@@ -7707,7 +7707,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
         .task-validation {
           font-style: italic; 
-          font-size: 0.8em; color: var(--secondary-text-color);
+          font-size: 0.7em; color: var(--secondary-text-color);
         }
 
         
@@ -7825,7 +7825,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   ${this.config && this.config.child_id ? `
                     ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
                     ${task.penalty_points > 0 ? `<span style="color: #f44336; font-weight: bold;">-${task.penalty_points} 🎫</span>` : ''}
-                    ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
+                    ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} 🪙</span>` : ''}
                   ` : `
                     ${task.points > 0 ? `+${task.points}` : ''}${task.coins > 0 ? ` +${task.coins}🪙` : ''} ${task.penalty_points ? `| -${task.penalty_points}` : ''}
                   `}
@@ -7896,7 +7896,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                     </div>
                     <div class="task-points">
                       ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
-                      ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
+                      ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} 🪙</span>` : ''}
                     </div>
                   </div>
                   <div class="task-action">
