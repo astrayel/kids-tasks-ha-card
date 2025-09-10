@@ -322,6 +322,7 @@ class KidsTasksStyleManager {
       /* Composant Child Name Header - En-tête nom d'enfant */
       .kt-child-name-header {
         font-size: 2em;
+        line-height: 1.2em;
         font-weight: 700;
         text-align: center;
         color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
@@ -2230,14 +2231,14 @@ class KidsTasksBaseCard extends HTMLElement {
       .header {
         background: linear-gradient(135deg, var(--custom-child-gradient-start, var(--header-color)) 0%, var(--custom-child-gradient-end, var(--secondary-color)) 100%);
         color: var(--custom-child-text-color, var(--header-text-color));
-        padding: 10px;
+        padding: 6px;
         position: relative;
       }
 
       .header-content {
         display: flex;
         gap: 16px;
-        margin-bottom: 12px;
+        margin-bottom: 6px;
       }
 
       /* === RESPONSIVE MOBILE POUR HEADERS === */
