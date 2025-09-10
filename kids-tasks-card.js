@@ -2242,11 +2242,7 @@ class KidsTasksBaseCard extends HTMLElement {
       }
 
       /* === RESPONSIVE MOBILE POUR HEADERS === */
-      @media (max-width: 600px) {
-        .header {
-          padding: var(--kt-space-lg);
-        }
-        
+      @media (max-width: 600px) {        
         .actions {
           align-self: flex-end;
         }
