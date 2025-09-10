@@ -456,7 +456,6 @@ class KidsTasksStyleManager {
         position: relative;
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
         width: 100%;
         z-index: 2;
         transition: transform var(--kt-transition-medium);
@@ -1904,6 +1903,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .task-main { 
         display: flex;
+        flex-direction: column;
         margin-left: 0.5em;
        }
 
