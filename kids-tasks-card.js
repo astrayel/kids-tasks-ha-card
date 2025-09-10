@@ -5565,6 +5565,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
         
         .task-rewards {
           display: flex;
+          position: absolute;
+          right: 0.5em;
           gap: 4px;
           margin: 0 8px;
           flex-shrink: 0;
