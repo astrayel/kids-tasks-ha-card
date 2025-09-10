@@ -1904,7 +1904,7 @@ class KidsTasksBaseCard extends HTMLElement {
       
       .task-main { 
         display: flex;
-        margin-left: 2em;
+        margin-left: 0.5em;
        }
 
       .task-info { flex: 1; }
@@ -7701,6 +7701,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .task-action {
           flex-shrink: 0;
+          position: absolute;
+          right: 1em;
         }
 
         
@@ -7828,7 +7830,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                 ${task.status === 'todo' ? `
                   <button class="btn btn-complete" 
                           data-action="complete_task" 
-                          data-id="${task.id}">Terminé</button>
+                          data-id="${task.id}">✓</button>
                 ` : task.status === 'pending_validation' ? `
                   ${this.config && this.config.child_id ? `
                     <span class="status pending">En attente de validation</span>
@@ -7838,7 +7840,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                             data-id="${task.id}">Validation</button>
                   `}
                 ` : `
-                  <span class="status completed">✓ Validée</span>
+                  <span class="status completed">✓</span>
                 `}
               </div>
             </div>

@@ -48,26 +48,16 @@ Ce document contient les spécifications d'amélioration UX pour la carte Kids T
 
 #### Nouvelle structure pour les validations:
 ```html
-<div class="validation-task swipeable-item" data-task-id="${task.id}">
-  <!-- Contenu existant de la tâche -->
-  <div class="task-content">
+<div class="task hover-card kt-swipeable-item pending-validation" data-task-id="${task.id}">
+  <!-- Contenu existant utilisant la structure unifiée -->
+  <div class="kt-task-content">
     <!-- Informations de la tâche -->
   </div>
   
-  <!-- Actions révélées par glissement -->
-  <div class="swipe-actions-left">
-    <button class="reject-action" data-action="reject-task">
-      <span class="icon">✗</span>
-      <span class="label">Rejeter</span>
-    </button>
-  </div>
-  
-  <div class="swipe-actions-right">
-    <button class="validate-action" data-action="validate-task">
-      <span class="icon">✓</span>
-      <span class="label">Valider</span>
-    </button>
-  </div>
+  <!-- Actions de glissement intégrées via CSS ::before -->
+  <!-- Les icônes et actions sont gérées automatiquement par les classes CSS :
+       - swiping-left::before affiche ✗ rouge
+       - swiping-right::before affiche ✓ vert pour pending-validation -->
 </div>
 ```
 
@@ -145,14 +135,16 @@ Ce document contient les spécifications d'amélioration UX pour la carte Kids T
 }
 
 /* === GESTES DE GLISSEMENT === */
-.swipeable-item {
+.kt-swipeable-item {
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
 }
 
-.swipe-actions-left,
-.swipe-actions-right {
+/* Actions de glissement intégrées via CSS ::before (automatiques) */
+.kt-swipeable-item.swiping-left::before,
+.kt-swipeable-item.swiping-right::before {
+  content: '';
   position: absolute;
   top: 0;
   bottom: 0;
@@ -161,66 +153,39 @@ Ce document contient les spécifications d'amélioration UX pour la carte Kids T
   align-items: center;
   justify-content: center;
   z-index: 1;
-  opacity: 0;
-  transition: all var(--kt-transition-medium);
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
 }
 
-.swipe-actions-left {
+/* Glissement gauche = rejeter (rouge) */
+.kt-swipeable-item.swiping-left::before {
+  content: '✗';
+  font-size: 3em;
   left: 0;
-  background: var(--kt-error);
+  background: linear-gradient(90deg, var(--kt-error), transparent);
 }
 
-.swipe-actions-right {
+/* Glissement droite = valider pour les tâches en attente */
+.kt-swipeable-item.pending-validation.swiping-right::before {
+  font-size: 3em;
+  content: '✓';
   right: 0;
-  background: var(--kt-success);
+  background: linear-gradient(-90deg, var(--kt-success), transparent);
 }
 
-.swipeable-item.swiping-left .swipe-actions-left,
-.swipeable-item.swiping-right .swipe-actions-right {
-  opacity: 1;
-}
-
-.swipeable-item .task-content {
+.kt-swipeable-item .kt-task-content {
   position: relative;
   z-index: 2;
-  background: var(--card-background-color, white);
   transition: transform var(--kt-transition-medium);
 }
 
-.swipeable-item.swiping-left .task-content {
-  transform: translateX(-80px);
+.kt-swipeable-item.swiping-left .kt-task-content {
+  transform: translateX(-20px);
 }
 
-.swipeable-item.swiping-right .task-content {
-  transform: translateX(80px);
-}
-
-.reject-action,
-.validate-action {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: var(--kt-font-size-sm);
-  padding: var(--kt-space-sm);
-  border-radius: var(--kt-radius-sm);
-  min-width: 60px;
-  cursor: pointer;
-  transition: all var(--kt-transition-fast);
-}
-
-.reject-action:hover,
-.validate-action:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.reject-action .icon,
-.validate-action .icon {
-  font-size: 20px;
-  font-weight: bold;
+.kt-swipeable-item.swiping-right .kt-task-content {
+  transform: translateX(20px);
 }
 
 /* === FEEDBACK VISUEL === */
@@ -229,22 +194,22 @@ Ce document contient les spécifications d'amélioration UX pour la carte Kids T
   outline-offset: 2px;
 }
 
-.validation-task.validated {
-  animation: slideOutRight 0.3s ease-out forwards;
+.task.kt-animating-validated {
+  animation: kt-slideOutRight 0.3s ease-out forwards;
 }
 
-.validation-task.rejected {
-  animation: slideOutLeft 0.3s ease-out forwards;
+.task.kt-animating-rejected {
+  animation: kt-slideOutLeft 0.3s ease-out forwards;
 }
 
-@keyframes slideOutRight {
+@keyframes kt-slideOutRight {
   to {
     transform: translateX(100%);
     opacity: 0;
   }
 }
 
-@keyframes slideOutLeft {
+@keyframes kt-slideOutLeft {
   to {
     transform: translateX(-100%);
     opacity: 0;
