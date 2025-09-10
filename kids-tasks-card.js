@@ -7402,7 +7402,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .tab {
           flex: 1;
-          padding: var(--kt-space-lg) 12px;
+          padding: var(--kt-space-md);
           border: none;
           background: transparent;
           color: var(--secondary-text-color, #757575);
