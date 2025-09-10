@@ -7689,9 +7689,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         
         .task-name-row {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 8px;
+          flex-direction: column;
+          align-items: left;
+          gap: 0.5em;
         }
         
         .task-points {
@@ -7703,6 +7703,11 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           flex-shrink: 0;
           position: absolute;
           right: 1em;
+        }
+
+        .task-validation {
+          font-style: italic; 
+          font-size: 0.8em; color: var(--secondary-text-color);
         }
 
         
@@ -7886,12 +7891,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                   <div class="task-main flex-content">
                     <div class="task-name-row">
                       <div class="task-name">${task.name}</div>
-                      ${task.last_validated_at ? `<div class="task-validation" style="font-style: italic; font-size: 0.8em; color: var(--secondary-text-color);">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
+                      ${task.last_completed_at ? `<div class="task-validation">Finie le ${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
+                      ${task.last_validated_at ? `<div class="task-validation">Validée le ${new Date(task.last_validated_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                     <div class="task-points">
                       ${task.points > 0 ? `<span style="color: #4CAF50; font-weight: bold;">+${task.points} 🎫</span>` : ''}
                       ${task.coins > 0 ? `<span style="color: #9C27B0; font-weight: bold;">+${task.coins} coins</span>` : ''}
-                      ${task.last_completed_at ? `<div style="color: var(--secondary-text-color);">${new Date(task.last_completed_at).toLocaleDateString('fr-FR')}</div>` : ''}
                     </div>
                   </div>
                   <div class="task-action">
