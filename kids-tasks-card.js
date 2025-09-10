@@ -2767,6 +2767,20 @@ class KidsTasksBaseCard extends HTMLElement {
     `;
   }
 
+  getActionIcon(actionType) {
+    const icons = {
+      'task_completed': '✅',
+      'task_validated': '🎯',
+      'task_penalty': '⚠️',
+      'reward_claimed': '🏆',
+      'manual_adjustment': '⚙️',
+      'level_up': '📈',
+      'bonus_points': '🌟',
+      'default': '📊'
+    };
+    return icons[actionType] || icons['default'];
+  }
+
   async renderChildHistoryContainer(childId, options = {}) {
     // Options par défaut
     const defaultOptions = {
@@ -3872,20 +3886,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     `;
 
     this.showModal(content, `Historique - ${childName}`);
-  }
-
-  getActionIcon(actionType) {
-    const icons = {
-      'task_completed': '✅',
-      'task_validated': '🎯',
-      'task_penalty': '⚠️',
-      'reward_claimed': '🏆',
-      'manual_adjustment': '⚙️',
-      'level_up': '📈',
-      'bonus_points': '🌟',
-      'default': '📊'
-    };
-    return icons[actionType] || icons['default'];
   }
 
   getActionTypeLabel(actionType) {
