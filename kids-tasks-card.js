@@ -2796,7 +2796,7 @@ class KidsTasksBaseCard extends HTMLElement {
     // Options par défaut
     const defaultOptions = {
       showHeader: true,
-      maxEntries: 20,
+      maxEntries: 50,
       containerClass: ''
     };
     const config = { ...defaultOptions, ...options };
@@ -3875,7 +3875,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     // Utiliser la nouvelle fonction réutilisable pour générer le conteneur d'historique
     const historyContainer = await this.renderChildHistoryContainer(childId, {
       showHeader: true,
-      maxEntries: 20,
+      maxEntries: 50,
       containerClass: 'modal-history'
     });
     

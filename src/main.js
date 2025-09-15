@@ -29,24 +29,26 @@ window.KidsTasksUtils = KidsTasksUtils;
 window.KidsTasksStyleManager = KidsTasksStyleManager;
 
 // Register custom elements with error boundaries
-customElements.define('kids-tasks-card', withErrorBoundary(KidsTasksCard));
-customElements.define('kids-tasks-child-card', withErrorBoundary(KidsTasksChildCard));
-customElements.define('kids-tasks-card-editor', KidsTasksCardEditor);
-customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
+const cardSuffix = __DEV__ ? '-dev' : '';
+customElements.define(`kids-tasks-card${cardSuffix}`, withErrorBoundary(KidsTasksCard));
+customElements.define(`kids-tasks-child-card${cardSuffix}`, withErrorBoundary(KidsTasksChildCard));
+customElements.define(`kids-tasks-card${cardSuffix}-editor`, KidsTasksCardEditor);
+customElements.define(`kids-tasks-child-card${cardSuffix}-editor`, KidsTasksChildCardEditor);
 
 // Register with Home Assistant card picker
 window.customCards = window.customCards || [];
+const devSuffix = __DEV__ ? ' (Dev)' : '';
 window.customCards.push(
   {
-    type: 'kids-tasks-card',
-    name: 'Kids Tasks Card',
+    type: `kids-tasks-card${cardSuffix}`,
+    name: `Kids Tasks Card${devSuffix}`,
     description: 'Manage children\'s tasks and rewards with an engaging interface',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   },
   {
-    type: 'kids-tasks-child-card',
-    name: 'Kids Tasks Child Card', 
+    type: `kids-tasks-child-card${cardSuffix}`,
+    name: `Kids Tasks Child Card${devSuffix}`, 
     description: 'Individual child view for tasks and rewards',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'

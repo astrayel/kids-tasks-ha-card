@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Tasks - Avatar Builder Mockup</title>
+    <style>
+        /* Kids Tasks CSS Variables */
+        :root {
+            --kt-primary: #4CAF50;
+            --kt-secondary: #2196F3;
+            --kt-surface: #FAFAFA;
+            --kt-surface-variant: #F5F5F5;
+            --kt-on-surface: #212121;
+            --kt-on-surface-variant: #757575;
+            --kt-outline: #E0E0E0;
+            --kt-space-xs: 4px;
+            --kt-space-sm: 8px;
+            --kt-space-md: 16px;
+            --kt-space-lg: 24px;
+            --kt-space-xl: 32px;
+            --kt-radius-sm: 4px;
+            --kt-radius-md: 8px;
+            --kt-radius-lg: 12px;
+            --kt-radius-xl: 16px;
+            --kt-transition-fast: 150ms ease;
+            --kt-transition-medium: 250ms ease;
+            --kt-shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --kt-shadow-md: 0 4px 6px rgba(0,0,0,0.16);
+            --kt-shadow-lg: 0 10px 20px rgba(0,0,0,0.19);
+            
+            /* Cosmetics System Variables */
+            --kt-rarity-common: #9e9e9e;
+            --kt-rarity-rare: #4caf50;
+            --kt-rarity-epic: #2196f3;
+            --kt-rarity-legendary: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: var(--kt-space-lg);
+        }
+
+        .mockup-header {
+            text-align: center;
+            margin-bottom: var(--kt-space-xl);
+            color: white;
+        }
+
+        .mockup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--kt-space-sm);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mockup-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Avatar Builder Layout */
+        .kt-avatar-builder {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: var(--kt-space-lg);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--kt-surface);
+            border-radius: var(--kt-radius-xl);
+            padding: var(--kt-space-xl);
+            box-shadow: var(--kt-shadow-lg);
+        }
+
+        /* Left Panel - Categories */
+        .cosmetic-categories {
+            background: var(--kt-surface-variant);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-lg);
+        }
+
+        .categories-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--kt-space-md);
+            color: var(--kt-on-surface);
+        }
+
+        .category-btn {
+            display: block;
+            width: 100%;
+            padding: var(--kt-space-md);
+            margin-bottom: var(--kt-space-sm);
+            background: white;
+            border: 2px solid var(--kt-outline);
+            border-radius: var(--kt-radius-md);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            text-align: left;
+        }
+
+        .category-btn:hover {
+            border-color: var(--kt-primary);
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .category-btn.active {
+            background: var(--kt-primary);
+            color: white;
+            border-color: var(--kt-primary);
+            box-shadow: var(--kt-shadow-md);
+        }
+
+        .category-btn::before {
+            content: attr(data-icon);
+            margin-right: var(--kt-space-sm);
+            font-size: 1.2rem;
+        }
+
+        /* Center Panel - Avatar Preview */
+        .avatar-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(145deg, #f0f0f0 0%, #ffffff 100%);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-xl);
+            position: relative;
+        }
+
+        .avatar-container {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(240,240,240,0.9) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--kt-space-lg);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-base {
+            width: 200px;
+            height: 200px;
+            transition: all var(--kt-transition-medium);
+        }
+
+        /* Avatar Layers (SVG simulation with CSS) */
+        .avatar-layer {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+        }
+
+        .body-layer {
+            background: #F4A460;
+            z-index: 1;
+        }
+
+        .hair-layer {
+            background: #8B4513;
+            width: 180px;
+            height: 100px;
+            top: 20px;
+            left: 10px;
+            border-radius: 90px 90px 0 0;
+            z-index: 3;
+        }
+
+        .eyes-layer {
+            background: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            top: 80px;
+            left: 70px;
+            z-index: 4;
+        }
+
+        .eyes-layer::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            left: 40px;
+        }
+
+        .outfit-layer {
+            background: var(--kt-primary);
+            width: 160px;
+            height: 120px;
+            top: 120px;
+            left: 20px;
+            border-radius: 80px 80px 20px 20px;
+            z-index: 2;
+        }
+
+        .accessory-layer {
+            background: var(--kt-rarity-epic);
+            width: 60px;
+            height: 30px;
+            top: 40px;
+            left: 70px;
+            border-radius: var(--kt-radius-md);
+            z-index: 5;
+        }
+
+        .avatar-controls {
+            display: flex;
+            gap: var(--kt-space-md);
+        }
+
+        .kt-btn {
+            padding: var(--kt-space-md) var(--kt-space-lg);
+            border: none;
+            border-radius: var(--kt-radius-md);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            font-weight: 500;
+        }
+
+        .kt-btn--primary {
+            background: var(--kt-primary);
+            color: white;
+        }
+
+        .kt-btn--primary:hover {
+            box-shadow: var(--kt-shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .kt-btn--secondary {
+            background: var(--kt-surface-variant);
+            color: var(--kt-on-surface);
+        }
+
+        .kt-btn--secondary:hover {
+            background: var(--kt-outline);
+        }
+
+        /* Right Panel - Cosmetic Items */
+        .cosmetic-items {
+            background: var(--kt-surface-variant);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-lg);
+        }
+
+        .items-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--kt-space-md);
+            color: var(--kt-on-surface);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--kt-space-sm);
+        }
+
+        .cosmetic-item {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: var(--kt-radius-md);
+            padding: var(--kt-space-sm);
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cosmetic-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--kt-shadow-md);
+        }
+
+        .cosmetic-item.equipped {
+            border-color: var(--kt-primary);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .cosmetic-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cosmetic-item.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+        }
+
+        /* Rarity System */
+        .rarity-common { border-color: var(--kt-rarity-common); }
+        .rarity-rare { border-color: var(--kt-rarity-rare); }
+        .rarity-epic { 
+            border-color: var(--kt-rarity-epic);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        .rarity-legendary { 
+            border-color: var(--kt-rarity-legendary);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 15px rgba(255, 193, 7, 0.5); }
+            to { box-shadow: 0 0 25px rgba(255, 193, 7, 0.8); }
+        }
+
+        .item-preview {
+            width: 100%;
+            height: 80%;
+            border-radius: var(--kt-radius-sm);
+            margin-bottom: var(--kt-space-xs);
+        }
+
+        .item-name {
+            font-size: 0.8rem;
+            text-align: center;
+            color: var(--kt-on-surface-variant);
+        }
+
+        /* Demo Item Colors */
+        .item-hair-1 { background: #8B4513; }
+        .item-hair-2 { background: #DAA520; }
+        .item-hair-3 { background: #000000; }
+        .item-outfit-1 { background: var(--kt-primary); }
+        .item-outfit-2 { background: var(--kt-secondary); }
+        .item-outfit-3 { background: #E91E63; }
+        .item-accessory-1 { background: var(--kt-rarity-epic); }
+        .item-accessory-2 { background: var(--kt-rarity-legendary); }
+        .item-accessory-3 { background: var(--kt-rarity-rare); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .kt-avatar-builder {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .avatar-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .items-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="mockup-header">
+        <h1>🎮 Avatar Builder</h1>
+        <p>Mockup du système de personnalisation d'avatar inspiré d'Habitica</p>
+    </header>
+
+    <div class="kt-avatar-builder">
+        <!-- Left Panel: Categories -->
+        <div class="cosmetic-categories">
+            <h3 class="categories-title">Catégories</h3>
+            <button class="category-btn active" data-category="hair" data-icon="💇">Cheveux</button>
+            <button class="category-btn" data-category="eyes" data-icon="👀">Yeux</button>
+            <button class="category-btn" data-category="outfit" data-icon="👔">Tenues</button>
+            <button class="category-btn" data-category="accessory" data-icon="🎩">Accessoires</button>
+            <button class="category-btn" data-category="background" data-icon="🌈">Arrière-plans</button>
+        </div>
+
+        <!-- Center Panel: Avatar Preview -->
+        <div class="avatar-preview">
+            <div class="avatar-container">
+                <svg class="avatar-base" viewBox="0 0 200 200">
+                    <!-- Body Layer -->
+                    <circle cx="100" cy="130" r="80" fill="#F4A460" class="body-layer"/>
+                    
+                    <!-- Hair Layer -->
+                    <ellipse cx="100" cy="70" rx="90" ry="50" fill="#8B4513" class="hair-layer"/>
+                    
+                    <!-- Eyes Layer -->
+                    <circle cx="80" cy="100" r="8" fill="white" class="eyes-layer"/>
+                    <circle cx="120" cy="100" r="8" fill="white" class="eyes-layer"/>
+                    <circle cx="80" cy="100" r="4" fill="black"/>
+                    <circle cx="120" cy="100" r="4" fill="black"/>
+                    
+                    <!-- Outfit Layer -->
+                    <rect x="60" y="140" width="80" height="50" rx="15" fill="#4CAF50" class="outfit-layer"/>
+                    
+                    <!-- Accessory Layer (Hat) -->
+                    <rect x="70" y="40" width="60" height="20" rx="5" fill="#2196F3" class="accessory-layer"/>
+                </svg>
+            </div>
+            
+            <div class="avatar-controls">
+                <button class="kt-btn kt-btn--secondary">Réinitialiser</button>
+                <button class="kt-btn kt-btn--primary">Sauvegarder</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Cosmetic Items -->
+        <div class="cosmetic-items">
+            <h3 class="items-title">Cheveux disponibles</h3>
+            <div class="items-grid">
+                <!-- Hair Items -->
+                <div class="cosmetic-item rarity-common equipped">
+                    <div class="item-preview item-hair-1"></div>
+                    <div class="item-name">Brun</div>
+                </div>
+                <div class="cosmetic-item rarity-common">
+                    <div class="item-preview item-hair-2"></div>
+                    <div class="item-name">Blond</div>
+                </div>
+                <div class="cosmetic-item rarity-rare">
+                    <div class="item-preview item-hair-3"></div>
+                    <div class="item-name">Noir</div>
+                </div>
+                <div class="cosmetic-item rarity-epic locked">
+                    <div class="item-preview" style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4);"></div>
+                    <div class="item-name">Arc-en-ciel</div>
+                </div>
+                <div class="cosmetic-item rarity-legendary locked">
+                    <div class="item-preview" style="background: linear-gradient(45deg, #FFD700, #FFA500);"></div>
+                    <div class="item-name">Doré</div>
+                </div>
+                <div class="cosmetic-item rarity-common">
+                    <div class="item-preview" style="background: #A0522D;"></div>
+                    <div class="item-name">Châtain</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive functionality for the mockup
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            const itemsTitle = document.querySelector('.items-title');
+            const itemsGrid = document.querySelector('.items-grid');
+            
+            // Mock data for different categories
+            const mockData = {
+                hair: {
+                    title: 'Cheveux disponibles',
+                    items: [
+                        { name: 'Brun', rarity: 'common', equipped: true, color: '#8B4513' },
+                        { name: 'Blond', rarity: 'common', equipped: false, color: '#DAA520' },
+                        { name: 'Noir', rarity: 'rare', equipped: false, color: '#000000' },
+                        { name: 'Arc-en-ciel', rarity: 'epic', locked: true, color: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)' },
+                        { name: 'Doré', rarity: 'legendary', locked: true, color: 'linear-gradient(45deg, #FFD700, #FFA500)' },
+                        { name: 'Châtain', rarity: 'common', equipped: false, color: '#A0522D' }
+                    ]
+                },
+                outfit: {
+                    title: 'Tenues disponibles',
+                    items: [
+                        { name: 'T-shirt Vert', rarity: 'common', equipped: true, color: '#4CAF50' },
+                        { name: 'T-shirt Bleu', rarity: 'common', equipped: false, color: '#2196F3' },
+                        { name: 'Robe Rose', rarity: 'rare', equipped: false, color: '#E91E63' },
+                        { name: 'Costume Pirate', rarity: 'epic', locked: true, color: 'linear-gradient(45deg, #8B4513, #000)' },
+                        { name: 'Armure Dorée', rarity: 'legendary', locked: true, color: 'linear-gradient(45deg, #FFD700, #FFA500)' },
+                        { name: 'Kimono', rarity: 'epic', locked: false, color: 'linear-gradient(45deg, #FF5722, #FFC107)' }
+                    ]
+                },
+                accessory: {
+                    title: 'Accessoires disponibles',
+                    items: [
+                        { name: 'Chapeau Bleu', rarity: 'epic', equipped: true, color: '#2196F3' },
+                        { name: 'Couronne', rarity: 'legendary', equipped: false, color: '#FFD700' },
+                        { name: 'Casquette', rarity: 'common', equipped: false, color: '#795548' },
+                        { name: 'Bandeau Pirate', rarity: 'epic', locked: true, color: '#000' },
+                        { name: 'Diadème Magique', rarity: 'legendary', locked: true, color: 'linear-gradient(45deg, #9C27B0, #E91E63)' },
+                        { name: 'Lunettes', rarity: 'rare', equipped: false, color: '#424242' }
+                    ]
+                }
+            };
+            
+            // Category switching
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Update active state
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update items display
+                    const category = this.dataset.category;
+                    if (mockData[category]) {
+                        updateItemsDisplay(mockData[category]);
+                    }
+                });
+            });
+            
+            function updateItemsDisplay(data) {
+                itemsTitle.textContent = data.title;
+                
+                itemsGrid.innerHTML = data.items.map(item => `
+                    <div class="cosmetic-item rarity-${item.rarity} ${item.equipped ? 'equipped' : ''} ${item.locked ? 'locked' : ''}">
+                        <div class="item-preview" style="background: ${item.color};"></div>
+                        <div class="item-name">${item.name}</div>
+                    </div>
+                `).join('');
+                
+                // Add click handlers for non-locked items
+                itemsGrid.querySelectorAll('.cosmetic-item:not(.locked)').forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Remove equipped state from siblings
+                        itemsGrid.querySelectorAll('.cosmetic-item').forEach(i => i.classList.remove('equipped'));
+                        // Add equipped state to clicked item
+                        this.classList.add('equipped');
+                    });
+                });
+            }
+            
+            // Button interactions
+            document.querySelector('.kt-btn--secondary').addEventListener('click', function() {
+                alert('Avatar réinitialisé ! (Mockup)');
+            });
+            
+            document.querySelector('.kt-btn--primary').addEventListener('click', function() {
+                alert('Avatar sauvegardé ! (Mockup)');
+            });
+        });
+    </script>
+</body>
+</html>

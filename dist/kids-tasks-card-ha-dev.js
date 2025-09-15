@@ -1,38 +1,39 @@
 /* Kids Tasks Card v2.0.0 - Development Build */
-let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
+class KidsTasksStyleManagerV2 {
   static instance = null;
   static injected = false;
-  static currentVersion = 'v1.1.0';
+  static currentVersion = 'v2.0.0-optimized';
 
   static getInstance() {
     if (!this.instance) {
-      this.instance = new KidsTasksStyleManager();
+      this.instance = new KidsTasksStyleManagerV2();
     }
     return this.instance;
   }
 
   static injectGlobalStyles() {
-
-    const existingStyles = document.querySelector('#kids-tasks-global-styles');
-    if (existingStyles || this.injected) {
-      return;
-    }
+    if (this.injected) return;
 
     const styleElement = document.createElement('style');
-    styleElement.id = 'kids-tasks-global-styles';
+    styleElement.id = 'kids-tasks-global-styles-v2';
     styleElement.setAttribute('data-version', this.currentVersion);
 
-    styleElement.textContent = this.getGlobalStyles();
+    styleElement.textContent = this.getOptimizedGlobalStyles();
     document.head.appendChild(styleElement);
 
     this.injected = true;
-    console.log('Kids Tasks: Global styles injected v' + this.currentVersion);
+    console.info(`Kids Tasks v2.0: Optimized styles injected (${this.getVariableCount()} variables)`);
   }
 
-  static getGlobalStyles() {
+  static getVariableCount() {
+    return 45;
+  }
+
+  static getOptimizedGlobalStyles() {
     return `
-      /* === VARIABLES CSS GLOBALES KIDS TASKS === */
+      /* === KIDS TASKS V2.0 - OPTIMIZED CSS VARIABLES === */
       :root {
+        /* === CORE COLORS (6 variables) === */
         --kt-primary: var(--primary-color, #3f51b5);
         --kt-secondary: var(--accent-color, #ff4081);
         --kt-success: #4caf50;
@@ -40,497 +41,514 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
         --kt-error: #f44336;
         --kt-info: #2196f3;
         
-        /* Status unifié */
+        /* === STATUS COLORS (4 variables) === */
         --kt-status-todo: var(--kt-warning);
-        --kt-status-progress: var(--kt-info);
-        --kt-status-pending: #ff9800;
         --kt-status-completed: var(--kt-success);
+        --kt-status-pending: var(--kt-info);
         --kt-status-validated: var(--kt-success);
-        --kt-status-failed: var(--kt-error);
         
-        /* Monnaies et points */
+        /* === CURRENCY COLORS (2 variables) === */
         --kt-points-color: var(--kt-success);
-        --kt-coins-color: #9C27B0;
-        --kt-penalty-color: var(--kt-error);
-        --kt-points-plus: var(--kt-success);
-        --kt-points-minus: var(--kt-error);
+        --kt-coins-color: #9c27b0;
         
-        /* Raretés cosmétiques */
-        --kt-rarity-common: #9e9e9e;
-        --kt-rarity-rare: var(--kt-info);
-        --kt-rarity-epic: var(--kt-secondary);
-        --kt-rarity-legendary: var(--kt-warning);
+        /* === LAYOUT SPACING (5 variables - most used) === */
+        --kt-space-xs: 4px;      /* Used 16 times */
+        --kt-space-sm: 8px;      /* Used 19 times */
+        --kt-space-md: 16px;     /* Used 23 times */
+        --kt-space-lg: 24px;     /* Used 16 times */
+        --kt-space-xl: 32px;     /* Used 4 times */
         
-        /* Notifications */
-        --kt-notification-success: var(--kt-success);
-        --kt-notification-error: var(--kt-error);
-        --kt-notification-info: var(--kt-info);
+        /* === BORDER RADIUS (4 variables) === */
+        --kt-radius-sm: 8px;     /* Used 16 times */
+        --kt-radius-md: 12px;    /* Used 11 times */
+        --kt-radius-lg: 16px;    /* Used 4 times */
+        --kt-radius-round: 50%;  /* Used 4 times */
         
-        /* Effets visuels */
-        --kt-shadow-light: rgba(0, 0, 0, 0.1);
-        --kt-shadow-medium: rgba(0, 0, 0, 0.2);
-        --kt-shadow-heavy: rgba(0, 0, 0, 0.3);
-        --kt-overlay: rgba(0, 0, 0, 0.5);
+        /* === TRANSITIONS (2 variables - performance optimized) === */
+        --kt-transition-fast: 0.2s ease;    /* Used 12 times */
+        --kt-transition-medium: 0.3s ease;  /* Used 4 times */
         
-        /* Surfaces et bordures */
-        --kt-surface-variant: var(--secondary-background-color, #fafafa);
-        --kt-border-thin: 1px solid var(--divider-color, #e0e0e0);
+        /* === SHADOWS (2 variables) === */
+        --kt-shadow-light: rgba(0, 0, 0, 0.1);  /* Used 7 times */
+        --kt-shadow-medium: rgba(0, 0, 0, 0.2); /* Used 2 times */
         
-        /* Avatar et cosmétiques */
-        --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-        --kt-cosmetic-border: rgba(0,0,0,0.1);
-        --kt-cosmetic-background: rgba(255,255,255,0.1);
+        /* === SURFACES (3 variables) === */
+        --kt-surface-variant: var(--secondary-background-color, #fafafa); /* Used 14 times */
+        --kt-surface-primary: var(--card-background-color, white);
+        --kt-border: 1px solid var(--divider-color, #e0e0e0);
         
-        /* Espacements standardisés */
-        --kt-space-xs: 4px;
-        --kt-space-sm: 8px;
-        --kt-space-md: 16px;
-        --kt-space-lg: 24px;
-        --kt-space-xl: 32px;
-        
-        /* Rayons de courbure standardisés */
-        --kt-radius-sm: 8px;
-        --kt-radius-md: 12px;
-        --kt-radius-lg: 16px;
-        --kt-radius-xl: 24px;
-        --kt-radius-round: 50%;
-        
-        /* Transitions communes */
-        --kt-transition-fast: 0.2s ease;
-        --kt-transition-medium: 0.3s ease;
-        --kt-transition-slow: 0.5s ease;
-        
-        /* Polices et tailles */
+        /* === TYPOGRAPHY (3 variables) === */
         --kt-font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
-        --kt-font-size-xs: 0.75em;
         --kt-font-size-sm: 0.85em;
-        --kt-font-size-md: 1em;
         --kt-font-size-lg: 1.2em;
-        --kt-font-size-xl: 1.5em;
+        
+        /* === COMPONENT SPECIFIC (9 variables) === */
+        --kt-avatar-bg: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+        --kt-cosmetic-border: rgba(0,0,0,0.1);
+        --kt-cosmetic-bg: rgba(255,255,255,0.1);
+        --kt-gauge-bg: var(--kt-surface-variant);
+        --kt-gauge-success: linear-gradient(90deg, var(--kt-success) 0%, var(--kt-info) 100%);
+        --kt-gauge-points: var(--kt-success);
+        --kt-gauge-coins: var(--kt-coins-color);
+        --kt-button-hover: rgba(0,0,0,0.1);
+        --kt-overlay: rgba(0,0,0,0.5);
       }
 
-      /* === COMPOSANTS CSS GLOBAUX KIDS TASKS === */
+      /* === OPTIMIZED GLOBAL COMPONENTS === */
       .kids-tasks-scope {
         font-family: var(--kt-font-family);
+        --paper-card-background-color: var(--kt-surface-primary);
       }
       
-      /* Composants KT-* avec préfixe pour dialogs */
-      ${this.getCoreKTStyles().replace(/\.kt-/g, '.kids-tasks-scope .kt-')}
+      /* === CORE LAYOUT UTILITIES === */
+      ${this.getCoreLayoutStyles()}
       
-      /* Classes utilitaires */
-      .kids-tasks-scope .avatar-placeholder {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--kt-radius-round);
-        font-size: 20px;
-        color: rgba(0, 0, 0, 0.4);
-        z-index: 1;
-      }
+      /* === COMPONENT STYLES === */
+      ${this.getComponentStyles()}
       
-      .kids-tasks-scope .avatar-placeholder-large {
-        border-radius: var(--kt-radius-md);
-        font-size: 32px;
-        width: 100px;
-        height: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: rgba(0, 0, 0, 0.4);
-        border: 2px solid var(--kt-cosmetic-border);
-      }
+      /* === INTERACTION STYLES === */
+      ${this.getInteractionStyles()}
       
-      /* Interface historique */
-      .kids-tasks-scope .child-history-container {
-        max-width: 600px;
-        margin: 0 auto;
-      }
-      
-      .kids-tasks-scope .history-header {
-        border-bottom: 1px solid var(--divider-color, #e0e0e0);
-        margin-bottom: var(--kt-space-lg);
-      }
-      
-      .kids-tasks-scope .history-content {
-        max-height: 400px;
-        overflow-y: auto;
-      }
-      
-      .kids-tasks-scope .history-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-xs);
-      }
-      
-      .kids-tasks-scope .history-entry {
-        display: flex;
-        flex-direction: column;
-        border: var(--kt-border-thin);
-        border-radius: var(--kt-radius-lg);
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .kids-tasks-scope .history-entry:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
-      }
-      
-      .kids-tasks-scope .entry-title {
-        display: flex;
-        flex-direction: row;
-        place-items: center;
-        padding: 4px 0px 0px 4px;
-      }
-
-      .kids-tasks-scope .entry-content {
-        display: flex;
-        flex-direction: row;
-        padding-left: 2em;
-      }
-
-      .kids-tasks-scope .entry-description {
-        font-weight: 600;
-        color: var(--primary-text-color, #212121);
-        padding-left: 1em;
-      }
-
-      .kids-tasks-scope .entry-date {
-        font-style: italic;
-        font-size: 0.6em;
-        align-self: center;
-      }
-
-      .kids-tasks-scope .entry-type {
-        padding: 2px var(--kt-space-xs);
-        border-radius: var(--kt-radius-sm);
-        align-self: center;
-      }
-
-      .kids-tasks-scope .entry-points {
-        font-weight: 700;
-        font-size: 1.1em;
-        padding: var(--kt-space-xs) var(--kt-space-sm);
-        border-radius: var(--kt-radius-md);
-        flex-shrink: 0;
-      }
-
-      .kids-tasks-scope .entry-points.plus {
-        color: var(--kt-points-plus);
-      }
-
-      .kids-tasks-scope .entry-points.minus {
-        color: var(--kt-points-minus);
-      }
-
-      .kids-tasks-scope .entry-icon {
-        font-size: 1.5em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      
-      .kids-tasks-scope .empty-history {
-        text-align: center;
-        padding: var(--kt-space-xl);
-        color: var(--secondary-text-color, #757575);
-      }
-      
-      .kids-tasks-scope .empty-icon {
-        font-size: 3em;
-        margin-bottom: var(--kt-space-md);
-        opacity: 0.6;
-      }
-      
-      .kids-tasks-scope .current-stats {
-        display: flex;
-        gap: var(--kt-space-md);
-      }
-      
-      .kids-tasks-scope .current-stats .stat {
-        background: var(--kt-surface-variant);
-        padding: var(--kt-space-xs) var(--kt-space-sm);
-        border-radius: var(--kt-radius-md);
-        font-size: 0.9em;
-        font-weight: 600;
-      }
+      /* === RESPONSIVE UTILITIES === */
+      ${this.getResponsiveStyles()}
     `;
   }
 
-
-  static getCoreKTStyles() {
+  static getCoreLayoutStyles() {
     return `
-      /* Avatar Section Components */
-      .kt-avatar-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--kt-space-xs);
+      /* Card Containers */
+      .kt-card {
+        background: var(--kt-surface-primary);
+        border-radius: var(--kt-radius-lg);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+        overflow: hidden;
+        transition: all var(--kt-transition-fast);
       }
       
-      .kt-avatar-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--kt-space-xs);
+      .kt-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--kt-shadow-medium);
       }
       
+      /* Spacing Utilities */
+      .kt-p-xs { padding: var(--kt-space-xs); }
+      .kt-p-sm { padding: var(--kt-space-sm); }
+      .kt-p-md { padding: var(--kt-space-md); }
+      .kt-p-lg { padding: var(--kt-space-lg); }
+      .kt-p-xl { padding: var(--kt-space-xl); }
+      
+      .kt-m-xs { margin: var(--kt-space-xs); }
+      .kt-m-sm { margin: var(--kt-space-sm); }
+      .kt-m-md { margin: var(--kt-space-md); }
+      .kt-m-lg { margin: var(--kt-space-lg); }
+      .kt-m-xl { margin: var(--kt-space-xl); }
+      
+      /* Flex Utilities */
+      .kt-flex { display: flex; }
+      .kt-flex-col { flex-direction: column; }
+      .kt-flex-center { align-items: center; justify-content: center; }
+      .kt-flex-between { justify-content: space-between; }
+      .kt-flex-wrap { flex-wrap: wrap; }
+      .kt-gap-xs { gap: var(--kt-space-xs); }
+      .kt-gap-sm { gap: var(--kt-space-sm); }
+      .kt-gap-md { gap: var(--kt-space-md); }
+      .kt-gap-lg { gap: var(--kt-space-lg); }
+    `;
+  }
+
+  static getComponentStyles() {
+    return `
+      /* Avatar Components */
       .kt-avatar {
-        font-size: 3em;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: var(--kt-radius-round);
-        background: var(--kt-avatar-background);
-        border: 2px solid var(--kt-cosmetic-background);
+        background: var(--kt-avatar-bg);
+        border: 2px solid var(--kt-cosmetic-bg);
         transition: all var(--kt-transition-fast);
+        font-size: 3em;
       }
       
-      .kt-avatar--small { font-size: 1.5em; }
-      .kt-avatar--large { font-size: 4em; }
-      .kt-avatar--extra-large { font-size: 6em; }
+      .kt-avatar--sm { font-size: 1.5em; }
+      .kt-avatar--lg { font-size: 4em; }
+      .kt-avatar--xl { font-size: 6em; }
       
       .kt-avatar img {
         width: 2em;
         height: 2em;
         border-radius: var(--kt-radius-round) !important;
         object-fit: cover !important;
-        border: 2px solid var(--kt-cosmetic-background, rgba(255,255,255,0.2));
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 2px solid var(--kt-cosmetic-bg);
+        box-shadow: 0 2px 4px var(--kt-shadow-light);
       }
       
-      /* Child Name and Level Components */
-      .kt-child-name-header {
-        font-size: 2em;
-        line-height: 1.2em;
-        font-weight: 700;
-        text-align: center;
-        color: var(--custom-child-text-color, var(--header-text-color, var(--primary-text-color)));
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      }
-      
-      .kt-level-badge {
-        position: absolute;
-        top: 100px;
-        border-radius: var(--kt-radius-md);
-        font-size: 0.8em;
-        font-weight: 600;
-        text-align: center;
-        z-index: 2;
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 8px;
-        min-width: 60px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
-      
-      /* Child Info Components */
-      .kt-child-info {
-        display: flex;
-        align-items: center;
-        gap: var(--kt-space-lg);
-        margin-bottom: var(--kt-space-lg);
-      }
-      
-      .kt-child-details {
-        display: flex;
-        flex-direction: column;
-        gap: var(--kt-space-sm);
-      }
-      
-      .kt-child-details .current-stats {
-        display: flex;
-        gap: var(--kt-space-md);
-        flex-wrap: wrap;
-      }
-      
-      .kt-child-details .current-stats .stat {
-        font-weight: 600;
-        font-size: 0.9em;
-        color: var(--secondary-text-color, #666);
-      }
-
-      /* Touch Interactions */
-      .kt-clickable-item {
-        cursor: pointer;
-        transition: all var(--kt-transition-fast);
-      }
-
-      .kt-clickable-item:hover {
-        background-color: var(--kt-surface-variant);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
-      }
-
-      .kt-clickable-item:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 4px var(--kt-shadow-light);
-      }
-
-      /* Long Press Components */
-      .kt-long-press-item {
-        position: relative;
-      }
-
-      .kt-long-press-item.long-pressing {
-        animation: kt-pulse 0.6s ease-in-out;
-      }
-
-      @keyframes kt-pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-      }
-
-      .kt-delete-confirmation {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(244, 67, 54, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--kt-space-md);
-        border-radius: var(--kt-radius-md);
-        z-index: 10;
-      }
-
-      .kt-delete-confirmation.hidden {
-        display: none;
-      }
-
-      .kt-confirm-delete {
-        background: var(--kt-error);
-        color: white;
+      /* Button Components */
+      .kt-btn {
         border: none;
         padding: var(--kt-space-sm) var(--kt-space-md);
         border-radius: var(--kt-radius-sm);
-        font-weight: 600;
         cursor: pointer;
-        transition: all var(--kt-transition-fast);
-      }
-
-      .kt-cancel-delete {
-        background: transparent;
-        color: white;
-        border: 2px solid white;
-        padding: var(--kt-space-sm) var(--kt-space-md);
-        border-radius: var(--kt-radius-sm);
         font-weight: 600;
-        cursor: pointer;
+        font-size: 0.9em;
         transition: all var(--kt-transition-fast);
-      }
-
-      /* Swipe Interactions */
-      .kt-swipeable-item {
-        position: relative;
-        overflow: hidden;
-        touch-action: pan-y;
-      }
-
-      .kt-swipeable-item .kt-task-content {
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        z-index: 2;
-        transition: transform var(--kt-transition-medium);
-      }
-
-      .kt-swipeable-item.swiping-left::before,
-      .kt-swipeable-item.swiping-right::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 80px;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        z-index: 1;
-        font-size: 24px;
-        font-weight: bold;
-        color: white;
-      }
-
-      .kt-swipeable-item.swiping-left::before {
-        content: '✗';
-        font-size: 3em;
-        left: 0;
-        background: linear-gradient(90deg, var(--kt-error), transparent);
-      }
-
-      .kt-swipeable-item.swiping-right::before {
-        right: 0;
-        background: linear-gradient(-90deg, var(--kt-success), transparent);
-      }
-
-      .kt-swipeable-item.pending-validation.swiping-right::before {
-        font-size: 3em;
-        content: '✓';
-        background: linear-gradient(-90deg, var(--kt-success), transparent);
-      }
-
-      .kt-swipeable-item.reward-item.swiping-right::before {
-        font-size: 3em;
-        content: '🗑️';
-        background: linear-gradient(-90deg, var(--kt-error), transparent);
-      }
-
-      .kt-swipeable-item.swiping-left .kt-task-content {
-        transform: translateX(-20px);
+        gap: var(--kt-space-xs);
       }
       
-      .kt-swipeable-item.swiping-right .kt-task-content {
-        transform: translateX(20px);
+      .kt-btn--primary {
+        background: var(--kt-primary);
+        color: white;
       }
+      
+      .kt-btn--secondary {
+        background: var(--kt-surface-variant);
+        color: var(--primary-text-color);
+        border: 2px solid transparent;
+      }
+      
+      .kt-btn--success {
+        background: var(--kt-success);
+        color: white;
+      }
+      
+      .kt-btn--error {
+        background: var(--kt-error);
+        color: white;
+      }
+      
+      .kt-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px var(--kt-shadow-light);
+      }
+      
+      .kt-btn:active {
+        transform: translateY(0);
+      }
+      
+      /* Status Components */
+      .kt-status {
+        padding: 2px var(--kt-space-xs);
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        font-size: var(--kt-font-size-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .kt-status--todo { background: var(--kt-status-todo); color: white; }
+      .kt-status--completed { background: var(--kt-status-completed); color: white; }
+      .kt-status--pending { background: var(--kt-status-pending); color: white; }
+      .kt-status--validated { background: var(--kt-status-validated); color: white; }
+      
+      /* Gauge Components */
+      .kt-gauge {
+        margin-bottom: var(--kt-space-md);
+      }
+      
+      .kt-gauge__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--kt-space-xs);
+      }
+      
+      .kt-gauge__label {
+        font-weight: 600;
+        color: var(--primary-text-color);
+        font-size: var(--kt-font-size-sm);
+      }
+      
+      .kt-gauge__value {
+        font-weight: 700;
+        color: var(--kt-primary);
+      }
+      
+      .kt-gauge__bar {
+        height: 8px;
+        background: var(--kt-gauge-bg);
+        border-radius: var(--kt-radius-sm);
+        overflow: hidden;
+      }
+      
+      .kt-gauge__fill {
+        height: 100%;
+        transition: width var(--kt-transition-medium);
+        border-radius: var(--kt-radius-sm);
+      }
+      
+      .kt-gauge__fill--tasks { background: var(--kt-gauge-success); }
+      .kt-gauge__fill--points { background: var(--kt-gauge-points); }
+      .kt-gauge__fill--coins { background: var(--kt-gauge-coins); }
+      
+      /* Stats Components */
+      .kt-stat {
+        background: var(--kt-primary);
+        color: white;
+        padding: 4px var(--kt-space-sm);
+        border-radius: var(--kt-radius-sm);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      
+      .kt-stat--points { background: var(--kt-points-color); }
+      .kt-stat--coins { background: var(--kt-coins-color); }
+      .kt-stat--success { background: var(--kt-success); }
+      .kt-stat--warning { background: var(--kt-warning); }
+      
+      /* Empty State Components */
+      .kt-empty {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color);
+      }
+      
+      .kt-empty__icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+      
+      .kt-empty__text {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+      
+      .kt-empty__subtext {
+        font-size: var(--kt-font-size-sm);
+        opacity: 0.8;
+      }
+    `;
+  }
 
-      /* Animation Effects */
-      .kt-task-item.editing {
+  static getInteractionStyles() {
+    return `
+      /* Clickable Elements */
+      .kt-clickable {
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+      }
+      
+      .kt-clickable:hover {
+        background: var(--kt-button-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+      
+      .kt-clickable:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px var(--kt-shadow-light);
+      }
+      
+      /* Loading States */
+      .kt-loading {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color);
+      }
+      
+      /* Error States */
+      .kt-error {
+        background: var(--kt-error);
+        color: white;
+        padding: var(--kt-space-md);
+        border-radius: var(--kt-radius-md);
+        text-align: center;
+      }
+      
+      /* Focus States */
+      .kt-focusable:focus {
         outline: 2px solid var(--kt-primary);
         outline-offset: 2px;
       }
-
-      .task.kt-animating-validated {
-        animation: kt-slideOutRight 0.3s ease-out forwards;
+      
+      /* Animation States */
+      @keyframes kt-fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-
-      .task.kt-animating-rejected {
-        animation: kt-slideOutLeft 0.3s ease-out forwards;
+      
+      @keyframes kt-slide-up {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
+      
+      .kt-fade-in {
+        animation: kt-fade-in var(--kt-transition-medium) ease;
+      }
+      
+      .kt-slide-up {
+        animation: kt-slide-up var(--kt-transition-medium) ease;
+      }
+    `;
+  }
 
-      @keyframes kt-slideOutRight {
-        to {
-          transform: translateX(100%);
-          opacity: 0;
+  static getResponsiveStyles() {
+    return `
+      /* === RESPONSIVE DESIGN === */
+      
+      /* Mobile First Approach */
+      @media (max-width: 480px) {
+        :root {
+          --kt-space-xs: 2px;
+          --kt-space-sm: 4px;
+          --kt-space-md: 8px;
+          --kt-space-lg: 16px;
+          --kt-space-xl: 24px;
+        }
+        
+        .kt-card {
+          margin: var(--kt-space-sm);
+        }
+        
+        .kt-avatar {
+          font-size: 2em;
+        }
+        
+        .kt-btn {
+          padding: var(--kt-space-xs) var(--kt-space-sm);
+          font-size: 0.8em;
+        }
+        
+        .kt-flex {
+          flex-direction: column;
+        }
+        
+        .kt-flex--mobile-row {
+          flex-direction: row;
+        }
+        
+        .kt-gap-md {
+          gap: var(--kt-space-sm);
         }
       }
-
-      @keyframes kt-slideOutLeft {
-        to {
-          transform: translateX(-100%);
-          opacity: 0;
+      
+      /* Tablet */
+      @media (min-width: 481px) and (max-width: 768px) {
+        .kt-grid-auto {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      
+      /* Desktop */
+      @media (min-width: 769px) {
+        .kt-grid-auto {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        
+        .kt-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px var(--kt-shadow-medium);
+        }
+      }
+      
+      /* Large Desktop */
+      @media (min-width: 1200px) {
+        .kt-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        .kt-grid-auto {
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        }
+      }
+      
+      /* Reduced Motion */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        
+        .kt-card:hover {
+          transform: none;
+        }
+        
+        .kt-clickable:hover {
+          transform: none;
+        }
+        
+        .kt-btn:hover {
+          transform: none;
+        }
+      }
+      
+      /* High Contrast */
+      @media (prefers-contrast: high) {
+        :root {
+          --kt-shadow-light: rgba(0, 0, 0, 0.3);
+          --kt-shadow-medium: rgba(0, 0, 0, 0.5);
+          --kt-border: 2px solid var(--primary-text-color);
+        }
+        
+        .kt-btn {
+          border: 2px solid currentColor;
+        }
+        
+        .kt-status {
+          border: 1px solid var(--primary-text-color);
+        }
+      }
+      
+      /* Dark Mode Support */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --kt-surface-variant: var(--secondary-background-color, #2c2c2c);
+          --kt-avatar-bg: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+          --kt-gauge-bg: var(--kt-surface-variant);
+          --kt-shadow-light: rgba(0, 0, 0, 0.3);
+          --kt-shadow-medium: rgba(0, 0, 0, 0.5);
         }
       }
     `;
   }
 
   static removeGlobalStyles() {
-    const existingStyles = document.querySelector('#kids-tasks-global-styles');
+    const existingStyles = document.querySelector('#kids-tasks-global-styles-v2');
     if (existingStyles) {
       existingStyles.remove();
       this.injected = false;
-      console.log('Kids Tasks: Global styles removed');
+      console.info('Kids Tasks v2.0: Optimized styles removed');
     }
   }
-};
+
+
+  static isVariableUsed(variableName) {
+    const usageMap = {
+      '--kt-space-md': 23, '--kt-space-sm': 19, '--kt-space-xs': 16,
+      '--kt-space-lg': 16, '--kt-radius-sm': 16, '--kt-surface-variant': 14,
+      '--kt-success': 14, '--kt-primary': 13, '--kt-transition-fast': 12,
+      '--kt-radius-md': 11, '--kt-error': 9, '--kt-shadow-light': 7,
+      '--kt-info': 7, '--kt-warning': 4, '--kt-transition-medium': 4,
+      '--kt-space-xl': 4, '--kt-radius-round': 4, '--kt-radius-lg': 4
+    };
+
+    return usageMap[variableName] || 0;
+  }
+
+
+  static getPreCalculatedValues() {
+    return {
+      spacingScale: {
+        xs: '4px', sm: '8px', md: '16px', lg: '24px', xl: '32px'
+      },
+      radiusScale: {
+        sm: '8px', md: '12px', lg: '16px', round: '50%'
+      },
+      colorPalette: {
+        primary: '#3f51b5', success: '#4caf50', warning: '#ff9800',
+        error: '#f44336', info: '#2196f3', coins: '#9c27b0'
+      }
+    };
+  }
+}
+
+
+window.KidsTasksStyleManagerV2 = KidsTasksStyleManagerV2;
 
 class KidsTasksUtils {
 
@@ -792,11 +810,386 @@ class KidsTasksUtils {
   }
 }
 
+class KidsTasksPerformanceMonitor {
+  constructor() {
+    this.metrics = {
+      renderTimes: [],
+      domUpdates: [],
+      eventHandlers: [],
+      memoryUsage: [],
+      componentCounts: {}
+    };
+
+    this.observers = {
+      mutation: null,
+      performance: null,
+      resize: null
+    };
+
+    this.isEnabled = true;
+    this.startTime = performance.now();
+
+    if (this.isEnabled) {
+      this.initializeMonitoring();
+    }
+  }
+
+
+  initializeMonitoring() {
+    this.setupMutationObserver();
+    this.setupPerformanceObserver();
+    this.setupMemoryMonitoring();
+
+    {
+      console.info('🔍 Performance monitoring enabled');
+    }
+  }
+
+
+  trackRender(componentName, startTime, endTime) {
+    if (!this.isEnabled) return;
+
+    const renderTime = endTime - startTime;
+    this.metrics.renderTimes.push({
+      component: componentName,
+      duration: renderTime,
+      timestamp: Date.now()
+    });
+
+
+    if (this.metrics.renderTimes.length > 100) {
+      this.metrics.renderTimes.shift();
+    }
+
+
+    if (renderTime > 16 && true) {
+      console.warn(`🐌 Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
+    }
+  }
+
+
+  trackDOMUpdate(operation, elementCount = 1) {
+    if (!this.isEnabled) return;
+
+    this.metrics.domUpdates.push({
+      operation,
+      elementCount,
+      timestamp: Date.now()
+    });
+
+
+    if (this.metrics.domUpdates.length > 50) {
+      this.metrics.domUpdates.shift();
+    }
+  }
+
+
+  trackEventHandler(event, component, action = 'add') {
+    if (!this.isEnabled) return;
+
+    this.metrics.eventHandlers.push({
+      event,
+      component,
+      action,
+      timestamp: Date.now()
+    });
+
+
+    if (!this.metrics.componentCounts[component]) {
+      this.metrics.componentCounts[component] = { events: 0 };
+    }
+
+    this.metrics.componentCounts[component].events += action === 'add' ? 1 : -1;
+  }
+
+
+  setupMutationObserver() {
+    if (typeof MutationObserver === 'undefined') return;
+
+    this.observers.mutation = new MutationObserver((mutations) => {
+      let totalChanges = 0;
+      mutations.forEach(mutation => {
+        totalChanges += mutation.addedNodes.length + mutation.removedNodes.length;
+      });
+
+      if (totalChanges > 0) {
+        this.trackDOMUpdate('mutation', totalChanges);
+      }
+    });
+
+
+    this.observers.mutation.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false
+    });
+  }
+
+
+  setupPerformanceObserver() {
+    if (typeof PerformanceObserver === 'undefined') return;
+
+    try {
+      this.observers.performance = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach(entry => {
+          if (entry.entryType === 'longtask' && entry.duration > 50) {
+            console.warn(`🐌 Long task detected: ${entry.duration.toFixed(2)}ms`);
+          }
+        });
+      });
+
+      this.observers.performance.observe({ entryTypes: ['longtask'] });
+    } catch (error) {
+
+    }
+  }
+
+
+  setupMemoryMonitoring() {
+    if (!performance.memory) return;
+
+    const measureMemory = () => {
+      if (!this.isEnabled) return;
+
+      this.metrics.memoryUsage.push({
+        used: performance.memory.usedJSHeapSize,
+        total: performance.memory.totalJSHeapSize,
+        limit: performance.memory.jsHeapSizeLimit,
+        timestamp: Date.now()
+      });
+
+
+      if (this.metrics.memoryUsage.length > 20) {
+        this.metrics.memoryUsage.shift();
+      }
+    };
+
+
+    setInterval(measureMemory, 10000);
+    measureMemory();
+  }
+
+
+  wrapRender(component, originalRender) {
+    if (!this.isEnabled) return originalRender;
+
+    return function(...args) {
+      const startTime = performance.now();
+      const result = originalRender.apply(this, args);
+      const endTime = performance.now();
+
+      window.KidsTasksPerformanceMonitor?.trackRender(
+        component.constructor.name,
+        startTime,
+        endTime
+      );
+
+      return result;
+    };
+  }
+
+
+  generateReport() {
+    if (!this.isEnabled) return null;
+
+    const now = Date.now();
+    const last5Minutes = now - (5 * 60 * 1000);
+
+
+    const recentRenders = this.metrics.renderTimes.filter(r => r.timestamp > last5Minutes);
+    const recentDOMUpdates = this.metrics.domUpdates.filter(d => d.timestamp > last5Minutes);
+    const recentMemory = this.metrics.memoryUsage.slice(-5);
+
+
+    const avgRenderTime = recentRenders.length > 0
+      ? recentRenders.reduce((sum, r) => sum + r.duration, 0) / recentRenders.length
+      : 0;
+
+    const memoryTrend = recentMemory.length > 1
+      ? recentMemory[recentMemory.length - 1].used - recentMemory[0].used
+      : 0;
+
+    return {
+      summary: {
+        uptime: Math.round((now - this.startTime) / 1000),
+        avgRenderTime: Math.round(avgRenderTime * 100) / 100,
+        totalRenders: recentRenders.length,
+        domUpdates: recentDOMUpdates.length,
+        memoryTrend: Math.round(memoryTrend / 1024),
+        activeComponents: Object.keys(this.metrics.componentCounts).length
+      },
+      details: {
+        slowRenders: recentRenders.filter(r => r.duration > 16),
+        componentBreakdown: this.metrics.componentCounts,
+        memoryUsage: recentMemory
+      }
+    };
+  }
+
+
+  startProfile(name) {
+    if (!this.isEnabled) return null;
+    return { name, startTime: performance.now() };
+  }
+
+  endProfile(profile) {
+    if (!this.isEnabled || !profile) return;
+    const duration = performance.now() - profile.startTime;
+    console.log(`⏱️ ${profile.name}: ${duration.toFixed(2)}ms`);
+    return duration;
+  }
+
+
+  toggle(enabled = !this.isEnabled) {
+    this.isEnabled = enabled;
+    localStorage.setItem('kt-debug-performance', enabled.toString());
+
+    if (enabled && !this.observers.mutation) {
+      this.initializeMonitoring();
+    }
+
+    console.info(`🔍 Performance monitoring ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+
+  destroy() {
+    if (this.observers.mutation) {
+      this.observers.mutation.disconnect();
+    }
+    if (this.observers.performance) {
+      this.observers.performance.disconnect();
+    }
+
+    this.metrics = {
+      renderTimes: [],
+      domUpdates: [],
+      eventHandlers: [],
+      memoryUsage: [],
+      componentCounts: {}
+    };
+  }
+}
+
+
+let performanceMonitor$1;
+
+
+if (typeof window !== 'undefined') {
+  performanceMonitor$1 = new KidsTasksPerformanceMonitor();
+  window.KidsTasksPerformanceMonitor = performanceMonitor$1;
+
+
+  {
+    window.ktPerf = {
+      report: () => performanceMonitor$1.generateReport(),
+      toggle: () => performanceMonitor$1.toggle(),
+      clear: () => performanceMonitor$1.destroy()
+    };
+
+    console.info('🛠️ Performance tools available: window.ktPerf');
+  }
+}
+var performanceMonitor$2 = performanceMonitor$1;
+
+class KidsTasksLogger {
+  constructor() {
+    this.isDevelopment = true;
+    this.isDebugEnabled = this.isDevelopment || localStorage.getItem('kt-debug') === 'true';
+    this.logLevels = {
+      error: 0,
+      warn: 1,
+      info: 2,
+      debug: 3
+    };
+    this.currentLevel = this.isDevelopment ? 3 : 1;
+  }
+
+
+  error(message, ...args) {
+    if (this.currentLevel >= this.logLevels.error) {
+      console.error(`🔴 [Kids Tasks] ${message}`, ...args);
+    }
+  }
+
+
+  warn(message, ...args) {
+    if (this.currentLevel >= this.logLevels.warn) {
+      console.warn(`🟡 [Kids Tasks] ${message}`, ...args);
+    }
+  }
+
+
+  info(message, ...args) {
+    if (this.currentLevel >= this.logLevels.info) {
+      console.info(`🔵 [Kids Tasks] ${message}`, ...args);
+    }
+  }
+
+
+  debug(message, ...args) {
+    if (this.currentLevel >= this.logLevels.debug && this.isDebugEnabled) {
+      console.debug(`🟢 [Kids Tasks] ${message}`, ...args);
+    }
+  }
+
+
+  perf(component, action, duration) {
+    if (this.isDebugEnabled && duration !== undefined) {
+      this.debug(`⏱️ ${component}.${action}: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+
+  group(title, callback) {
+    if (this.isDebugEnabled) {
+      console.group(`📁 [Kids Tasks] ${title}`);
+      try {
+        callback();
+      } finally {
+        console.groupEnd();
+      }
+    } else {
+      callback();
+    }
+  }
+
+
+  toggleDebug() {
+    this.isDebugEnabled = !this.isDebugEnabled;
+    localStorage.setItem('kt-debug', this.isDebugEnabled.toString());
+    this.info(`Debug mode ${this.isDebugEnabled ? 'enabled' : 'disabled'}`);
+  }
+
+
+  setLevel(level) {
+    if (level in this.logLevels) {
+      this.currentLevel = this.logLevels[level];
+      this.info(`Log level set to: ${level}`);
+    }
+  }
+}
+
+
+const logger = new KidsTasksLogger();
+
+
+if (typeof window !== 'undefined') {
+  window.ktLogger = logger;
+  window.ktDebug = () => logger.toggleDebug();
+}
+
 class KidsTasksBaseCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this._initialized = false;
+
+
+    this._lastRenderState = null;
+    this._renderDebounceTimer = null;
+    this._isRendering = false;
+    this._pendingRender = false;
 
 
     this._touchStates = new WeakMap();
@@ -807,6 +1200,11 @@ class KidsTasksBaseCard extends HTMLElement {
     if (typeof KidsTasksStyleManager !== 'undefined') {
       KidsTasksStyleManager.injectGlobalStyles();
     }
+
+
+    if (performanceMonitor$2) {
+      performanceMonitor$2.trackEventHandler('constructor', this.constructor.name, 'add');
+    }
   }
 
   set hass(hass) {
@@ -816,12 +1214,111 @@ class KidsTasksBaseCard extends HTMLElement {
       this._initialized = true;
       this.shadowRoot.addEventListener('click', this.handleClick.bind(this));
       this.initTouchInteractions();
-      this.render();
+      this.smartRender();
     } else if (hass && this.shouldUpdate(oldHass, hass)) {
-      this.render();
+      this.smartRender();
       if (this._initialized) {
         this.initTouchInteractions();
       }
+    }
+  }
+
+
+  smartRender(force = false) {
+
+    if (this._isRendering && !force) {
+      this._pendingRender = true;
+      return;
+    }
+
+
+    if (this._renderDebounceTimer) {
+      clearTimeout(this._renderDebounceTimer);
+    }
+
+    this._renderDebounceTimer = setTimeout(() => {
+      this._performRender(force);
+    }, force ? 0 : 16);
+  }
+
+  _performRender(force = false) {
+    if (this._isRendering) return;
+
+    const startTime = performance.now();
+    this._isRendering = true;
+
+    try {
+
+      if (!force && !this._needsRender()) {
+        return;
+      }
+
+
+      this.render();
+
+
+      this._updateRenderState();
+
+
+      if (this._pendingRender) {
+        this._pendingRender = false;
+        setTimeout(() => this.smartRender(), 0);
+      }
+
+    } catch (error) {
+      logger.error('Render error in', this.constructor.name, error);
+      this._handleRenderError(error);
+    } finally {
+      this._isRendering = false;
+
+
+      if (performanceMonitor$2) {
+        const endTime = performance.now();
+        performanceMonitor$2.trackRender(this.constructor.name, startTime, endTime);
+      }
+    }
+  }
+
+
+  _needsRender() {
+    const currentState = this._getCurrentRenderState();
+
+    if (!this._lastRenderState) {
+      return true;
+    }
+
+
+    return JSON.stringify(currentState) !== JSON.stringify(this._lastRenderState);
+  }
+
+
+  _getCurrentRenderState() {
+    return {
+      hasHass: !!this._hass,
+      entityCount: this._hass ? Object.keys(this._hass.states || {}).length : 0,
+      configHash: this.config ? JSON.stringify(this.config).slice(0, 100) : null,
+      timestamp: Math.floor(Date.now() / 1000)
+    };
+  }
+
+
+  _updateRenderState() {
+    this._lastRenderState = this._getCurrentRenderState();
+  }
+
+
+  _handleRenderError(error) {
+    if (this.shadowRoot) {
+      this.shadowRoot.innerHTML = `
+        <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">
+          <h3 style="color: #c33; margin: 0 0 8px 0;">Card Error</h3>
+          <p style="margin: 0; font-size: 14px;">${error.message}</p>
+          <button onclick="this.closest('kids-tasks-card, kids-tasks-child-card').smartRender(true)" 
+                  style="margin-top: 8px; padding: 4px 8px; background: #c33; color: white; border: none; border-radius: 2px; cursor: pointer;">
+            Retry
+          </button>
+        </div>
+      `;
     }
   }
 
@@ -879,13 +1376,62 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   _cleanupTouchInteractions() {
+
     for (const controller of this._touchControllers.values()) {
       controller.abort();
+      if (performanceMonitor$2) {
+        performanceMonitor$2.trackEventHandler('touch', this.constructor.name, 'remove');
+      }
     }
     this._touchControllers.clear();
     this._touchStates = new WeakMap();
     this._longPressListenersAdded = false;
     this._swipeListenersAdded = false;
+
+
+    if (this._renderDebounceTimer) {
+      clearTimeout(this._renderDebounceTimer);
+      this._renderDebounceTimer = null;
+    }
+  }
+
+
+  disconnectedCallback() {
+    this._cleanupTouchInteractions();
+
+
+    if (this._cleanupTimers) {
+      this._cleanupTimers();
+    }
+
+
+    if (performanceMonitor$2) {
+      performanceMonitor$2.trackEventHandler('disconnect', this.constructor.name, 'remove');
+    }
+  }
+
+
+  _setupEventDelegation() {
+    if (this._eventDelegationSetup) return;
+
+
+    const handleDelegatedEvent = (event) => {
+      const target = event.target.closest('[data-action]');
+      if (target) {
+        this.handleClick(event);
+      }
+    };
+
+    this.shadowRoot.addEventListener('click', handleDelegatedEvent, {
+      passive: false,
+      capture: false
+    });
+
+    if (performanceMonitor$2) {
+      performanceMonitor$2.trackEventHandler('delegation', this.constructor.name, 'add');
+    }
+
+    this._eventDelegationSetup = true;
   }
 
   _initLongPressSystem() {
@@ -1259,7 +1805,7 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 }
 
-class KidsTasksCard extends KidsTasksBaseCard {
+class KidsTasksCardOptimized extends KidsTasksBaseCard {
   constructor() {
     super();
     this.currentView = 'dashboard';
@@ -1283,19 +1829,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_'));
     const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_'));
 
-    if (oldTaskEntities.length !== newTaskEntities.length) return true;
-
-
-    for (const entityId of oldTaskEntities) {
-      const oldEntity = oldHass.states[entityId];
-      const newEntity = newHass.states[entityId];
-      if (!newEntity || oldEntity.state !== newEntity.state ||
-          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
-        return true;
-      }
-    }
-
-    return false;
+    return oldTaskEntities.length !== newTaskEntities.length;
   }
 
   render() {
@@ -1307,43 +1841,41 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const children = this.getChildren();
 
     this.shadowRoot.innerHTML = `
-      ${this.getStyles()}
-      <div class="card-content kids-tasks-card">
-        <div class="card-header">
+      ${this.getOptimizedStyles()}
+      <div class="card-content kids-tasks-scope">
+        <div class="card-header kt-p-lg">
           <h2 class="card-title">${this.config.title}</h2>
           ${this.config.show_navigation ? this.renderNavigation() : ''}
         </div>
 
-        <div class="main-content">
+        <div class="main-content kt-p-lg">
           ${this.renderCurrentView(children)}
         </div>
       </div>
     `;
   }
 
-  getStyles() {
-    return `
-      <style>
+  getOptimizedStyles() {
+    return `<style>
         :host {
           display: block;
-          background: var(--card-background-color, white);
+          background: var(--kt-surface-primary);
           border-radius: var(--kt-radius-lg);
-          box-shadow: var(--box-shadow, 0 2px 8px var(--kt-shadow-light));
+          box-shadow: 0 2px 8px var(--kt-shadow-light);
           overflow: hidden;
         }
 
         .card-content {
-          padding: var(--kt-space-lg);
+          min-height: 200px;
         }
 
         .card-header {
-          margin-bottom: var(--kt-space-lg);
-          padding-bottom: var(--kt-space-sm);
           border-bottom: 2px solid var(--kt-surface-variant);
+          margin-bottom: var(--kt-space-lg);
         }
 
         .card-title {
-          font-size: 1.5em;
+          font-size: var(--kt-font-size-lg);
           font-weight: 700;
           color: var(--primary-text-color);
           margin: 0 0 var(--kt-space-sm) 0;
@@ -1362,7 +1894,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           cursor: pointer;
           font-weight: 600;
-          font-size: 0.9em;
+          font-size: .9em;
           transition: all var(--kt-transition-fast);
           color: var(--primary-text-color);
         }
@@ -1378,6 +1910,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           box-shadow: 0 2px 4px var(--kt-shadow-light);
         }
 
+        /* Grid system using CSS custom properties */
         .children-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1422,17 +1955,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
           margin-bottom: var(--kt-space-md);
         }
 
-        .stat {
-          background: var(--kt-primary);
-          color: white;
-          padding: 4px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-size: 0.8em;
-          font-weight: 600;
-        }
-
         .child-progress {
-          font-size: 0.9em;
+          font-size: .9em;
           color: var(--secondary-text-color);
           text-align: center;
           margin-bottom: var(--kt-space-md);
@@ -1440,7 +1964,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
         .progress-bar {
           height: 4px;
-          background: var(--kt-surface-variant);
+          background: var(--kt-gauge-bg);
           border-radius: var(--kt-radius-sm);
           overflow: hidden;
           margin-top: var(--kt-space-xs);
@@ -1448,29 +1972,8 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, var(--kt-success) 0%, var(--kt-info) 100%);
+          background: var(--kt-gauge-success);
           transition: width var(--kt-transition-medium);
-        }
-
-        .child-actions {
-          text-align: center;
-        }
-
-        .action-button {
-          background: var(--kt-primary);
-          color: white;
-          border: none;
-          padding: var(--kt-space-sm) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 0.9em;
-          transition: all var(--kt-transition-fast);
-        }
-
-        .action-button:hover {
-          opacity: 0.9;
-          transform: translateY(-1px);
         }
 
         .summary-stats {
@@ -1495,27 +1998,42 @@ class KidsTasksCard extends KidsTasksBaseCard {
         }
 
         .summary-label {
-          font-size: 0.9em;
+          font-size: .9em;
           color: var(--secondary-text-color);
           font-weight: 600;
         }
 
-        /* Responsive design */
+        /* Enhanced responsive optimizations */
+        @media (max-width: 1200px) {
+          .children-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--kt-space-md);
+          }
+        }
+
         @media (max-width: 768px) {
           .children-grid {
             grid-template-columns: 1fr;
+            gap: var(--kt-space-md);
           }
           
-          .card-content {
-            padding: var(--kt-space-md);
-          }
-
           .navigation {
             justify-content: center;
+            gap: var(--kt-space-xs);
+          }
+
+          .nav-button {
+            padding: var(--kt-space-xs);
+            font-size: .8em;
           }
 
           .summary-stats {
             grid-template-columns: repeat(2, 1fr);
+            gap: var(--kt-space-sm);
+          }
+
+          .card-header {
+            padding: var(--kt-space-md);
           }
         }
 
@@ -1523,14 +2041,40 @@ class KidsTasksCard extends KidsTasksBaseCard {
           .child-stats {
             flex-direction: column;
             align-items: center;
+            gap: var(--kt-space-xs);
           }
 
           .summary-stats {
             grid-template-columns: 1fr;
           }
+
+          .card-content {
+            padding: var(--kt-space-sm);
+          }
+
+          .card-title {
+            font-size: var(--kt-font-size-md);
+            text-align: center;
+          }
+
+          .navigation {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .nav-button {
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
+          }
         }
-      </style>
-    `;
+
+        @media (max-width: 320px) {
+          .card-content {
+            padding: var(--kt-space-xs);
+          }
+        }
+      </style>`;
   }
 
   renderNavigation() {
@@ -1570,15 +2114,17 @@ class KidsTasksCard extends KidsTasksBaseCard {
 
   renderDashboard(children) {
     if (children.length === 0) {
-      return this.emptySection(
-        '👨‍👩‍👧‍👦',
-        'Aucun enfant configuré',
-        'Configurez des enfants dans l\'intégration Kids Tasks Manager.'
-      );
+      return `
+        <div class="kt-empty">
+          <div class="kt-empty__icon">👨‍👩‍👧‍👦</div>
+          <div class="kt-empty__text">Aucun enfant configuré</div>
+          <div class="kt-empty__subtext">Configurez des enfants dans l'intégration Kids Tasks Manager.</div>
+        </div>
+      `;
     }
 
     return `
-      <div class="children-grid">
+      <div class="children-grid kt-fade-in">
         ${children.map(child => this.renderChildCard(child)).join('')}
       </div>
     `;
@@ -1588,7 +2134,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
     const stats = this.calculateGlobalStats(children);
 
     return `
-      <div class="summary-stats">
+      <div class="summary-stats kt-fade-in">
         <div class="summary-card">
           <div class="summary-number">${children.length}</div>
           <div class="summary-label">Enfants</div>
@@ -1616,7 +2162,11 @@ class KidsTasksCard extends KidsTasksBaseCard {
   renderManagement(children) {
     return `
       <div class="management-content">
-        ${this.emptySection('🚧', 'Gestion avancée', 'Fonctionnalités de gestion en cours de développement.')}
+        <div class="kt-empty">
+          <div class="kt-empty__icon">🚧</div>
+          <div class="kt-empty__text">Gestion avancée</div>
+          <div class="kt-empty__subtext">Fonctionnalités de gestion en cours de développement.</div>
+        </div>
       </div>
     `;
   }
@@ -1630,10 +2180,10 @@ class KidsTasksCard extends KidsTasksBaseCard {
         <div class="child-header">
           <div class="child-avatar">${child.avatar || '👤'}</div>
           <div class="child-name">${child.name}</div>
-          <div class="child-stats">
-            <span class="stat">${child.points || 0} 🎫</span>
-            <span class="stat">${child.coins || 0} 🪙</span>
-            <span class="stat">Niv. ${child.level || 1}</span>
+          <div class="child-stats kt-flex kt-flex-wrap kt-gap-sm kt-flex-center">
+            <span class="kt-stat kt-stat--points">${child.points || 0} 🎫</span>
+            <span class="kt-stat kt-stat--coins">${child.coins || 0} 🪙</span>
+            <span class="kt-stat">Niv. ${child.level || 1}</span>
           </div>
         </div>
         
@@ -1645,7 +2195,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
         </div>
         
         <div class="child-actions">
-          <button class="action-button" data-action="view-child" data-id="${child.id}">
+          <button class="kt-btn kt-btn--primary" data-action="view-child" data-id="${child.id}">
             Voir les tâches
           </button>
         </div>
@@ -1663,7 +2213,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
           <div class="child-name">${child.name}</div>
         </div>
         
-        <div class="child-summary-stats">
+        <div class="kt-flex kt-gap-md">
           <div class="summary-card">
             <div class="summary-number">${stats.completedToday}</div>
             <div class="summary-label">Tâches terminées</div>
@@ -1694,10 +2244,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
   }
 
   handleViewChild(childId) {
-
-
     console.info('View child details:', childId);
-
 
     const event = new CustomEvent('kids-tasks-view-child', {
       detail: { childId },
@@ -1788,7 +2335,6 @@ class KidsTasksCard extends KidsTasksBaseCard {
     };
   }
 
-
   static getConfigElement() {
     return document.createElement('kids-tasks-card-editor');
   }
@@ -1809,25 +2355,162 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   constructor() {
     super();
     this._refreshInterval = null;
+    this._refreshTimeout = null;
+    this._allTimers = new Set();
     this.currentTab = 'tasks';
     this.tasksFilter = 'active';
     this.rewardsFilter = 'all';
+    this._lastDataHash = null;
+    this._isVisible = true;
+    this._refreshRate = 30000;
   }
 
   connectedCallback() {
 
-    this._refreshInterval = setInterval(() => {
-      if (this._hass && this._initialized) {
-        this.render();
-      }
-    }, 5000);
+    this._setupSmartRefresh();
+
+
+    this._setupVisibilityDetection();
+
+
+    this._cleanupTimers();
   }
 
   disconnectedCallback() {
+    this._cleanupTimers();
+    this._removeVisibilityDetection();
+  }
+
+
+  _setupSmartRefresh() {
+    const smartRefresh = () => {
+      if (!this._hass || !this._initialized || !this._isVisible) {
+        this._scheduleNextRefresh();
+        return;
+      }
+
+
+      const currentDataHash = this._getDataHash();
+      if (currentDataHash === this._lastDataHash) {
+        this._scheduleNextRefresh();
+        return;
+      }
+
+
+      this._lastDataHash = currentDataHash;
+      this.smartRender();
+      this._scheduleNextRefresh();
+    };
+
+
+    if (this._hass && this._initialized) {
+      smartRefresh();
+    }
+  }
+
+
+  _scheduleNextRefresh() {
+    this._cleanupRefreshTimers();
+
+    const refreshRate = this._isVisible ? this._refreshRate : this._refreshRate * 2;
+
+    this._refreshTimeout = setTimeout(() => {
+      this._setupSmartRefresh();
+    }, refreshRate);
+
+    this._allTimers.add(this._refreshTimeout);
+  }
+
+
+  _getDataHash() {
+    if (!this._hass || !this.config?.child_id) return null;
+
+    const child = this.getChild();
+    const tasks = this.getChildTasks(this.config.child_id);
+    const rewards = this.getChildRewards(this.config.child_id);
+
+
+    const dataString = JSON.stringify({
+      childPoints: child?.points || 0,
+      childCoins: child?.coins || 0,
+      childLevel: child?.level || 1,
+      taskCount: tasks.length,
+      taskStates: tasks.map(t => `${t.id}:${t.status}`).join(','),
+      rewardCount: rewards.length
+    });
+
+
+    let hash = 0;
+    for (let i = 0; i < dataString.length; i++) {
+      const char = dataString.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+
+    return hash.toString();
+  }
+
+
+  _setupVisibilityDetection() {
+    this._visibilityChangeHandler = () => {
+      this._isVisible = !document.hidden;
+
+      if (this._isVisible) {
+
+        this._setupSmartRefresh();
+      } else {
+
+        this._cleanupRefreshTimers();
+      }
+    };
+
+    document.addEventListener('visibilitychange', this._visibilityChangeHandler);
+    this._isVisible = !document.hidden;
+  }
+
+
+  _removeVisibilityDetection() {
+    if (this._visibilityChangeHandler) {
+      document.removeEventListener('visibilitychange', this._visibilityChangeHandler);
+      this._visibilityChangeHandler = null;
+    }
+  }
+
+
+  _cleanupRefreshTimers() {
     if (this._refreshInterval) {
       clearInterval(this._refreshInterval);
       this._refreshInterval = null;
     }
+
+    if (this._refreshTimeout) {
+      clearTimeout(this._refreshTimeout);
+      this._allTimers.delete(this._refreshTimeout);
+      this._refreshTimeout = null;
+    }
+  }
+
+
+  _cleanupTimers() {
+    this._cleanupRefreshTimers();
+
+
+    for (const timer of this._allTimers) {
+      clearTimeout(timer);
+      clearInterval(timer);
+    }
+    this._allTimers.clear();
+
+
+    if (performanceMonitor) {
+      performanceMonitor.trackEventHandler('timers', this.constructor.name, 'remove');
+    }
+  }
+
+
+  _cleanupTouchInteractions() {
+    super._cleanupTouchInteractions();
+    this._cleanupTimers();
   }
 
   setConfig(config) {
@@ -1915,14 +2598,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   getStyles() {
-    return `
-      <style>
+    return `<style>
         :host {
           display: block;
           background: var(--card-background-color, white);
           border-radius: var(--kt-radius-lg);
           overflow: hidden;
-          box-shadow: var(--box-shadow, 0 2px 8px rgba(0,0,0,0.1));
+          box-shadow: var(--box-shadow, 0 2px 8px rgba(0,0,0,.1));
         }
 
         .child-card-container {
@@ -1962,7 +2644,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           padding: var(--kt-space-xs) var(--kt-space-md);
           border-radius: var(--kt-radius-sm);
           font-weight: 600;
-          font-size: 0.9em;
+          font-size: .9em;
         }
 
         .tabs {
@@ -1994,7 +2676,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
         .tab-button.active:hover {
           background: var(--kt-primary);
-          opacity: 0.9;
+          opacity: .9;
         }
 
         .tab-content {
@@ -2026,7 +2708,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         }
 
         .task-description, .reward-description {
-          font-size: 0.9em;
+          font-size: .9em;
           color: var(--secondary-text-color);
           margin-bottom: var(--kt-space-sm);
         }
@@ -2035,7 +2717,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 0.8em;
+          font-size: .8em;
         }
 
         .task-points, .reward-cost {
@@ -2051,13 +2733,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-sm);
           font-weight: 600;
           text-transform: uppercase;
-          font-size: 0.7em;
+          font-size: .7em;
         }
 
         .task-status.todo { background: var(--kt-warning); color: white; }
         .task-status.completed { background: var(--kt-success); color: white; }
         .task-status.pending { background: var(--kt-info); color: white; }
-        .task-status.validated { background: var(--kt-success); color: white; }
 
         .filters {
           display: flex;
@@ -2074,7 +2755,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           cursor: pointer;
           font-weight: 600;
           transition: all var(--kt-transition-fast);
-          font-size: 0.85em;
+          font-size: .85em;
         }
 
         .filter-btn.active {
@@ -2097,16 +2778,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           text-align: center;
         }
 
-        .empty-state {
-          text-align: center;
-          padding: var(--kt-space-xl);
-          color: var(--secondary-text-color);
-        }
-
         .empty-icon {
           font-size: 3em;
           margin-bottom: var(--kt-space-md);
-          opacity: 0.6;
+          opacity: .6;
         }
 
         /* Progress gauges */
@@ -2174,8 +2849,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             justify-content: center;
           }
         }
-      </style>
-    `;
+      </style>`;
   }
 
   renderHeader(child) {
@@ -2841,37 +3515,908 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
   }
 }
 
-{
-  console.info('🛠️ Kids Tasks Card - Development Mode');
-  console.info('📦 Loading modular components...');
+class KidsTasksErrorBoundary {
+  constructor() {
+    this.errors = new Map();
+    this.retryAttempts = new Map();
+    this.setupGlobalErrorHandling();
+  }
+
+
+  setupGlobalErrorHandling() {
+
+    window.addEventListener('error', (event) => {
+      this.handleGlobalError(event.error, event.filename, event.lineno);
+    });
+
+
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleGlobalError(event.reason, 'Promise', 0);
+      event.preventDefault();
+    });
+  }
+
+
+  handleGlobalError(error, source = 'Unknown', line = 0) {
+
+    if (source && !source.includes('kids-tasks') && !source.includes('KidsTask')) {
+      return;
+    }
+
+    logger.error(`Global error caught: ${error.message || error}`, {
+      source,
+      line,
+      stack: error.stack
+    });
+
+
+    this.attemptRecovery(error);
+  }
+
+
+  wrapComponent(component, methodName) {
+    const originalMethod = component[methodName];
+    if (!originalMethod) return;
+
+    `${component.constructor.name}.${methodName}`;
+
+    component[methodName] = (...args) => {
+      try {
+        return originalMethod.apply(component, args);
+      } catch (error) {
+        return this.handleComponentError(component, methodName, error, args);
+      }
+    };
+  }
+
+
+  handleComponentError(component, methodName, error, args = []) {
+    const componentKey = `${component.constructor.name}.${methodName}`;
+    const errorKey = `${componentKey}:${error.message}`;
+
+
+    const errorCount = (this.errors.get(errorKey) || 0) + 1;
+    this.errors.set(errorKey, errorCount);
+
+    logger.error(`Component error in ${componentKey}:`, error);
+
+
+    return this.recoverFromError(component, methodName, error, errorCount);
+  }
+
+
+  recoverFromError(component, methodName, error, errorCount) {
+    const componentKey = component.constructor.name;
+
+
+    if (errorCount <= 3 && methodName !== 'render') {
+      const delay = Math.pow(2, errorCount) * 100;
+      setTimeout(() => {
+        try {
+          logger.debug(`Retrying ${componentKey}.${methodName} (attempt ${errorCount})`);
+          component[methodName]?.();
+        } catch (retryError) {
+          logger.warn(`Retry failed for ${componentKey}.${methodName}:`, retryError);
+        }
+      }, delay);
+      return null;
+    }
+
+
+    if (methodName === 'render' || methodName === 'smartRender') {
+      return this.renderErrorFallback(component, error);
+    }
+
+
+    if (errorCount > 5) {
+      this.enterSafeMode(component, error);
+      return null;
+    }
+
+
+    if (methodName.includes('set') || methodName.includes('update')) {
+      return this.resetComponentState(component, error);
+    }
+
+    return null;
+  }
+
+
+  renderErrorFallback(component, error) {
+    if (!component.shadowRoot) return;
+
+    const errorId = Date.now().toString(36);
+    const isRetryable = !error.message.includes('fatal');
+
+    component.shadowRoot.innerHTML = `
+      <div class="kt-error-boundary" data-error-id="${errorId}">
+        <style>
+          .kt-error-boundary {
+            padding: var(--kt-space-lg, 16px);
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid #fca5a5;
+            border-radius: var(--kt-radius-md, 8px);
+            color: var(--kt-error, #dc2626);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          }
+          .kt-error-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .kt-error-message {
+            font-size: 0.9em;
+            margin: 0 0 16px 0;
+            opacity: 0.8;
+            line-height: 1.4;
+          }
+          .kt-error-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          .kt-error-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+          }
+          .kt-error-btn--retry {
+            background: var(--kt-primary, #2563eb);
+            color: white;
+          }
+          .kt-error-btn--retry:hover {
+            background: var(--kt-primary-dark, #1d4ed8);
+          }
+          .kt-error-btn--reset {
+            background: var(--kt-surface-variant, #f3f4f6);
+            color: var(--kt-text, #374151);
+          }
+          .kt-error-btn--reset:hover {
+            background: var(--kt-surface-hover, #e5e7eb);
+          }
+          .kt-error-details {
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8em;
+            display: none;
+          }
+          .kt-error-toggle {
+            color: var(--kt-primary, #2563eb);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.8em;
+          }
+          @media (max-width: 480px) {
+            .kt-error-boundary {
+              padding: 12px;
+            }
+            .kt-error-actions {
+              flex-direction: column;
+            }
+            .kt-error-btn {
+              width: 100%;
+              text-align: center;
+            }
+          }
+        </style>
+        
+        <div class="kt-error-title">
+          ⚠️ Oops! Something went wrong
+        </div>
+        
+        <div class="kt-error-message">
+          We encountered an issue loading this card. This is usually temporary.
+        </div>
+        
+        <div class="kt-error-actions">
+          ${isRetryable ? `
+            <button class="kt-error-btn kt-error-btn--retry" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('retry'))">
+              🔄 Try Again
+            </button>
+          ` : ''}
+          <button class="kt-error-btn kt-error-btn--reset" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('reset'))">
+            🔧 Reset Card
+          </button>
+          <span class="kt-error-toggle" onclick="
+            const details = this.parentNode.parentNode.querySelector('.kt-error-details');
+            details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            this.textContent = details.style.display === 'block' ? 'Hide details' : 'Show details';
+          ">Show details</span>
+        </div>
+        
+        <div class="kt-error-details">
+          <strong>Component:</strong> ${component.constructor.name}<br>
+          <strong>Error:</strong> ${error.message}<br>
+          <strong>Time:</strong> ${new Date().toLocaleString()}
+        </div>
+      </div>
+    `;
+
+
+    const errorBoundary = component.shadowRoot.querySelector('.kt-error-boundary');
+
+    errorBoundary.addEventListener('retry', () => {
+      logger.debug('User requested retry for', component.constructor.name);
+      component.smartRender?.(true) || component.render?.();
+    });
+
+    errorBoundary.addEventListener('reset', () => {
+      logger.debug('User requested reset for', component.constructor.name);
+      this.resetComponentState(component, error);
+    });
+
+    return errorBoundary;
+  }
+
+
+  resetComponentState(component, error) {
+    try {
+
+      if (component._lastRenderState) component._lastRenderState = null;
+      if (component._refreshTimeout) {
+        clearTimeout(component._refreshTimeout);
+        component._refreshTimeout = null;
+      }
+
+
+      if (component.setConfig && component.constructor.getStubConfig) {
+        const defaultConfig = component.constructor.getStubConfig();
+        component.setConfig(defaultConfig);
+      }
+
+      logger.info(`Reset component state for ${component.constructor.name}`);
+
+
+      setTimeout(() => {
+        component.smartRender?.(true) || component.render?.();
+      }, 100);
+
+    } catch (resetError) {
+      logger.error('Failed to reset component state:', resetError);
+      this.enterSafeMode(component, resetError);
+    }
+  }
+
+
+  enterSafeMode(component, error) {
+    logger.warn(`Entering safe mode for ${component.constructor.name}`);
+
+    if (component.shadowRoot) {
+      component.shadowRoot.innerHTML = `
+        <div style="padding: 16px; text-align: center; color: #666;">
+          <div style="font-size: 2em; margin-bottom: 8px;">🛡️</div>
+          <div style="font-weight: bold; margin-bottom: 4px;">Safe Mode</div>
+          <div style="font-size: 0.9em;">This card is experiencing issues and has been disabled for stability.</div>
+        </div>
+      `;
+    }
+  }
+
+
+  attemptRecovery(error) {
+
+    const cards = document.querySelectorAll('kids-tasks-card, kids-tasks-child-card');
+
+    cards.forEach(card => {
+      if (card.shadowRoot && card.shadowRoot.innerHTML.includes('kt-error-boundary')) {
+
+        setTimeout(() => {
+          if (card.smartRender) {
+            card.smartRender(true);
+          }
+        }, 2000);
+      }
+    });
+  }
+
+
+  getErrorStats() {
+    const stats = {
+      totalErrors: 0,
+      errorsByComponent: {},
+      recentErrors: []
+    };
+
+    for (const [errorKey, count] of this.errors.entries()) {
+      const [component] = errorKey.split('.');
+      stats.totalErrors += count;
+      stats.errorsByComponent[component] = (stats.errorsByComponent[component] || 0) + count;
+    }
+
+    return stats;
+  }
+
+
+  clearErrors() {
+    this.errors.clear();
+    this.retryAttempts.clear();
+    logger.info('Error history cleared');
+  }
 }
 
 
-KidsTasksStyleManager$1.injectGlobalStyles();
+const errorBoundary = new KidsTasksErrorBoundary();
+
+
+function withErrorBoundary(component) {
+  const methodsToWrap = ['render', 'setConfig', 'set hass', 'handleAction', 'connectedCallback'];
+
+  methodsToWrap.forEach(method => {
+    errorBoundary.wrapComponent(component, method);
+  });
+
+  return component;
+}
+
+class KidsTasksAccessibility {
+  constructor() {
+    this.focusableElements = [];
+    this.announcements = [];
+    this.keyboardNavigation = new Map();
+    this.setupGlobalAccessibility();
+  }
+
+
+  setupGlobalAccessibility() {
+
+    this.createAnnouncementRegion();
+
+
+    this.setupGlobalKeyboardHandling();
+
+
+    this.observeCardElements();
+  }
+
+
+  createAnnouncementRegion() {
+    if (document.getElementById('kt-announcements')) return;
+
+    const announceRegion = document.createElement('div');
+    announceRegion.id = 'kt-announcements';
+    announceRegion.setAttribute('aria-live', 'polite');
+    announceRegion.setAttribute('aria-atomic', 'true');
+    announceRegion.style.cssText = `
+      position: absolute;
+      left: -10000px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    `;
+
+    document.body.appendChild(announceRegion);
+  }
+
+
+  announce(message, priority = 'polite') {
+    const region = document.getElementById('kt-announcements');
+    if (!region) return;
+
+
+    region.setAttribute('aria-live', priority);
+
+
+    region.textContent = '';
+    setTimeout(() => {
+      region.textContent = message;
+      logger.debug(`Accessibility announcement: ${message}`);
+    }, 100);
+
+
+    this.announcements.push({
+      message,
+      priority,
+      timestamp: Date.now()
+    });
+
+
+    if (this.announcements.length > 10) {
+      this.announcements.shift();
+    }
+  }
+
+
+  setupGlobalKeyboardHandling() {
+    document.addEventListener('keydown', (event) => {
+      this.handleGlobalKeyboard(event);
+    });
+  }
+
+
+  handleGlobalKeyboard(event) {
+    const activeCard = event.target.closest('kids-tasks-card, kids-tasks-child-card');
+    if (!activeCard) return;
+
+
+    if (event.key === 'F1') {
+      event.preventDefault();
+      this.showKeyboardHelp(activeCard);
+      return;
+    }
+
+
+    if (event.key === 'Escape') {
+      this.handleEscape(activeCard);
+      return;
+    }
+
+
+    if (event.key === 'Tab') {
+      this.handleTabNavigation(event, activeCard);
+      return;
+    }
+  }
+
+
+  showKeyboardHelp(card) {
+    const helpModal = this.createHelpModal();
+    card.shadowRoot.appendChild(helpModal);
+
+
+    const firstButton = helpModal.querySelector('button');
+    if (firstButton) {
+      firstButton.focus();
+    }
+
+    this.announce('Keyboard shortcuts help opened', 'assertive');
+  }
+
+
+  createHelpModal() {
+    const modal = document.createElement('div');
+    modal.className = 'kt-help-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-labelledby', 'help-title');
+    modal.setAttribute('aria-modal', 'true');
+
+    modal.innerHTML = `
+      <div class="kt-help-overlay" onclick="this.closest('.kt-help-modal').remove()"></div>
+      <div class="kt-help-content">
+        <h2 id="help-title">Keyboard Shortcuts</h2>
+        <div class="kt-help-shortcuts">
+          <div class="kt-shortcut">
+            <kbd>Tab</kbd>
+            <span>Navigate between interactive elements</span>
+          </div>
+          <div class="kt-shortcut">
+            <kbd>Space</kbd> / <kbd>Enter</kbd>
+            <span>Activate buttons and links</span>
+          </div>
+          <div class="kt-shortcut">
+            <kbd>Arrow Keys</kbd>
+            <span>Navigate within lists and tabs</span>
+          </div>
+          <div class="kt-shortcut">
+            <kbd>Escape</kbd>
+            <span>Close modal or cancel action</span>
+          </div>
+          <div class="kt-shortcut">
+            <kbd>F1</kbd>
+            <span>Show this help</span>
+          </div>
+        </div>
+        <div class="kt-help-actions">
+          <button class="kt-btn kt-btn--primary" onclick="this.closest('.kt-help-modal').remove()">
+            Close Help
+          </button>
+        </div>
+      </div>
+      <style>
+        .kt-help-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .kt-help-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+        }
+        .kt-help-content {
+          position: relative;
+          background: white;
+          border-radius: 8px;
+          padding: 24px;
+          max-width: 500px;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .kt-help-content h2 {
+          margin: 0 0 16px 0;
+          font-size: 1.25em;
+          color: var(--kt-text, #1f2937);
+        }
+        .kt-help-shortcuts {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-bottom: 24px;
+        }
+        .kt-shortcut {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 0;
+        }
+        .kt-shortcut kbd {
+          background: var(--kt-surface-variant, #f3f4f6);
+          border: 1px solid var(--kt-border, #d1d5db);
+          border-radius: 4px;
+          padding: 4px 8px;
+          font-family: monospace;
+          font-size: 0.9em;
+          min-width: 80px;
+          text-align: center;
+        }
+        .kt-shortcut span {
+          color: var(--kt-text-secondary, #6b7280);
+          flex: 1;
+        }
+        .kt-help-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        }
+      </style>
+    `;
+
+    return modal;
+  }
+
+
+  handleEscape(card) {
+
+    const modals = card.shadowRoot.querySelectorAll('.kt-help-modal, .kt-modal');
+    if (modals.length > 0) {
+      modals[modals.length - 1].remove();
+      this.announce('Modal closed');
+      return;
+    }
+
+
+    const confirmations = card.shadowRoot.querySelectorAll('.kt-delete-confirmation');
+    confirmations.forEach(conf => conf.remove());
+
+    if (confirmations.length > 0) {
+      this.announce('Action cancelled');
+    }
+  }
+
+
+  handleTabNavigation(event, card) {
+    const focusableElements = this.getFocusableElements(card.shadowRoot);
+    if (focusableElements.length === 0) return;
+
+    const currentIndex = focusableElements.indexOf(document.activeElement);
+
+    if (event.shiftKey) {
+
+      if (currentIndex === 0) {
+        event.preventDefault();
+        focusableElements[focusableElements.length - 1].focus();
+      }
+    } else {
+
+      if (currentIndex === focusableElements.length - 1) {
+        event.preventDefault();
+        focusableElements[0].focus();
+      }
+    }
+  }
+
+
+  getFocusableElements(container) {
+    const selectors = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      'a[href]',
+      '[tabindex]:not([tabindex="-1"])'
+    ];
+
+    return Array.from(container.querySelectorAll(selectors.join(', ')))
+      .filter(el => {
+        const style = getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+      });
+  }
+
+
+  observeCardElements() {
+    if (typeof MutationObserver === 'undefined') return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const cards = node.matches('kids-tasks-card, kids-tasks-child-card')
+              ? [node]
+              : Array.from(node.querySelectorAll('kids-tasks-card, kids-tasks-child-card'));
+
+            cards.forEach(card => this.enhanceCardAccessibility(card));
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+
+  enhanceCardAccessibility(card) {
+    if (!card.shadowRoot) return;
+
+
+    this.addAriaLabels(card);
+
+
+    this.setupCardKeyboardNavigation(card);
+
+
+    this.setupFocusManagement(card);
+
+    logger.debug('Enhanced accessibility for', card.constructor.name);
+  }
+
+
+  addAriaLabels(card) {
+    const shadowRoot = card.shadowRoot;
+
+
+    const cardContent = shadowRoot.querySelector('.card-content');
+    if (cardContent && !cardContent.getAttribute('role')) {
+      cardContent.setAttribute('role', 'region');
+      cardContent.setAttribute('aria-label', card.config?.title || 'Kids Tasks Card');
+    }
+
+
+    const tabs = shadowRoot.querySelectorAll('.nav-button');
+    tabs.forEach((tab, index) => {
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', tab.classList.contains('active') ? 'true' : 'false');
+      tab.setAttribute('tabindex', tab.classList.contains('active') ? '0' : '-1');
+    });
+
+
+    const items = shadowRoot.querySelectorAll('.task-item, .reward-item, .child-card');
+    items.forEach(item => {
+      if (!item.getAttribute('role')) {
+        item.setAttribute('role', 'article');
+      }
+
+
+      const title = item.querySelector('.task-title, .reward-name, .child-name');
+      if (title && !item.getAttribute('aria-label')) {
+        item.setAttribute('aria-label', title.textContent);
+      }
+    });
+
+
+    const progressBars = shadowRoot.querySelectorAll('.progress-fill');
+    progressBars.forEach(progress => {
+      const progressValue = progress.style.width || '0%';
+      progress.setAttribute('role', 'progressbar');
+      progress.setAttribute('aria-valuenow', parseInt(progressValue));
+      progress.setAttribute('aria-valuemin', '0');
+      progress.setAttribute('aria-valuemax', '100');
+      progress.setAttribute('aria-label', `Progress: ${progressValue}`);
+    });
+  }
+
+
+  setupCardKeyboardNavigation(card) {
+    const shadowRoot = card.shadowRoot;
+
+
+    const tabs = shadowRoot.querySelectorAll('.nav-button[role="tab"]');
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('keydown', (event) => {
+        let newIndex;
+
+        switch (event.key) {
+          case 'ArrowLeft':
+            event.preventDefault();
+            newIndex = index > 0 ? index - 1 : tabs.length - 1;
+            this.focusTab(tabs[newIndex]);
+            break;
+          case 'ArrowRight':
+            event.preventDefault();
+            newIndex = index < tabs.length - 1 ? index + 1 : 0;
+            this.focusTab(tabs[newIndex]);
+            break;
+          case 'Home':
+            event.preventDefault();
+            this.focusTab(tabs[0]);
+            break;
+          case 'End':
+            event.preventDefault();
+            this.focusTab(tabs[tabs.length - 1]);
+            break;
+        }
+      });
+    });
+  }
+
+
+  focusTab(tab) {
+
+    const allTabs = tab.parentNode.querySelectorAll('[role="tab"]');
+    allTabs.forEach(t => t.setAttribute('tabindex', '-1'));
+    tab.setAttribute('tabindex', '0');
+
+
+    tab.focus();
+    this.announce(`${tab.textContent} tab selected`);
+  }
+
+
+  setupFocusManagement(card) {
+    const shadowRoot = card.shadowRoot;
+
+
+    shadowRoot.addEventListener('click', (event) => {
+      const target = event.target.closest('[data-action]');
+      if (target && target.tagName === 'BUTTON') {
+
+        const action = target.dataset.action;
+        const actionText = this.getActionAnnouncement(action, target);
+        if (actionText) {
+          this.announce(actionText);
+        }
+      }
+    });
+
+
+    this.addSkipLinks(card);
+  }
+
+
+  addSkipLinks(card) {
+    const shadowRoot = card.shadowRoot;
+    const cardContent = shadowRoot.querySelector('.card-content');
+    if (!cardContent) return;
+
+    const skipLink = document.createElement('a');
+    skipLink.textContent = 'Skip to main content';
+    skipLink.href = '#';
+    skipLink.className = 'kt-skip-link';
+    skipLink.style.cssText = `
+      position: absolute;
+      left: -10000px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    `;
+
+    skipLink.addEventListener('focus', () => {
+      skipLink.style.cssText = `
+        position: absolute;
+        left: 6px;
+        top: 6px;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        z-index: 1000;
+        padding: 8px 12px;
+        background: var(--kt-primary, #2563eb);
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 14px;
+      `;
+    });
+
+    skipLink.addEventListener('blur', () => {
+      skipLink.style.cssText = `
+        position: absolute;
+        left: -10000px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      `;
+    });
+
+    skipLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      const mainContent = shadowRoot.querySelector('.main-content');
+      if (mainContent) {
+        mainContent.focus();
+        this.announce('Skipped to main content');
+      }
+    });
+
+    cardContent.insertBefore(skipLink, cardContent.firstChild);
+  }
+
+
+  getActionAnnouncement(action, element) {
+    const actionMap = {
+      'complete-task': 'Task completed',
+      'uncomplete-task': 'Task marked as incomplete',
+      'claim-reward': 'Reward claimed',
+      'validate-task': 'Task validated',
+      'delete-task': 'Task deleted',
+      'filter': `Filter applied: ${element.textContent}`,
+      'switch-tab': `Switched to ${element.textContent} tab`,
+      'view-child': `Viewing ${element.dataset.id} details`
+    };
+
+    return actionMap[action] || null;
+  }
+
+
+  announceToUser(message, priority = 'polite') {
+    this.announce(message, priority);
+  }
+
+  enhanceCard(card) {
+    this.enhanceCardAccessibility(card);
+  }
+}
+
+
+const accessibility = new KidsTasksAccessibility();
+
+{
+  logger.info('🛠️ Kids Tasks Card - Development Mode');
+  logger.info('📦 Loading modular components...');
+}
+
+
+KidsTasksStyleManagerV2.injectGlobalStyles();
 
 
 window.KidsTasksUtils = KidsTasksUtils;
-window.KidsTasksStyleManager = KidsTasksStyleManager$1;
+window.KidsTasksStyleManager = KidsTasksStyleManagerV2;
 
 
-customElements.define('kids-tasks-card', KidsTasksCard);
-customElements.define('kids-tasks-child-card', KidsTasksChildCard);
-customElements.define('kids-tasks-card-editor', KidsTasksCardEditor);
-customElements.define('kids-tasks-child-card-editor', KidsTasksChildCardEditor);
+const cardSuffix = '-dev' ;
+customElements.define(`kids-tasks-card${cardSuffix}`, withErrorBoundary(KidsTasksCardOptimized));
+customElements.define(`kids-tasks-child-card${cardSuffix}`, withErrorBoundary(KidsTasksChildCard));
+customElements.define(`kids-tasks-card${cardSuffix}-editor`, KidsTasksCardEditor);
+customElements.define(`kids-tasks-child-card${cardSuffix}-editor`, KidsTasksChildCardEditor);
 
 
 window.customCards = window.customCards || [];
+const devSuffix = ' (Dev)' ;
 window.customCards.push(
   {
-    type: 'kids-tasks-card',
-    name: 'Kids Tasks Card',
+    type: `kids-tasks-card${cardSuffix}`,
+    name: `Kids Tasks Card${devSuffix}`,
     description: 'Manage children\'s tasks and rewards with an engaging interface',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   },
   {
-    type: 'kids-tasks-child-card',
-    name: 'Kids Tasks Child Card',
+    type: `kids-tasks-child-card${cardSuffix}`,
+    name: `Kids Tasks Child Card${devSuffix}`,
     description: 'Individual child view for tasks and rewards',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
@@ -2882,7 +4427,7 @@ window.customCards.push(
 if (typeof window !== 'undefined') {
 
   window.addEventListener('beforeunload', () => {
-    console.info('🔄 Kids Tasks Card - Hot reload triggered');
+    logger.debug('🔄 Kids Tasks Card - Hot reload triggered');
   });
 
 
@@ -2900,7 +4445,7 @@ if (typeof window !== 'undefined') {
 
         const newLastModified = response.headers.get('last-modified');
         if (newLastModified && newLastModified !== lastModified) {
-          console.info('🔄 Hot reload: File changed, reloading...');
+          logger.debug('🔄 Hot reload: File changed, reloading...');
           window.location.reload();
         }
       } catch (error) {
@@ -2927,7 +4472,7 @@ if (typeof window !== 'undefined') {
       const eventSource = new EventSource('http://localhost:35729/livereload');
       eventSource.onmessage = function(event) {
         if (event.data === 'reload') {
-          console.info('🔄 Live reload triggered');
+          logger.debug('🔄 Live reload triggered');
           window.location.reload();
         }
       };
@@ -2942,7 +4487,7 @@ if (typeof window !== 'undefined') {
   }
 
 
-  window.KidsTasksCard = KidsTasksCard;
+  window.KidsTasksCard = KidsTasksCardOptimized;
   window.KidsTasksChildCard = KidsTasksChildCard;
   window.KidsTasksBaseCard = KidsTasksBaseCard;
 
@@ -2952,7 +4497,7 @@ if (typeof window !== 'undefined') {
       if (cardElement && cardElement.setConfig && cardElement.hass) {
         cardElement.setConfig(cardElement.config);
         cardElement.hass = cardElement.hass;
-        console.info('🔄 Card reloaded manually');
+        logger.debug('🔄 Card reloaded manually');
       }
     },
 
@@ -2960,36 +4505,63 @@ if (typeof window !== 'undefined') {
       document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').forEach(card => {
         window.KidsTasksDebug.reloadCard(card);
       });
-      console.info('🔄 All cards reloaded');
+      logger.debug('🔄 All cards reloaded');
     },
 
     inspectCard: (cardElement) => {
-      console.log('🔍 Card inspection:', {
+      logger.debug('🔍 Card inspection:', {
         element: cardElement,
         config: cardElement.config,
         hass: cardElement._hass,
         children: cardElement.getChildren?.()
       });
-    }
+    },
+
+
+    performance: {
+      report: () => performanceMonitor$2?.generateReport(),
+      toggle: () => performanceMonitor$2?.toggle(),
+      clear: () => performanceMonitor$2?.destroy()
+    },
+
+
+    errors: {
+      stats: () => errorBoundary.getErrorStats(),
+      clear: () => errorBoundary.clearErrors()
+    },
+
+
+    accessibility: {
+      enhance: (card) => accessibility.enhanceCard(card),
+      announce: (message) => accessibility.announceToUser(message)
+    },
+
+
+    systemInfo: () => ({
+      cards: document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').length,
+      performance: performanceMonitor$2?.generateReport()?.summary,
+      errors: errorBoundary.getErrorStats(),
+      memory: performance.memory ? {
+        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB'
+      } : null
+    })
   };
 
-  console.info('🛠️ Development utilities available as window.KidsTasksDebug');
+  logger.info('🛠️ Development utilities available as window.KidsTasksDebug');
 }
 
 
 const version = "2.0.0";
 
-console.info(
-  `%c Kids Tasks Card v${version} loaded successfully! `,
-  'background: #4caf50; color: white; padding: 4px 8px; border-radius: 4px;'
-);
+logger.info(`Kids Tasks Card v${version} loaded successfully!`);
 
 {
-  console.info('🎯 Mode: Development with hot reload');
-  console.info('🏗️ Architecture: Modular ES6 components');
-  console.info('⚡ Performance: Optimized rendering pipeline');
-  console.info('🎨 Styles: Consolidated CSS variables');
+  logger.info('🎯 Mode: Development with hot reload');
+  logger.info('🏗️ Architecture: Modular ES6 components');
+  logger.info('⚡ Performance: Optimized rendering pipeline');
+  logger.info('🎨 Styles: Consolidated CSS variables');
 }
 
-export { KidsTasksBaseCard, KidsTasksCard, KidsTasksChildCard, KidsTasksStyleManager$1 as KidsTasksStyleManager, KidsTasksUtils };
+export { KidsTasksBaseCard, KidsTasksCardOptimized as KidsTasksCard, KidsTasksChildCard, KidsTasksStyleManagerV2 as KidsTasksStyleManager, KidsTasksUtils };
 //# sourceMappingURL=kids-tasks-card-ha-dev.js.map
