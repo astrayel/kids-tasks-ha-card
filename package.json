@@ -1,7 +1,28 @@
 {
   "name": "kids-tasks-card",
-  "version": "1.0.0",
-  "description": "Lovelace custom cards for Kids Tasks Manager integration",
+  "version": "2.0.0",
+  "description": "Home Assistant Lovelace card for managing children's tasks and rewards",
+  "main": "dist/kids-tasks-card.js",
+  "type": "module",
+  "scripts": {
+    "dev": "rollup -c rollup.config.js --watch --environment NODE_ENV:development",
+    "dev:full": "concurrently \"npm run dev\" \"npm run watch:deploy\" \"npm run serve\"",
+    "build": "rollup -c rollup.config.js --environment NODE_ENV:production",
+    "build:dev": "rollup -c rollup.config.js --environment NODE_ENV:development",
+    "clean": "rimraf dist",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --write src/**/*.js",
+    "serve": "live-server --port=8080 --cors --watch=dist --open=/dist/dev.html",
+    "setup": "node scripts/dev-setup.js",
+    "watch:deploy": "node scripts/watch-and-deploy.js",
+    "deploy:local": "npm run build && cp dist/kids-tasks-card.js /config/www/local/ || echo 'Could not copy to HA - update path manually'",
+    "deploy:hacs": "npm run build && cp dist/kids-tasks-card.js /config/www/community/kids-tasks-card/ || echo 'Could not copy to HACS - update path manually'",
+    "deploy:dev": "npm run build:dev && node scripts/watch-and-deploy.js --once",
+    "start": "npm run setup && npm run dev:full",
+    "test": "echo 'No tests yet' && exit 0",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
   "keywords": [
     "home-assistant",
     "lovelace",
@@ -12,6 +33,20 @@
   ],
   "author": "Kids Tasks Card Team",
   "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-replace": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-serve": "^2.0.3",
+    "rollup-plugin-livereload": "^2.0.5",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "live-server": "^1.2.2",
+    "concurrently": "^8.2.2"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/astrayel/kids-tasks-card.git"
@@ -19,5 +54,13 @@
   "bugs": {
     "url": "https://github.com/astrayel/kids-tasks-card/issues"
   },
-  "homepage": "https://github.com/astrayel/kids-tasks-card#readme"
+  "homepage": "https://github.com/astrayel/kids-tasks-card#readme",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE",
+    "hacs.json",
+    "info.md"
+  ]
 }

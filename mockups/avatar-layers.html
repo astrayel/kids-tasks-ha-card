@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Tasks - Avatar Layers Demo</title>
+    <style>
+        /* Kids Tasks CSS Variables */
+        :root {
+            --kt-primary: #4CAF50;
+            --kt-secondary: #2196F3;
+            --kt-surface: #FAFAFA;
+            --kt-surface-variant: #F5F5F5;
+            --kt-on-surface: #212121;
+            --kt-on-surface-variant: #757575;
+            --kt-outline: #E0E0E0;
+            --kt-space-xs: 4px;
+            --kt-space-sm: 8px;
+            --kt-space-md: 16px;
+            --kt-space-lg: 24px;
+            --kt-space-xl: 32px;
+            --kt-radius-sm: 4px;
+            --kt-radius-md: 8px;
+            --kt-radius-lg: 12px;
+            --kt-radius-xl: 16px;
+            --kt-transition-fast: 150ms ease;
+            --kt-transition-medium: 250ms ease;
+            --kt-shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --kt-shadow-md: 0 4px 6px rgba(0,0,0,0.16);
+            --kt-shadow-lg: 0 10px 20px rgba(0,0,0,0.19);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: var(--kt-space-lg);
+        }
+
+        .mockup-header {
+            text-align: center;
+            margin-bottom: var(--kt-space-xl);
+            color: white;
+        }
+
+        .mockup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--kt-space-sm);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mockup-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--kt-surface);
+            border-radius: var(--kt-radius-xl);
+            padding: var(--kt-space-xl);
+            box-shadow: var(--kt-shadow-lg);
+        }
+
+        /* Layer Builder Demo */
+        .layer-builder {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: var(--kt-space-xl);
+            margin-bottom: var(--kt-space-xl);
+        }
+
+        .layer-controls {
+            background: var(--kt-surface-variant);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-lg);
+        }
+
+        .control-section {
+            margin-bottom: var(--kt-space-lg);
+        }
+
+        .control-section h3 {
+            margin-bottom: var(--kt-space-md);
+            color: var(--kt-on-surface);
+            font-size: 1.1rem;
+        }
+
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-sm);
+            margin-bottom: var(--kt-space-sm);
+            padding: var(--kt-space-sm);
+            background: white;
+            border-radius: var(--kt-radius-md);
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+        }
+
+        .layer-toggle:hover {
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .layer-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .layer-toggle label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .layer-order {
+            font-size: 0.8rem;
+            color: var(--kt-on-surface-variant);
+            background: var(--kt-outline);
+            padding: 2px 6px;
+            border-radius: var(--kt-radius-sm);
+        }
+
+        /* Avatar Display */
+        .avatar-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .avatar-showcase {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--kt-space-lg);
+            box-shadow: var(--kt-shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-svg {
+            width: 250px;
+            height: 250px;
+        }
+
+        /* SVG Layer System */
+        .avatar-layer {
+            transition: opacity var(--kt-transition-medium);
+        }
+
+        .avatar-layer.hidden {
+            opacity: 0;
+        }
+
+        /* Layer Examples Grid */
+        .layer-examples {
+            margin-top: var(--kt-space-xl);
+        }
+
+        .examples-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--kt-space-lg);
+            color: var(--kt-on-surface);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--kt-space-lg);
+        }
+
+        .example-card {
+            background: white;
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-lg);
+            text-align: center;
+            box-shadow: var(--kt-shadow-sm);
+            transition: all var(--kt-transition-medium);
+        }
+
+        .example-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--kt-shadow-md);
+        }
+
+        .example-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--kt-space-md);
+        }
+
+        .example-title {
+            font-weight: 600;
+            margin-bottom: var(--kt-space-sm);
+            color: var(--kt-on-surface);
+        }
+
+        .example-description {
+            font-size: 0.9rem;
+            color: var(--kt-on-surface-variant);
+        }
+
+        /* Layer Animation */
+        @keyframes layerAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .layer-animate {
+            animation: layerAppear 0.3s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .layer-builder {
+                grid-template-columns: 1fr;
+            }
+            
+            .avatar-showcase {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .avatar-svg {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .examples-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="mockup-header">
+        <h1>🧩 Avatar Layers System</h1>
+        <p>Démonstration technique du système de couches SVG pour les avatars</p>
+    </header>
+
+    <div class="demo-container">
+        <div class="layer-builder">
+            <!-- Layer Controls -->
+            <div class="layer-controls">
+                <div class="control-section">
+                    <h3>🎛️ Contrôles des Couches</h3>
+                    <p style="margin-bottom: var(--kt-space-md); color: var(--kt-on-surface-variant);">
+                        Activez/désactivez les couches pour voir comment l'avatar se construit
+                    </p>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="layer-body" checked>
+                        <label for="layer-body">Corps (Base)</label>
+                        <span class="layer-order">Z:1</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="layer-outfit" checked>
+                        <label for="layer-outfit">Tenue</label>
+                        <span class="layer-order">Z:2</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="layer-hair" checked>
+                        <label for="layer-hair">Cheveux</label>
+                        <span class="layer-order">Z:3</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="layer-eyes" checked>
+                        <label for="layer-eyes">Yeux</label>
+                        <span class="layer-order">Z:4</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="layer-accessory" checked>
+                        <label for="layer-accessory">Accessoires</label>
+                        <span class="layer-order">Z:5</span>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>🎨 Variantes</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--kt-space-sm);">
+                        <button class="preset-btn" data-preset="default">Défaut</button>
+                        <button class="preset-btn" data-preset="pirate">Pirate</button>
+                        <button class="preset-btn" data-preset="princess">Princesse</button>
+                        <button class="preset-btn" data-preset="superhero">Super-héros</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Display -->
+            <div class="avatar-display">
+                <div class="avatar-showcase">
+                    <svg class="avatar-svg" viewBox="0 0 250 250" id="main-avatar">
+                        <!-- Background Circle -->
+                        <circle cx="125" cy="125" r="120" fill="#f0f8ff" opacity="0.3"/>
+                        
+                        <!-- Body Layer -->
+                        <g class="avatar-layer" id="svg-body">
+                            <circle cx="125" cy="160" r="70" fill="#F4A460"/>
+                            <circle cx="125" cy="120" r="45" fill="#F4A460"/>
+                        </g>
+                        
+                        <!-- Outfit Layer -->
+                        <g class="avatar-layer" id="svg-outfit">
+                            <rect x="80" y="145" width="90" height="60" rx="15" fill="#4CAF50"/>
+                            <rect x="90" y="135" width="70" height="25" rx="10" fill="#4CAF50"/>
+                        </g>
+                        
+                        <!-- Hair Layer -->
+                        <g class="avatar-layer" id="svg-hair">
+                            <ellipse cx="125" cy="100" rx="50" ry="30" fill="#8B4513"/>
+                            <ellipse cx="125" cy="85" rx="45" ry="25" fill="#8B4513"/>
+                        </g>
+                        
+                        <!-- Eyes Layer -->
+                        <g class="avatar-layer" id="svg-eyes">
+                            <circle cx="110" cy="115" r="6" fill="white"/>
+                            <circle cx="140" cy="115" r="6" fill="white"/>
+                            <circle cx="110" cy="115" r="3" fill="black"/>
+                            <circle cx="140" cy="115" r="3" fill="black"/>
+                            <!-- Mouth -->
+                            <path d="M 115 130 Q 125 135 135 130" stroke="#333" stroke-width="2" fill="none"/>
+                        </g>
+                        
+                        <!-- Accessory Layer -->
+                        <g class="avatar-layer" id="svg-accessory">
+                            <rect x="100" y="70" width="50" height="15" rx="7" fill="#2196F3"/>
+                            <circle cx="125" cy="77" r="3" fill="#FFD700"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <div style="text-align: center; color: var(--kt-on-surface-variant);">
+                    <p><strong>Couches actives:</strong> <span id="active-layers">5/5</span></p>
+                    <p><em>L'ordre des couches (Z-index) détermine quels éléments apparaissent au-dessus</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layer Examples -->
+        <div class="layer-examples">
+            <h2 class="examples-title">💡 Exemples de Combinaisons</h2>
+            <div class="examples-grid">
+                <!-- Example 1: Default -->
+                <div class="example-card">
+                    <svg class="example-avatar" viewBox="0 0 250 250">
+                        <circle cx="125" cy="125" r="120" fill="#f0f8ff" opacity="0.3"/>
+                        <circle cx="125" cy="160" r="70" fill="#F4A460"/>
+                        <circle cx="125" cy="120" r="45" fill="#F4A460"/>
+                        <rect x="80" y="145" width="90" height="60" rx="15" fill="#4CAF50"/>
+                        <ellipse cx="125" cy="100" rx="50" ry="30" fill="#8B4513"/>
+                        <circle cx="110" cy="115" r="6" fill="white"/>
+                        <circle cx="140" cy="115" r="6" fill="white"/>
+                        <circle cx="110" cy="115" r="3" fill="black"/>
+                        <circle cx="140" cy="115" r="3" fill="black"/>
+                        <rect x="100" y="70" width="50" height="15" rx="7" fill="#2196F3"/>
+                    </svg>
+                    <h4 class="example-title">Avatar Standard</h4>
+                    <p class="example-description">Toutes les couches activées avec le style par défaut</p>
+                </div>
+
+                <!-- Example 2: Pirate -->
+                <div class="example-card">
+                    <svg class="example-avatar" viewBox="0 0 250 250">
+                        <circle cx="125" cy="125" r="120" fill="#f0f8ff" opacity="0.3"/>
+                        <circle cx="125" cy="160" r="70" fill="#F4A460"/>
+                        <circle cx="125" cy="120" r="45" fill="#F4A460"/>
+                        <rect x="80" y="145" width="90" height="60" rx="15" fill="#8B0000"/>
+                        <ellipse cx="125" cy="100" rx="50" ry="30" fill="#000"/>
+                        <circle cx="110" cy="115" r="6" fill="white"/>
+                        <circle cx="140" cy="115" r="6" fill="white"/>
+                        <circle cx="110" cy="115" r="3" fill="black"/>
+                        <rect x="135" y="110" width="15" height="8" fill="black"/>
+                        <rect x="90" y="70" width="70" height="15" rx="7" fill="#000"/>
+                        <polygon points="95,75 100,65 105,75" fill="#000"/>
+                    </svg>
+                    <h4 class="example-title">Pirate</h4>
+                    <p class="example-description">Cheveux noirs, cache-œil et bandana de pirate</p>
+                </div>
+
+                <!-- Example 3: Princess -->
+                <div class="example-card">
+                    <svg class="example-avatar" viewBox="0 0 250 250">
+                        <circle cx="125" cy="125" r="120" fill="#f0f8ff" opacity="0.3"/>
+                        <circle cx="125" cy="160" r="70" fill="#F4A460"/>
+                        <circle cx="125" cy="120" r="45" fill="#F4A460"/>
+                        <rect x="80" y="145" width="90" height="60" rx="15" fill="#FF69B4"/>
+                        <ellipse cx="125" cy="100" rx="50" ry="30" fill="#FFD700"/>
+                        <circle cx="110" cy="115" r="6" fill="white"/>
+                        <circle cx="140" cy="115" r="6" fill="white"/>
+                        <circle cx="110" cy="115" r="3" fill="blue"/>
+                        <circle cx="140" cy="115" r="3" fill="blue"/>
+                        <polygon points="125,60 120,75 130,75" fill="#FFD700"/>
+                        <circle cx="125" cy="67" r="3" fill="#FF1493"/>
+                    </svg>
+                    <h4 class="example-title">Princesse</h4>
+                    <p class="example-description">Cheveux dorés, robe rose et couronne royale</p>
+                </div>
+
+                <!-- Example 4: Superhero -->
+                <div class="example-card">
+                    <svg class="example-avatar" viewBox="0 0 250 250">
+                        <circle cx="125" cy="125" r="120" fill="#f0f8ff" opacity="0.3"/>
+                        <circle cx="125" cy="160" r="70" fill="#F4A460"/>
+                        <circle cx="125" cy="120" r="45" fill="#F4A460"/>
+                        <rect x="80" y="145" width="90" height="60" rx="15" fill="#FF0000"/>
+                        <rect x="100" y="155" width="50" height="40" rx="5" fill="#0000FF"/>
+                        <ellipse cx="125" cy="100" rx="50" ry="30" fill="#000"/>
+                        <circle cx="110" cy="115" r="6" fill="white"/>
+                        <circle cx="140" cy="115" r="6" fill="white"/>
+                        <circle cx="110" cy="115" r="3" fill="black"/>
+                        <circle cx="140" cy="115" r="3" fill="black"/>
+                        <rect x="105" y="105" width="40" height="8" rx="4" fill="#000"/>
+                    </svg>
+                    <h4 class="example-title">Super-héros</h4>
+                    <p class="example-description">Cape rouge, costume et masque de super-héros</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const layerToggles = document.querySelectorAll('.layer-toggle input[type="checkbox"]');
+            const activeLayersSpan = document.getElementById('active-layers');
+            const presetButtons = document.querySelectorAll('.preset-btn');
+            
+            // Layer toggle functionality
+            layerToggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const layerId = this.id.replace('layer-', 'svg-');
+                    const svgLayer = document.getElementById(layerId);
+                    
+                    if (svgLayer) {
+                        if (this.checked) {
+                            svgLayer.classList.remove('hidden');
+                            svgLayer.classList.add('layer-animate');
+                        } else {
+                            svgLayer.classList.add('hidden');
+                        }
+                    }
+                    
+                    updateActiveLayersCount();
+                });
+            });
+            
+            function updateActiveLayersCount() {
+                const activeCount = Array.from(layerToggles).filter(toggle => toggle.checked).length;
+                activeLayersSpan.textContent = `${activeCount}/5`;
+            }
+            
+            // Preset functionality
+            const presets = {
+                default: {
+                    body: true, outfit: true, hair: true, eyes: true, accessory: true,
+                    colors: { hair: '#8B4513', outfit: '#4CAF50', accessory: '#2196F3' }
+                },
+                pirate: {
+                    body: true, outfit: true, hair: true, eyes: true, accessory: true,
+                    colors: { hair: '#000', outfit: '#8B0000', accessory: '#000' }
+                },
+                princess: {
+                    body: true, outfit: true, hair: true, eyes: true, accessory: true,
+                    colors: { hair: '#FFD700', outfit: '#FF69B4', accessory: '#FFD700' }
+                },
+                superhero: {
+                    body: true, outfit: true, hair: true, eyes: true, accessory: true,
+                    colors: { hair: '#000', outfit: '#FF0000', accessory: '#000' }
+                }
+            };
+            
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const presetName = this.dataset.preset;
+                    const preset = presets[presetName];
+                    
+                    if (preset) {
+                        // Update toggles
+                        layerToggles.forEach(toggle => {
+                            const layerName = toggle.id.replace('layer-', '');
+                            toggle.checked = preset[layerName];
+                            toggle.dispatchEvent(new Event('change'));
+                        });
+                        
+                        // Update colors (simplified for demo)
+                        if (preset.colors) {
+                            const svgElements = {
+                                hair: document.querySelector('#svg-hair ellipse'),
+                                outfit: document.querySelector('#svg-outfit rect'),
+                                accessory: document.querySelector('#svg-accessory rect')
+                            };
+                            
+                            Object.keys(preset.colors).forEach(element => {
+                                if (svgElements[element]) {
+                                    svgElements[element].setAttribute('fill', preset.colors[element]);
+                                }
+                            });
+                        }
+                        
+                        // Visual feedback
+                        presetButtons.forEach(b => b.style.background = '');
+                        this.style.background = 'var(--kt-primary)';
+                        this.style.color = 'white';
+                    }
+                });
+            });
+            
+            // Add button styles
+            presetButtons.forEach(btn => {
+                btn.style.cssText = `
+                    padding: var(--kt-space-sm);
+                    border: 1px solid var(--kt-outline);
+                    border-radius: var(--kt-radius-sm);
+                    background: white;
+                    cursor: pointer;
+                    transition: all var(--kt-transition-medium);
+                `;
+                
+                btn.addEventListener('mouseenter', function() {
+                    if (this.style.background !== 'var(--kt-primary)') {
+                        this.style.background = 'var(--kt-surface-variant)';
+                    }
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    if (this.style.background !== 'var(--kt-primary)') {
+                        this.style.background = 'white';
+                    }
+                });
+            });
+            
+            // Initialize count
+            updateActiveLayersCount();
+        });
+    </script>
+</body>
+</html>

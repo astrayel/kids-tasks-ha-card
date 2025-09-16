@@ -1,0 +1,25 @@
+{
+  "homeAssistant": {
+    "localPath": "/config/www/local/kids-tasks-card-dev.js",
+    "hacsPath": "/config/www/community/kids-tasks-card/kids-tasks-card.js",
+    "url": "http://homeassistant.local:8123",
+    "alternativePaths": [
+      "C:\\config\\www\\local\\kids-tasks-card-dev.js",
+      "/usr/share/hassio/homeassistant/www/local/kids-tasks-card-dev.js",
+      "./dist/kids-tasks-card-dev.js"
+    ]
+  },
+  "development": {
+    "port": 8080,
+    "host": "localhost",
+    "livereload": true,
+    "sourcemaps": true,
+    "hotReload": true
+  },
+  "build": {
+    "minify": false,
+    "removeConsole": false,
+    "sourceMap": true,
+    "target": "es2020"
+  }
+}
