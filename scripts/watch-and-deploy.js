@@ -12,11 +12,12 @@ const projectRoot = path.join(__dirname, '..');
 
 // Configuration
 const HA_PATHS = [
-  // Common Home Assistant paths - update these for your setup
+  // Add your Home Assistant path here - replace with your actual path
+  'C:\\path\\to\\your\\homeassistant\\www\\local\\kids-tasks-card-dev.js',
+  // Common Home Assistant paths
   'C:\\config\\www\\local\\kids-tasks-card-dev.js',
   '/config/www/local/kids-tasks-card-dev.js',
   '/usr/share/hassio/homeassistant/www/local/kids-tasks-card-dev.js',
-  // Add your specific HA path here
 ];
 
 let deployPath = null;

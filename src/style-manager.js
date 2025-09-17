@@ -316,20 +316,6 @@ class KidsTasksStyleManager {
         text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       
-      .kt-level-badge {
-        position: absolute;
-        top: 100px;
-        border-radius: var(--kt-radius-md);
-        font-size: 0.8em;
-        font-weight: 600;
-        text-align: center;
-        z-index: 2;
-        background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
-        backdrop-filter: blur(10px);
-        padding: var(--kt-space-xs) 8px;
-        min-width: 60px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      }
       
       /* Child Info Components */
       .kt-child-info {

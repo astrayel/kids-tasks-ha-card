@@ -77,7 +77,7 @@ if (isDevelopment) {
     serve({
       open: false,
       contentBase: ['dist', '.'],
-      host: 'localhost',
+      host: '0.0.0.0', // Listen on all interfaces for network access
       port: 8080,
       headers: {
         'Access-Control-Allow-Origin': '*'

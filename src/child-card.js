@@ -808,9 +808,26 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     };
   }
 
+
   getAvatar(child) {
-    return child.avatar || child.cosmetics?.avatar?.emoji || '👤';
+    if (!child) {
+      return '👶';
+    }
+    const avatarType = child.avatar_type || 'emoji';
+    
+    if (avatarType === 'emoji') {
+      return child.avatar || '👶';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}">`;
+      }
+    }
+    return child.avatar || '👶';
   }
+
 
   isToday(dateString) {
     if (!dateString) return false;

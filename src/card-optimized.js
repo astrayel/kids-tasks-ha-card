@@ -53,9 +53,45 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
     `;
   }
 
+  getCustomCSSVariables() {
+    // Extract colors from config like in original
+    const tabColor = this.config?.tab_color || 'var(--kt-primary)';
+    const headerColor = this.config?.header_color || 'var(--kt-primary)';
+    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--kt-primary)';
+    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--kt-secondary)';
+    const childGradientStart = this.config?.child_gradient_start || '#4CAF50';
+    const childGradientEnd = this.config?.child_gradient_end || '#8BC34A';
+    const childBorderColor = this.config?.child_border_color || '#2E7D32';
+    const childTextColor = this.config?.child_text_color || '#ffffff';
+    const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
+    const progressBarColor = this.config?.progress_bar_color || 'var(--kt-success)';
+    const pointsBadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
+    const iconColor = this.config?.icon_color || '#757575';
+
+    return `
+      /* Configurable colors from config */
+      :host {
+        --custom-tab-color: ${tabColor};
+        --custom-header-color: ${headerColor};
+        --custom-dashboard-primary: ${dashboardPrimary};
+        --custom-dashboard-secondary: ${dashboardSecondary};
+        --custom-child-gradient-start: ${childGradientStart};
+        --custom-child-gradient-end: ${childGradientEnd};
+        --custom-child-border-color: ${childBorderColor};
+        --custom-child-text-color: ${childTextColor};
+        --custom-button-hover-color: ${buttonHoverColor};
+        --custom-progress-bar-color: ${progressBarColor};
+        --custom-points-badge-color: ${pointsBadgeColor};
+        --custom-icon-color: ${iconColor};
+      }
+    `;
+  }
+
   getOptimizedStyles() {
     return `
       <style>
+        ${this.getCustomCSSVariables()}
+
         :host {
           display: block;
           background: var(--kt-surface-primary);
@@ -80,42 +116,278 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
           margin: 0 0 var(--kt-space-sm) 0;
         }
 
+        /* Navigation tabs like original */
         .navigation {
           display: flex;
-          gap: var(--kt-space-sm);
-          flex-wrap: wrap;
+          background: var(--card-background-color, #fff);
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
         }
 
         .nav-button {
-          background: var(--kt-surface-variant);
-          border: 2px solid transparent;
-          padding: var(--kt-space-xs) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
+          flex: 1;
+          padding: var(--kt-space-md);
+          border: none;
+          background: transparent;
+          color: var(--secondary-text-color, #757575);
           font-weight: 600;
           font-size: 0.9em;
-          transition: all var(--kt-transition-fast);
-          color: var(--primary-text-color);
-        }
-
-        .nav-button.active {
-          border-color: var(--kt-primary);
-          background: var(--kt-primary);
-          color: white;
+          cursor: pointer;
+          transition: all 0.3s;
+          border-bottom: 3px solid transparent;
         }
 
         .nav-button:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px var(--kt-shadow-light);
+          background: rgba(0,0,0,0.05);
+          color: var(--primary-text-color, #212121);
+        }
+
+        .nav-button.active {
+          color: var(--custom-tab-color, var(--kt-primary));
+          border-bottom-color: var(--custom-tab-color, var(--kt-primary));
+          background: rgba(107, 115, 255, 0.05);
+          position: relative;
+        }
+
+        .nav-button.active::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: var(--custom-tab-color, var(--kt-primary));
+          opacity: 0.1;
+          z-index: -1;
         }
 
         /* Grid system using CSS custom properties */
         .children-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: var(--kt-space-lg);
         }
 
+        /* Colorful child cards like original design */
+        .child-card-colorful {
+          background: linear-gradient(135deg, var(--custom-child-gradient-start, #4CAF50) 0%, var(--custom-child-gradient-end, #8BC34A) 100%);
+          color: var(--custom-child-text-color, white);
+          border: 2px solid var(--custom-child-border-color, #2E7D32);
+          border-radius: var(--kt-radius-lg);
+          padding: var(--kt-space-sm);
+          transition: all var(--kt-transition-fast);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          min-height: 110px;
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .child-card-colorful:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .child-name-header {
+          font-size: 1.8em;
+          font-weight: 700;
+          margin-bottom: 12px;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          text-align: left;
+          line-height: 1.2;
+          opacity: 1;
+          color: var(--custom-child-text-color, var(--primary-text-color));
+        }
+
+        .child-content-horizontal {
+          display: flex;
+          align-items: flex-start;
+          gap: 20px;
+          width: 100%;
+        }
+        .child-avatar {
+          display: flex;
+          flex-direction: column;
+          align-items: center; 
+        }
+        .child-avatar-section {
+          position: relative;
+          flex-shrink: 0;
+        }
+
+        .child-avatar-colorful {
+          font-size: 3em;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--kt-radius-round);
+          background: var(--kt-avatar-background);
+          border: 2px solid var(--kt-cosmetic-background);
+          transition: all var(--kt-transition-fast);
+        }
+
+        .child-avatar-colorful img {
+          width: 2em;
+          height: 2em;
+          border-radius: var(--kt-radius-round) !important;
+          object-fit: cover !important;
+          border: 2px solid var(--kt-cosmetic-background, rgba(255, 255, 255, 0.2));
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .child-level-badge {
+          position: absolute;
+          bottom: -16px;
+          left: 8px;
+          border-radius: var(--kt-radius-md);
+          font-size: 0.8em;
+          font-weight: 600;
+          text-align: center;
+          z-index: 2;
+          background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+          backdrop-filter: blur(10px);
+          padding: var(--kt-space-xs) 8px;
+          min-width: 60px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .child-stats-colorful {
+          display: flex;
+          justify-content: space-around;
+          margin: var(--kt-space-lg) 0;
+        }
+
+        .stat-item {
+          text-align: center;
+          background: rgba(255, 255, 255, 0.15);
+          padding: var(--kt-space-sm);
+          border-radius: var(--kt-radius-md);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          min-width: 80px;
+        }
+
+        .stat-value {
+          font-size: 1.5em;
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 2px;
+        }
+
+        .stat-label {
+          font-size: 0.7em;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        /* Jauges et barres de progression comme l'original */
+        .gauges-section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          min-height: 60px;
+          justify-content: flex-start;
+          padding-left: 4px;
+          padding-top: 0px;
+        }
+
+        .gauge {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .gauge-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .gauge-label {
+          font-size: 0.65em;
+          opacity: 0.9;
+          font-weight: 500;
+        }
+
+        .gauge-text {
+          font-size: 0.65em;
+          font-weight: bold;
+          opacity: 0.95;
+        }
+
+        .gauge-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 4px;
+          overflow: hidden;
+          position: relative;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .gauge-fill {
+          height: 100%;
+          border-radius: var(--kt-space-xs);
+          transition: width 0.6s ease;
+        }
+
+        .gauge-fill.total-points {
+          background: linear-gradient(90deg, #ffd700, #ffed4a);
+        }
+
+        .gauge-fill.level-progress {
+          background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+
+        .gauge-fill.tasks-progress {
+          background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+
+        .gauge-fill.coins-progress {
+          background: linear-gradient(90deg, var(--kt-coins-color, #9C27B0), #E1BEE7);
+        }
+
+        .child-progress-colorful {
+          background: rgba(255, 255, 255, 0.15);
+          padding: var(--kt-space-md);
+          border-radius: var(--kt-radius-md);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-label {
+          font-size: 0.8em;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 4px;
+        }
+
+        .progress-value {
+          font-size: 1.1em;
+          font-weight: 600;
+          margin-bottom: var(--kt-space-xs);
+        }
+
+        .progress-bar-colorful {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: var(--kt-radius-sm);
+          overflow: hidden;
+        }
+
+        .progress-fill-colorful {
+          height: 100%;
+          background: rgba(255, 255, 255, 0.8);
+          transition: width var(--kt-transition-medium);
+          border-radius: var(--kt-radius-sm);
+        }
+
+        /* Legacy support */
         .child-card {
           background: var(--kt-surface-variant);
           border-radius: var(--kt-radius-md);
@@ -135,7 +407,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         }
 
         .child-avatar {
-          font-size: 3em;
+          font-size: 1.2em;
           margin-bottom: var(--kt-space-sm);
         }
 
@@ -385,34 +657,111 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
 
   renderChildCard(child) {
     const stats = this.getChildStats(child);
-    const progressPercent = stats.totalToday > 0 ? (stats.completedToday / stats.totalToday) * 100 : 0;
-    
+
+    // Créer les stats pour les gauges comme dans l'original
+    const gaugeStats = {
+      totalPoints: child.points || 0,
+      level: child.level || 1,
+      pointsInCurrentLevel: (child.points || 0) % 100,
+      pointsToNextLevel: 100,
+      completedToday: stats.completedToday,
+      totalToday: stats.totalToday,
+      coins: child.coins || 0
+    };
+
+    // Use configurable gradient from config like in original
     return `
-      <div class="child-card kt-clickable" data-action="view-child" data-id="${child.id}">
-        <div class="child-header">
-          <div class="child-avatar">${child.avatar || '👤'}</div>
-          <div class="child-name">${child.name}</div>
-          <div class="child-stats kt-flex kt-flex-wrap kt-gap-sm kt-flex-center">
-            <span class="kt-stat kt-stat--points">${child.points || 0} 🎫</span>
-            <span class="kt-stat kt-stat--coins">${child.coins || 0} 🪙</span>
-            <span class="kt-stat">Niv. ${child.level || 1}</span>
+      <div class="child-card-colorful kt-clickable"
+           data-action="view-child"
+           data-id="${child.id}">
+        <div class="child-avatar">
+          <div class="child-name-header">${child.name}</div>
+          <div class="child-avatar-section">
+            <div class="child-avatar-colorful">
+              ${this.getAvatar(child)}
+            </div>
+            <div class="child-level-badge">Niveau ${child.level || 1}</div>
           </div>
         </div>
-        
-        <div class="child-progress">
-          Aujourd'hui: ${stats.completedToday}/${stats.totalToday} tâches
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+        <div class="child-content-horizontal">
+
+          <div class="gauges-section">
+            ${this.renderGauges(gaugeStats, true)}
           </div>
-        </div>
-        
-        <div class="child-actions">
-          <button class="kt-btn kt-btn--primary" data-action="view-child" data-id="${child.id}">
-            Voir les tâches
-          </button>
         </div>
       </div>
     `;
+  }
+
+  // Méthode pour récupérer l'avatar (emoji ou image)
+  getAvatar(child) {
+    if (!child) return '👤';
+
+    const avatarType = child.avatar_type || 'emoji';
+
+    if (avatarType === 'emoji') {
+      return child.avatar || '👤';
+    } else if (avatarType === 'url' && child.avatar_data) {
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}">`;
+      }
+    }
+
+    return child.avatar || '👤';
+  }
+
+  // Méthode renderGauges comme dans l'original
+  renderGauges(stats, includeCoins = false) {
+    if (!stats) return '';
+
+    const renderGauge = (label, text, fillClass, width) => {
+      return `
+        <div class="gauge">
+          <div class="gauge-header">
+            <div class="gauge-label">${label}</div>
+            <div class="gauge-text">${text}</div>
+          </div>
+          <div class="gauge-bar">
+            <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
+          </div>
+        </div>
+      `;
+    };
+
+    let gaugesHtml = renderGauge(
+      'Points totaux',
+      stats.totalPoints,
+      'total-points',
+      Math.min((stats.totalPoints / 500) * 100, 100)
+    );
+
+    gaugesHtml += renderGauge(
+      `Niveau ${stats.level}`,
+      `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`,
+      'level-progress',
+      (stats.pointsInCurrentLevel / stats.pointsToNextLevel) * 100
+    );
+
+    gaugesHtml += renderGauge(
+      'Tâches',
+      `${stats.completedToday}/${stats.totalToday}`,
+      'tasks-progress',
+      stats.totalToday > 0 ? (stats.completedToday / stats.totalToday) * 100 : 0
+    );
+
+    if (includeCoins && stats.coins !== undefined) {
+      gaugesHtml += renderGauge(
+        '🪙',
+        stats.coins,
+        'coins-progress',
+        Math.min(stats.coins, 100)
+      );
+    }
+
+    return gaugesHtml;
   }
 
   renderChildSummary(child) {
