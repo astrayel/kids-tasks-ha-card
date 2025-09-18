@@ -10,7 +10,11 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 
   setConfig(config) {
     this._config = { ...config };
-    this._fireConfigChanged();
+    if (this._rendered) {
+      this._render();
+    } else {
+      this._pendingConfig = true;
+    }
   }
 
   set hass(hass) {
@@ -18,6 +22,9 @@ class KidsTasksBaseCardEditor extends HTMLElement {
     if (!this._rendered) {
       this._render();
       this._rendered = true;
+    } else if (this._pendingConfig) {
+      this._syncInputValues();
+      this._pendingConfig = false;
     }
   }
 
@@ -132,6 +139,7 @@ class KidsTasksBaseCardEditor extends HTMLElement {
     `;
 
     this._attachListeners();
+    this._syncInputValues();
   }
 
   _renderSpecificOptions() {
@@ -164,9 +172,30 @@ class KidsTasksBaseCardEditor extends HTMLElement {
     // To be overridden by subclasses
   }
 
+  _syncInputValues() {
+    // Sync base input values
+    const titleInput = this.querySelector('.title-input');
+    const navToggle = this.querySelector('.navigation-toggle');
+
+    if (titleInput && this._config.title !== undefined) {
+      titleInput.value = this._config.title;
+    }
+
+    if (navToggle && this._config.show_navigation !== undefined) {
+      navToggle.checked = this._config.show_navigation !== false;
+    }
+
+    // Call specific sync method for subclasses
+    this._syncSpecificInputValues();
+  }
+
+  _syncSpecificInputValues() {
+    // To be overridden by subclasses
+  }
+
   _fireConfigChanged() {
     const event = new CustomEvent('config-changed', {
-      detail: { config: this._config },
+      detail: { config: { ...this._config } },
       bubbles: true,
       composed: true
     });
@@ -175,7 +204,25 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 }
 
 class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
+  getDefaultColors() {
+    return {
+      tab_color: '#3f51b5',
+      header_color: '#3f51b5',
+      dashboard_primary_color: '#3f51b5',
+      dashboard_secondary_color: '#ff4081',
+      child_gradient_start: '#4CAF50',
+      child_gradient_end: '#8BC34A',
+      child_border_color: '#2E7D32',
+      child_text_color: '#ffffff',
+      button_hover_color: '#1565C0',
+      progress_bar_color: '#4caf50',
+      points_badge_color: '#ff9800',
+      icon_color: '#757575'
+    };
+  }
+
   _renderSpecificOptions() {
+    const defaults = this.getDefaultColors();
     return `
       <div class="section-title">Couleurs Carte Principale</div>
       <div class="color-grid">
@@ -184,7 +231,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="tab-color-input"
-            value="${this._config.tab_color || '#3f51b5'}"
+            value="${this._config.tab_color || defaults.tab_color}"
           >
         </div>
         <div class="color-option">
@@ -192,7 +239,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="header-color-input"
-            value="${this._config.header_color || '#3f51b5'}"
+            value="${this._config.header_color || defaults.header_color}"
           >
         </div>
         <div class="color-option">
@@ -200,7 +247,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="dashboard-primary-input"
-            value="${this._config.dashboard_primary_color || '#3f51b5'}"
+            value="${this._config.dashboard_primary_color || defaults.dashboard_primary_color}"
           >
         </div>
         <div class="color-option">
@@ -208,7 +255,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="dashboard-secondary-input"
-            value="${this._config.dashboard_secondary_color || '#ff4081'}"
+            value="${this._config.dashboard_secondary_color || defaults.dashboard_secondary_color}"
           >
         </div>
       </div>
@@ -220,7 +267,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="child-gradient-start-input"
-            value="${this._config.child_gradient_start || '#4CAF50'}"
+            value="${this._config.child_gradient_start || defaults.child_gradient_start}"
           >
         </div>
         <div class="color-option">
@@ -228,7 +275,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="child-gradient-end-input"
-            value="${this._config.child_gradient_end || '#8BC34A'}"
+            value="${this._config.child_gradient_end || defaults.child_gradient_end}"
           >
         </div>
         <div class="color-option">
@@ -236,7 +283,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="child-border-color-input"
-            value="${this._config.child_border_color || '#2E7D32'}"
+            value="${this._config.child_border_color || defaults.child_border_color}"
           >
         </div>
         <div class="color-option">
@@ -244,7 +291,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="child-text-color-input"
-            value="${this._config.child_text_color || '#ffffff'}"
+            value="${this._config.child_text_color || defaults.child_text_color}"
           >
         </div>
       </div>
@@ -256,7 +303,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="button-hover-input"
-            value="${this._config.button_hover_color || '#1565C0'}"
+            value="${this._config.button_hover_color || defaults.button_hover_color}"
           >
         </div>
         <div class="color-option">
@@ -264,7 +311,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="progress-bar-input"
-            value="${this._config.progress_bar_color || '#4caf50'}"
+            value="${this._config.progress_bar_color || defaults.progress_bar_color}"
           >
         </div>
         <div class="color-option">
@@ -272,7 +319,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="points-badge-input"
-            value="${this._config.points_badge_color || '#ff9800'}"
+            value="${this._config.points_badge_color || defaults.points_badge_color}"
           >
         </div>
         <div class="color-option">
@@ -280,7 +327,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           <input
             type="color"
             class="icon-color-input"
-            value="${this._config.icon_color || '#757575'}"
+            value="${this._config.icon_color || defaults.icon_color}"
           >
         </div>
       </div>
@@ -389,6 +436,34 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
         this._fireConfigChanged();
       });
     }
+  }
+
+  _syncSpecificInputValues() {
+    const defaults = this.getDefaultColors();
+
+    // Sync all color inputs with current config values
+    const colorInputs = [
+      { input: '.tab-color-input', config: 'tab_color', default: defaults.tab_color },
+      { input: '.header-color-input', config: 'header_color', default: defaults.header_color },
+      { input: '.dashboard-primary-input', config: 'dashboard_primary_color', default: defaults.dashboard_primary_color },
+      { input: '.dashboard-secondary-input', config: 'dashboard_secondary_color', default: defaults.dashboard_secondary_color },
+      { input: '.child-gradient-start-input', config: 'child_gradient_start', default: defaults.child_gradient_start },
+      { input: '.child-gradient-end-input', config: 'child_gradient_end', default: defaults.child_gradient_end },
+      { input: '.child-border-color-input', config: 'child_border_color', default: defaults.child_border_color },
+      { input: '.child-text-color-input', config: 'child_text_color', default: defaults.child_text_color },
+      { input: '.button-hover-input', config: 'button_hover_color', default: defaults.button_hover_color },
+      { input: '.progress-bar-input', config: 'progress_bar_color', default: defaults.progress_bar_color },
+      { input: '.points-badge-input', config: 'points_badge_color', default: defaults.points_badge_color },
+      { input: '.icon-color-input', config: 'icon_color', default: defaults.icon_color }
+    ];
+
+    colorInputs.forEach(({ input, config, default: defaultValue }) => {
+      const element = this.querySelector(input);
+      if (element) {
+        const value = this._config[config] || defaultValue;
+        element.value = value;
+      }
+    });
   }
 }
 

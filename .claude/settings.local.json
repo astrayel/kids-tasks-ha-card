@@ -6,7 +6,15 @@
       "Bash(npx kill-port:*)",
       "Bash(npm run build:*)",
       "Bash(node:*)",
-      "mcp__playwright__browser_navigate"
+      "mcp__playwright__browser_navigate",
+      "Bash(python:*)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_press_key",
+      "Bash(npm run serve:*)",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_type"
     ],
     "deny": [],
     "ask": []
