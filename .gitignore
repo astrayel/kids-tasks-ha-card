@@ -1,1 +1,6 @@
 node_modules
+dist/*
+.claude
+.playright-mcp
+.github
+claude_desktop_config.json

@@ -3,7 +3,10 @@
     "allow": [
       "Bash(dir \"C:\\Users\\micro\\Nextcloud\\Documents\\Développement\\kids-tasks-card\\dist\")",
       "Bash(npm run dev:*)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(npm run build:*)",
+      "Bash(node:*)",
+      "mcp__playwright__browser_navigate"
     ],
     "deny": [],
     "ask": []

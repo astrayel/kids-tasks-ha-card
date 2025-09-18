@@ -275,7 +275,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .child-avatar {
           font-size: 4em;
           margin-bottom: var(--kt-space-sm);
-          margin-right: var(--kt-space-md);
         }
 
         .child-name {
@@ -838,8 +837,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   // Configuration
   static getConfigElement() {
-    const suffix = window.KidsTasksCardSuffix || '';
-    return document.createElement(`kids-tasks-child-card-editor${suffix}`);
+    return document.createElement('kids-tasks-child-card-editor');
   }
 
   static getStubConfig() {
