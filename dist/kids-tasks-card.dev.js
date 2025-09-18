@@ -1786,15 +1786,145 @@ class KidsTasksBaseCard extends HTMLElement {
 
 
   getChildren() {
-    return [];
+    if (!this._hass) return [];
+
+    const children = [];
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.state !== 'unavailable') {
+          const childId = entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+          children.push({
+            id: childId,
+            name: entity.attributes.friendly_name || childId,
+            points: parseInt(entity.state) || 0,
+            coins: entity.attributes.coins || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || entity.attributes.cosmetics?.avatar?.emoji || '👤',
+            ...entity.attributes
+          });
+        }
+      }
+    });
+
+    return children.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getTasks() {
-    return [];
+    if (!this._hass) return [];
+
+    const taskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'))
+      .map(id => this._hass.states[id]);
+
+    return taskEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      name: entity.attributes.friendly_name || 'Tâche',
+      description: entity.attributes.description,
+      status: entity.state,
+      points: entity.attributes.points || 0,
+      coins: entity.attributes.coins || 0,
+      penalty_points: entity.attributes.penalty_points || 0,
+      category: entity.attributes.category,
+      frequency: entity.attributes.frequency || 'daily',
+      assigned_children: entity.attributes.assigned_children || [],
+      active: entity.attributes.active !== false,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
   }
 
   getRewards() {
-    return [];
+    if (!this._hass) return [];
+
+    const rewardEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_reward_'))
+      .map(id => this._hass.states[id]);
+
+    return rewardEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
+      name: entity.attributes.friendly_name || 'Récompense',
+      description: entity.attributes.description,
+      cost: entity.attributes.cost || 0,
+      coin_cost: entity.attributes.coin_cost || 0,
+      category: entity.attributes.category,
+      remaining_quantity: entity.attributes.remaining_quantity,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
+  }
+
+
+  filterTasks(tasks, filter) {
+    switch (filter) {
+      case 'active':
+        return tasks.filter(task => task.frequency !== 'none' && task.active !== false && this.isTaskInPeriod(task));
+      case 'inactive':
+        return tasks.filter(task => task.frequency !== 'none' && task.active === false);
+      case 'bonus':
+        return tasks.filter(task => task.frequency === 'bonus' || task.category === 'bonus');
+      case 'out-of-period':
+        return tasks.filter(task => task.frequency !== 'none' && task.active !== false && !this.isTaskInPeriod(task));
+      case 'all':
+      default:
+        return tasks;
+    }
+  }
+
+  isTaskInPeriod(task) {
+
+    return true;
+  }
+
+  getFrequencyLabel(frequency) {
+    const labels = {
+      'daily': 'Quotidienne',
+      'weekly': 'Hebdomadaire',
+      'monthly': 'Mensuelle',
+      'bonus': 'Bonus',
+      'none': 'Désactivée'
+    };
+    return labels[frequency] || frequency;
+  }
+
+  getCategoryLabel(category) {
+    const labels = {
+      'chores': 'Corvées',
+      'homework': 'Devoirs',
+      'hygiene': 'Hygiène',
+      'bonus': 'Bonus',
+      'cosmetic': 'Cosmétique',
+      'reward': 'Récompense'
+    };
+    return labels[category] || category;
+  }
+
+  getCategoryIcon(item) {
+    if (item.icon) return item.icon;
+
+    const icons = {
+      'chores': '🧹',
+      'homework': '📚',
+      'hygiene': '🦷',
+      'bonus': '⭐',
+      'cosmetic': '🎨',
+      'reward': '🎁'
+    };
+    return icons[item.category] || '📋';
+  }
+
+  formatAssignedChildren(task) {
+    if (!task.assigned_children || task.assigned_children.length === 0) {
+      return 'Non assignée';
+    }
+
+    const children = this.getChildren();
+    const assignedNames = task.assigned_children.map(childId => {
+      const child = children.find(c => c.id === childId);
+      return child ? child.name : childId;
+    });
+
+    return assignedNames.join(', ');
   }
 
   getDynamicIcons() {
@@ -1806,7 +1936,7 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 }
 
-class KidsTasksCardOptimized extends KidsTasksBaseCard {
+class KidsTasksCard extends KidsTasksBaseCard {
   constructor() {
     super();
     this.currentView = 'dashboard';
@@ -1907,14 +2037,18 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         }
 
         .card-header {
-          border-bottom: 2px solid var(--kt-surface-variant);
+          border-bottom: 2px solid var(--custom-header-color, var(--kt-surface-variant));
           margin-bottom: var(--kt-space-lg);
+          background: linear-gradient(135deg, var(--custom-header-color, var(--kt-primary)) 0%, transparent 100%);
+          background-size: 100% 4px;
+          background-repeat: no-repeat;
+          background-position: bottom;
         }
 
         .card-title {
           font-size: var(--kt-font-size-lg);
           font-weight: 700;
-          color: var(--primary-text-color);
+          color: var(--custom-dashboard-primary, var(--primary-text-color));
           margin: 0 0 var(--kt-space-sm) 0;
         }
 
@@ -1939,7 +2073,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         }
 
         .nav-button:hover {
-          background: rgba(0,0,0,.05);
+          background: var(--custom-button-hover-color, rgba(0,0,0,.05));
           color: var(--primary-text-color, #212121);
         }
 
@@ -1981,7 +2115,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
           position: relative;
           overflow: hidden;
           box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
-          min-height: 110px;
+          min-height: 180px;
           display: flex;
           flex-direction: row;
           justify-content: flex-start;
@@ -2043,7 +2177,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         .child-level-badge {
           position: absolute;
           bottom: -16px;
-          left: 8px;
+          left: 16px;
           border-radius: var(--kt-radius-md);
           font-size: .8em;
           font-weight: 600;
@@ -2142,11 +2276,11 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         }
 
         .gauge-fill.level-progress {
-          background: linear-gradient(90deg, #4facfe, #00f2fe);
+          background: linear-gradient(90deg, var(--custom-progress-bar-color, #4facfe), var(--custom-dashboard-secondary, #00f2fe));
         }
 
         .gauge-fill.tasks-progress {
-          background: linear-gradient(90deg, #43e97b, #38f9d7);
+          background: linear-gradient(90deg, var(--custom-progress-bar-color, #43e97b), var(--custom-dashboard-secondary, #38f9d7));
         }
 
         .gauge-fill.coins-progress {
@@ -2211,6 +2345,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         .child-avatar {
           font-size: 1.2em;
           margin-bottom: var(--kt-space-sm);
+          margin-right: var(--kt-space-md);
         }
 
         .child-name {
@@ -2245,7 +2380,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
 
         .progress-fill {
           height: 100%;
-          background: var(--kt-gauge-success);
+          background: var(--custom-progress-bar-color, var(--kt-gauge-success));
           transition: width var(--kt-transition-medium);
         }
 
@@ -2274,6 +2409,24 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
           font-size: .9em;
           color: var(--secondary-text-color);
           font-weight: 600;
+        }
+
+        /* Icônes et éléments secondaires */
+        .kt-empty__icon,
+        ha-icon,
+        .icon-image,
+        .task-icon,
+        .reward-icon,
+        .child-icon {
+          color: var(--custom-icon-color, var(--secondary-text-color));
+        }
+
+        .summary-card,
+        .gauge-label,
+        .secondary-text,
+        .child-stats,
+        .progress-label {
+          color: var(--custom-dashboard-secondary, var(--secondary-text-color));
         }
 
         /* Enhanced responsive optimizations */
@@ -2521,13 +2674,6 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
     };
 
     let gaugesHtml = renderGauge(
-      'Points totaux',
-      stats.totalPoints,
-      'total-points',
-      Math.min((stats.totalPoints / 500) * 100, 100)
-    );
-
-    gaugesHtml += renderGauge(
       `Niveau ${stats.level}`,
       `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`,
       'level-progress',
@@ -2539,6 +2685,13 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
       `${stats.completedToday}/${stats.totalToday}`,
       'tasks-progress',
       stats.totalToday > 0 ? (stats.completedToday / stats.totalToday) * 100 : 0
+    );
+
+    gaugesHtml += renderGauge(
+      'Points',
+      stats.totalPoints,
+      'total-points',
+      Math.min((stats.totalPoints / 500) * 100, 100)
     );
 
     if (includeCoins && stats.coins !== undefined) {
@@ -2686,7 +2839,8 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
   }
 
   static getConfigElement() {
-    return document.createElement('kids-tasks-card-editor');
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-card-editor${suffix}`);
   }
 
   static getStubConfig() {
@@ -2972,6 +3126,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .child-avatar {
           font-size: 4em;
           margin-bottom: var(--kt-space-sm);
+          margin-right: var(--kt-space-md);
         }
 
         .child-name {
@@ -3526,7 +3681,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
 
   static getConfigElement() {
-    return document.createElement('kids-tasks-child-card-editor');
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-child-card-editor${suffix}`);
   }
 
   static getStubConfig() {
@@ -3538,6 +3694,586 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       show_progress: true,
       show_rewards: true,
       show_completed: true
+    };
+  }
+}
+
+class KidsTasksManagerCard extends KidsTasksBaseCard {
+  constructor() {
+    super();
+    this.currentView = 'tasks';
+    this.taskFilter = 'active';
+  }
+
+  setConfig(config) {
+    this.config = {
+      title: 'Gestion Tâches & Récompenses',
+      show_navigation: true,
+      ...config
+    };
+  }
+
+  shouldUpdate(oldHass, newHass) {
+    if (!oldHass) return true;
+
+
+    const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
+    const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
+
+    if (oldTaskEntities.length !== newTaskEntities.length) return true;
+
+
+    for (const entityId of oldTaskEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state ||
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+
+
+    const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+    const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+
+    if (oldRewardEntities.length !== newRewardEntities.length) return true;
+
+    for (const entityId of oldRewardEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state ||
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  render() {
+    if (!this._hass) {
+      this.shadowRoot.innerHTML = '<div class="kt-loading">Chargement...</div>';
+      return;
+    }
+
+    this.shadowRoot.innerHTML = `
+      ${this.getStyles()}
+      <div class="card-content kids-tasks-scope">
+        <div class="card-header kt-p-lg">
+          <h2 class="card-title">${this.config.title}</h2>
+          ${this.config.show_navigation ? this.renderNavigation() : ''}
+        </div>
+
+        <div class="main-content kt-p-lg">
+          ${this.renderCurrentView()}
+        </div>
+      </div>
+    `;
+  }
+
+  getCustomCSSVariables() {
+
+    const tabColor = this.config?.tab_color || 'var(--kt-primary)';
+    const headerColor = this.config?.header_color || 'var(--kt-primary)';
+    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--kt-primary)';
+    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--kt-secondary)';
+    const childGradientStart = this.config?.child_gradient_start || '#4CAF50';
+    const childGradientEnd = this.config?.child_gradient_end || '#8BC34A';
+    const childBorderColor = this.config?.child_border_color || '#2E7D32';
+    const childTextColor = this.config?.child_text_color || '#ffffff';
+    const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
+    const progressBarColor = this.config?.progress_bar_color || 'var(--kt-success)';
+    const pointsBadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
+    const iconColor = this.config?.icon_color || '#757575';
+
+    return `
+      /* Configurable colors from config */
+      :host {
+        --custom-tab-color: ${tabColor};
+        --custom-header-color: ${headerColor};
+        --custom-dashboard-primary: ${dashboardPrimary};
+        --custom-dashboard-secondary: ${dashboardSecondary};
+        --custom-child-gradient-start: ${childGradientStart};
+        --custom-child-gradient-end: ${childGradientEnd};
+        --custom-child-border-color: ${childBorderColor};
+        --custom-child-text-color: ${childTextColor};
+        --custom-button-hover-color: ${buttonHoverColor};
+        --custom-progress-bar-color: ${progressBarColor};
+        --custom-points-badge-color: ${pointsBadgeColor};
+        --custom-icon-color: ${iconColor};
+      }
+    `;
+  }
+
+  getStyles() {
+    return `<style>
+        ${this.getCustomCSSVariables()}
+        :host {
+          display: block;
+          background: var(--kt-surface-primary);
+          border-radius: var(--kt-radius-lg);
+          box-shadow: 0 2px 8px var(--kt-shadow-light);
+          overflow: hidden;
+        }
+
+        .card-content {
+          min-height: 200px;
+        }
+
+        .card-header {
+          border-bottom: 2px solid var(--kt-surface-variant);
+          margin-bottom: var(--kt-space-lg);
+        }
+
+        .card-title {
+          font-size: var(--kt-font-size-lg);
+          font-weight: 700;
+          color: var(--primary-text-color);
+          margin: 0 0 var(--kt-space-sm) 0;
+        }
+
+        .navigation {
+          display: flex;
+          background: var(--card-background-color, #fff);
+          border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        }
+
+        .nav-button {
+          flex: 1;
+          padding: var(--kt-space-md);
+          border: none;
+          background: transparent;
+          color: var(--secondary-text-color, #757575);
+          font-weight: 600;
+          font-size: .9em;
+          cursor: pointer;
+          transition: all .3s;
+          border-bottom: 3px solid transparent;
+        }
+
+        .nav-button:hover {
+          background: rgba(0,0,0,.05);
+          color: var(--primary-text-color, #212121);
+        }
+
+        .nav-button.active {
+          color: var(--custom-tab-color, var(--kt-primary));
+          border-bottom-color: var(--custom-tab-color, var(--kt-primary));
+          background: rgba(107, 115, 255, .05);
+          position: relative;
+        }
+
+        .section {
+          margin-bottom: var(--kt-space-lg);
+        }
+
+        .section h2 {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--kt-space-md);
+          color: var(--primary-text-color);
+        }
+
+        .add-btn {
+          background: var(--kt-primary);
+          color: white;
+          border: none;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+        }
+
+        .add-btn:hover {
+          background: var(--kt-success);
+          transform: translateY(-1px);
+        }
+
+        .filters {
+          display: flex;
+          gap: var(--kt-space-sm);
+          margin-bottom: var(--kt-space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filter-btn {
+          background: var(--kt-surface-variant);
+          border: 2px solid transparent;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all var(--kt-transition-fast);
+          font-size: .9em;
+        }
+
+        .filter-btn:hover {
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .filter-btn.active {
+          border-color: var(--kt-primary);
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .task-list, .reward-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--kt-space-sm);
+        }
+
+        .task-item, .reward-item {
+          background: var(--kt-surface-variant);
+          border-radius: var(--kt-radius-md);
+          padding: var(--kt-space-md);
+          display: flex;
+          align-items: center;
+          gap: var(--kt-space-md);
+          transition: all var(--kt-transition-fast);
+          cursor: pointer;
+        }
+
+        .task-item:hover, .reward-item:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px var(--kt-shadow-light);
+        }
+
+        .task-item.inactive {
+          opacity: .6;
+          background: var(--kt-surface-variant);
+        }
+
+        .task-item.out-of-period {
+          border-left: 4px solid var(--kt-warning);
+        }
+
+        .item-icon {
+          font-size: 1.5em;
+          width: 40px;
+          text-align: center;
+        }
+
+        .task-main, .reward-main {
+          flex: 1;
+        }
+
+        .task-name, .reward-name {
+          font-weight: 600;
+          color: var(--primary-text-color);
+          margin-bottom: var(--kt-space-xs);
+        }
+
+        .task-meta, .reward-meta {
+          font-size: .9em;
+          color: var(--secondary-text-color);
+          display: flex;
+          gap: var(--kt-space-sm);
+          flex-wrap: wrap;
+        }
+
+        .task-rewards {
+          display: flex;
+          gap: var(--kt-space-xs);
+          align-items: center;
+        }
+
+        .reward-points, .reward-coins {
+          background: var(--kt-success);
+          color: white;
+          padding: 2px 8px;
+          border-radius: var(--kt-radius-sm);
+          font-weight: 600;
+          font-size: .8em;
+        }
+
+        .reward-coins {
+          background: var(--kt-coins-color);
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color);
+        }
+
+        .empty-state-icon {
+          font-size: 3em;
+          margin-bottom: var(--kt-space-md);
+          opacity: .6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .nav-tabs {
+            flex-wrap: wrap;
+          }
+
+          .filters {
+            justify-content: center;
+          }
+        }
+      </style>`;
+  }
+
+  renderNavigation() {
+    const tabs = [
+      { id: 'tasks', label: '📝 Tâches' },
+      { id: 'rewards', label: '🎁 Récompenses' },
+      { id: 'cosmetics', label: '🎨 Cosmétiques' }
+    ];
+
+    return `
+      <div class="navigation">
+        ${tabs.map(tab => `
+          <button
+            class="nav-button ${this.currentView === tab.id ? 'active' : ''}"
+            data-action="switch-view"
+            data-id="${tab.id}"
+          >
+            ${tab.label}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderCurrentView() {
+    switch (this.currentView) {
+      case 'tasks':
+        return this.renderTasksView();
+      case 'rewards':
+        return this.renderRewardsView();
+      case 'cosmetics':
+        return this.renderCosmeticsView();
+      default:
+        return this.renderTasksView();
+    }
+  }
+
+  renderTasksView() {
+    const allTasks = this.getTasks();
+    const tasks = this.filterTasks(allTasks, this.taskFilter);
+
+    return `
+      <div class="section">
+        <h2>
+          Gestion des tâches
+          <button class="add-btn" data-action="add-task">Ajouter</button>
+        </h2>
+
+        <div class="filters">
+          ${this.renderTaskFilters()}
+        </div>
+
+        ${tasks.length > 0 ? `
+          <div class="task-list">
+            ${tasks.map(task => this.renderTaskItem(task)).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <p>Aucune tâche ${this.getFilterLabel(this.taskFilter)}</p>
+            ${this.taskFilter === 'active' ? '<button class="add-btn" data-action="add-task">Créer votre première tâche</button>' : ''}
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderTaskFilters() {
+    const filters = [
+      { id: 'all', label: 'Toutes' },
+      { id: 'active', label: 'Actives' },
+      { id: 'bonus', label: 'Bonus' },
+      { id: 'inactive', label: 'Désactivées' },
+      { id: 'out-of-period', label: 'Hors période' }
+    ];
+
+    return filters.map(filter => `
+      <button
+        class="filter-btn ${this.taskFilter === filter.id ? 'active' : ''}"
+        data-action="filter-tasks"
+        data-filter="${filter.id}"
+      >
+        ${filter.label}
+      </button>
+    `).join('');
+  }
+
+  renderTaskItem(task) {
+    const childName = this.formatAssignedChildren(task);
+    const taskIcon = this.getCategoryIcon(task);
+
+    return `
+      <div class="task-item kt-swipeable-item ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}"
+           data-action="edit-task" data-id="${task.id}">
+        <div class="item-icon">${taskIcon}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-meta">
+            <span>👤 ${childName}</span>
+            <span>📅 ${this.getFrequencyLabel(task.frequency)}</span>
+            <span>📂 ${this.getCategoryLabel(task.category)}</span>
+          </div>
+          ${task.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${task.description}</div>` : ''}
+        </div>
+        <div class="task-rewards">
+          ${task.points > 0 ? `<span class="reward-points">+${task.points} 🎫</span>` : ''}
+          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins} 🪙</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  renderRewardsView() {
+    const rewards = this.getRewards();
+
+    return `
+      <div class="section">
+        <h2>
+          Gestion des récompenses
+          <button class="add-btn" data-action="add-reward">Ajouter</button>
+        </h2>
+        ${rewards.length > 0 ? `
+          <div class="reward-list">
+            ${rewards.map(reward => this.renderRewardItem(reward)).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">🎁</div>
+            <p>Aucune récompense créée</p>
+            <button class="add-btn" data-action="add-reward">Créer votre première récompense</button>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderRewardItem(reward) {
+    const rewardIcon = this.getCategoryIcon(reward);
+
+    return `
+      <div class="reward-item kt-swipeable-item"
+           data-action="edit-reward" data-id="${reward.id}">
+        <div class="item-icon">${rewardIcon}</div>
+        <div class="reward-main">
+          <div class="reward-name">${reward.name}</div>
+          <div class="reward-meta">
+            <span>💰 ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''}</span>
+            <span>📂 ${this.getCategoryLabel(reward.category)}</span>
+            ${reward.remaining_quantity !== null ? `<span>📦 ${reward.remaining_quantity} restant(s)</span>` : ''}
+          </div>
+          ${reward.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${reward.description}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  renderCosmeticsView() {
+    const allRewards = this.getRewards();
+    const cosmeticsRewards = allRewards.filter(r =>
+      r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic'
+    );
+
+    if (cosmeticsRewards.length === 0) {
+      return `
+        <div class="section">
+          <h2>🎨 Cosmétiques</h2>
+          <div class="empty-state">
+            <div class="empty-state-icon">🎨</div>
+            <p>Aucun cosmétique disponible</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">Créez des récompenses de type cosmétique pour les voir apparaître ici.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="section">
+        <h2>🎨 Cosmétiques</h2>
+        <div class="reward-list">
+          ${cosmeticsRewards.map(cosmetic => this.renderRewardItem(cosmetic)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  getFilterLabel(filter) {
+    const labels = {
+      'all': '',
+      'active': 'actives',
+      'inactive': 'désactivées',
+      'bonus': 'bonus',
+      'out-of-period': 'hors période'
+    };
+    return labels[filter] || '';
+  }
+
+  handleAction(action, id, event) {
+    switch (action) {
+      case 'switch-view':
+        this.currentView = id;
+        this.render();
+        break;
+      case 'filter-tasks':
+        this.taskFilter = event.target.dataset.filter;
+        this.render();
+        break;
+      case 'add-task':
+        this.handleAddTask();
+        break;
+      case 'edit-task':
+        this.handleEditTask(id);
+        break;
+      case 'add-reward':
+        this.handleAddReward();
+        break;
+      case 'edit-reward':
+        this.handleEditReward(id);
+        break;
+      default:
+        {
+          console.warn('Unknown action in manager card:', action);
+        }
+    }
+  }
+
+
+  async handleAddTask() {
+    console.info('Add task requested');
+
+  }
+
+  async handleEditTask(taskId) {
+    console.info('Edit task:', taskId);
+
+  }
+
+  async handleAddReward() {
+    console.info('Add reward requested');
+
+  }
+
+  async handleEditReward(rewardId) {
+    console.info('Edit reward:', rewardId);
+
+  }
+
+
+  static getConfigElement() {
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-manager-editor${suffix}`);
+  }
+
+  static getStubConfig() {
+    return {
+      type: 'custom:kids-tasks-manager',
+      title: 'Gestion Tâches & Récompenses',
+      show_navigation: true
     };
   }
 }
@@ -3640,6 +4376,36 @@ class KidsTasksBaseCardEditor extends HTMLElement {
           border-bottom: 1px solid var(--divider-color);
           padding-bottom: 4px;
         }
+
+        .color-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .color-option {
+          margin-bottom: 0;
+        }
+
+        .color-option label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          font-size: 13px;
+        }
+
+        .color-option input[type="color"] {
+          width: 100%;
+          height: 40px;
+          border: 1px solid var(--divider-color);
+          border-radius: 4px;
+          background: var(--card-background-color);
+          cursor: pointer;
+        }
+
+        }
       </style>
     `;
 
@@ -3689,63 +4455,329 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
   _renderSpecificOptions() {
     return `
-      <div class="section-title">Options d'affichage</div>
-      <div class="option">
-        <label>Mode d'affichage</label>
-        <select class="mode-select">
-          <option value="dashboard" ${this._config.mode === 'dashboard' ? 'selected' : ''}>
-            Tableau de bord
-          </option>
-          <option value="compact" ${this._config.mode === 'compact' ? 'selected' : ''}>
-            Vue compacte
-          </option>
-        </select>
-      </div>
-      <div class="option">
-        <label>
-          <input 
-            type="checkbox" 
-            class="show-completed-toggle"
-            ${this._config.show_completed !== false ? 'checked' : ''}
+      <div class="section-title">Couleurs Carte Principale</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Couleur des onglets</label>
+          <input
+            type="color"
+            class="tab-color-input"
+            value="${this._config.tab_color || '#3f51b5'}"
           >
-          Afficher les tâches terminées
-        </label>
-      </div>
-      <div class="option">
-        <label>
-          <input 
-            type="checkbox" 
-            class="show-rewards-toggle"
-            ${this._config.show_rewards !== false ? 'checked' : ''}
+        </div>
+        <div class="color-option">
+          <label>Couleur d'entête</label>
+          <input
+            type="color"
+            class="header-color-input"
+            value="${this._config.header_color || '#3f51b5'}"
           >
-          Afficher les récompenses
-        </label>
+        </div>
+        <div class="color-option">
+          <label>Couleur primaire dashboard</label>
+          <input
+            type="color"
+            class="dashboard-primary-input"
+            value="${this._config.dashboard_primary_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur secondaire dashboard</label>
+          <input
+            type="color"
+            class="dashboard-secondary-input"
+            value="${this._config.dashboard_secondary_color || '#ff4081'}"
+          >
+        </div>
+      </div>
+
+      <div class="section-title">Couleurs Cartes Enfants</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Début dégradé cartes enfants</label>
+          <input
+            type="color"
+            class="child-gradient-start-input"
+            value="${this._config.child_gradient_start || '#4CAF50'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Fin dégradé cartes enfants</label>
+          <input
+            type="color"
+            class="child-gradient-end-input"
+            value="${this._config.child_gradient_end || '#8BC34A'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur bordure cartes enfants</label>
+          <input
+            type="color"
+            class="child-border-color-input"
+            value="${this._config.child_border_color || '#2E7D32'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur texte cartes enfants</label>
+          <input
+            type="color"
+            class="child-text-color-input"
+            value="${this._config.child_text_color || '#ffffff'}"
+          >
+        </div>
+      </div>
+
+      <div class="section-title">Couleurs Interface</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Couleur des boutons au survol</label>
+          <input
+            type="color"
+            class="button-hover-input"
+            value="${this._config.button_hover_color || '#1565C0'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur de la barre de progression</label>
+          <input
+            type="color"
+            class="progress-bar-input"
+            value="${this._config.progress_bar_color || '#4caf50'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des badges de points</label>
+          <input
+            type="color"
+            class="points-badge-input"
+            value="${this._config.points_badge_color || '#ff9800'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des icônes</label>
+          <input
+            type="color"
+            class="icon-color-input"
+            value="${this._config.icon_color || '#757575'}"
+          >
+        </div>
+      </div>
+
+      <div class="help-text">
+        Cette carte affiche un tableau de bord avec tous les enfants et leurs tâches.
+        Personnalisez les couleurs pour harmoniser avec votre thème Home Assistant.
       </div>
     `;
   }
 
   _attachSpecificListeners() {
-    const modeSelect = this.querySelector('.mode-select');
-    const completedToggle = this.querySelector('.show-completed-toggle');
-    const rewardsToggle = this.querySelector('.show-rewards-toggle');
+    const tabColorInput = this.querySelector('.tab-color-input');
+    const headerColorInput = this.querySelector('.header-color-input');
+    const dashboardPrimaryInput = this.querySelector('.dashboard-primary-input');
+    const dashboardSecondaryInput = this.querySelector('.dashboard-secondary-input');
+    const childGradientStartInput = this.querySelector('.child-gradient-start-input');
+    const childGradientEndInput = this.querySelector('.child-gradient-end-input');
+    const childBorderColorInput = this.querySelector('.child-border-color-input');
+    const childTextColorInput = this.querySelector('.child-text-color-input');
+    const buttonHoverInput = this.querySelector('.button-hover-input');
+    const progressBarInput = this.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.querySelector('.points-badge-input');
+    const iconColorInput = this.querySelector('.icon-color-input');
 
-    if (modeSelect) {
-      modeSelect.addEventListener('change', (e) => {
-        this._config.mode = e.target.value;
+    if (tabColorInput) {
+      tabColorInput.addEventListener('change', (e) => {
+        this._config.tab_color = e.target.value;
         this._fireConfigChanged();
       });
     }
 
-    if (completedToggle) {
-      completedToggle.addEventListener('change', (e) => {
-        this._config.show_completed = e.target.checked;
+    if (headerColorInput) {
+      headerColorInput.addEventListener('change', (e) => {
+        this._config.header_color = e.target.value;
         this._fireConfigChanged();
       });
     }
 
-    if (rewardsToggle) {
-      rewardsToggle.addEventListener('change', (e) => {
-        this._config.show_rewards = e.target.checked;
+    if (dashboardPrimaryInput) {
+      dashboardPrimaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_primary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (dashboardSecondaryInput) {
+      dashboardSecondaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_secondary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childGradientStartInput) {
+      childGradientStartInput.addEventListener('change', (e) => {
+        this._config.child_gradient_start = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childGradientEndInput) {
+      childGradientEndInput.addEventListener('change', (e) => {
+        this._config.child_gradient_end = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childBorderColorInput) {
+      childBorderColorInput.addEventListener('change', (e) => {
+        this._config.child_border_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childTextColorInput) {
+      childTextColorInput.addEventListener('change', (e) => {
+        this._config.child_text_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (buttonHoverInput) {
+      buttonHoverInput.addEventListener('change', (e) => {
+        this._config.button_hover_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (progressBarInput) {
+      progressBarInput.addEventListener('change', (e) => {
+        this._config.progress_bar_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (pointsBadgeInput) {
+      pointsBadgeInput.addEventListener('change', (e) => {
+        this._config.points_badge_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (iconColorInput) {
+      iconColorInput.addEventListener('change', (e) => {
+        this._config.icon_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+  }
+}
+
+class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
+  _renderSpecificOptions() {
+    return `
+      <div class="section-title">Personnalisation des couleurs</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Couleur des onglets</label>
+          <input
+            type="color"
+            class="tab-color-input"
+            value="${this._config.tab_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur de l'en-tête</label>
+          <input
+            type="color"
+            class="header-color-input"
+            value="${this._config.header_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur primaire</label>
+          <input
+            type="color"
+            class="dashboard-primary-input"
+            value="${this._config.dashboard_primary_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des boutons au survol</label>
+          <input
+            type="color"
+            class="button-hover-input"
+            value="${this._config.button_hover_color || '#1565C0'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur de la barre de progression</label>
+          <input
+            type="color"
+            class="progress-bar-input"
+            value="${this._config.progress_bar_color || '#4caf50'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des badges de points</label>
+          <input
+            type="color"
+            class="points-badge-input"
+            value="${this._config.points_badge_color || '#ff9800'}"
+          >
+        </div>
+      </div>
+
+      <div class="help-text">
+        Cette carte permet de gérer les tâches, récompenses et cosmétiques.
+        Elle est destinée aux administrateurs du système Kids Tasks.
+      </div>
+    `;
+  }
+
+  _attachSpecificListeners() {
+    const tabColorInput = this.querySelector('.tab-color-input');
+    const headerColorInput = this.querySelector('.header-color-input');
+    const dashboardPrimaryInput = this.querySelector('.dashboard-primary-input');
+    const buttonHoverInput = this.querySelector('.button-hover-input');
+    const progressBarInput = this.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.querySelector('.points-badge-input');
+
+    if (tabColorInput) {
+      tabColorInput.addEventListener('change', (e) => {
+        this._config.tab_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (headerColorInput) {
+      headerColorInput.addEventListener('change', (e) => {
+        this._config.header_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (dashboardPrimaryInput) {
+      dashboardPrimaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_primary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (buttonHoverInput) {
+      buttonHoverInput.addEventListener('change', (e) => {
+        this._config.button_hover_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (progressBarInput) {
+      progressBarInput.addEventListener('change', (e) => {
+        this._config.progress_bar_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (pointsBadgeInput) {
+      pointsBadgeInput.addEventListener('change', (e) => {
+        this._config.points_badge_color = e.target.value;
         this._fireConfigChanged();
       });
     }
@@ -4765,13 +5797,17 @@ window.KidsTasksStyleManager = KidsTasksStyleManagerV2;
 
 
 const cardSuffix = '-dev' ;
+window.KidsTasksCardSuffix = cardSuffix;
 const mainCardType = `kids-tasks-card${cardSuffix}`;
 const childCardType = `kids-tasks-child-card${cardSuffix}`;
+const managerCardType = `kids-tasks-manager${cardSuffix}`;
 
-customElements.define(mainCardType, withErrorBoundary(KidsTasksCardOptimized));
+customElements.define(mainCardType, withErrorBoundary(KidsTasksCard));
 customElements.define(childCardType, withErrorBoundary(KidsTasksChildCard));
+customElements.define(managerCardType, withErrorBoundary(KidsTasksManagerCard));
 customElements.define(`kids-tasks-card-editor${cardSuffix}`, KidsTasksCardEditor);
 customElements.define(`kids-tasks-child-card-editor${cardSuffix}`, KidsTasksChildCardEditor);
+customElements.define(`kids-tasks-manager-editor${cardSuffix}`, KidsTasksManagerEditor);
 
 
 window.customCards = window.customCards || [];
@@ -4787,6 +5823,13 @@ window.customCards.push(
     type: childCardType,
     name: `Kids Tasks Child Card${' (Dev)' }`,
     description: 'Individual child view for tasks and rewards',
+    preview: true,
+    documentationURL: 'https://github.com/astrayel/kids-tasks-card'
+  },
+  {
+    type: managerCardType,
+    name: `Kids Tasks Manager${' (Dev)' }`,
+    description: 'Administration interface for managing tasks, rewards and cosmetics',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   }
@@ -4856,8 +5899,9 @@ if (typeof window !== 'undefined') {
   }
 
 
-  window.KidsTasksCard = KidsTasksCardOptimized;
+  window.KidsTasksCard = KidsTasksCard;
   window.KidsTasksChildCard = KidsTasksChildCard;
+  window.KidsTasksManagerCard = KidsTasksManagerCard;
   window.KidsTasksBaseCard = KidsTasksBaseCard;
 
 
@@ -4871,7 +5915,7 @@ if (typeof window !== 'undefined') {
     },
 
     reloadAllCards: () => {
-      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev' ;
+      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' ;
       document.querySelectorAll(selector).forEach(card => {
         window.KidsTasksDebug.reloadCard(card);
       });
@@ -4908,7 +5952,7 @@ if (typeof window !== 'undefined') {
 
 
     systemInfo: () => {
-      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev' ;
+      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' ;
       return {
         cards: document.querySelectorAll(selector).length,
         performance: performanceMonitor$2?.generateReport()?.summary,
@@ -4936,5 +5980,5 @@ logger.info(`Kids Tasks Card v${version} loaded successfully!`);
   logger.info('🎨 Styles: Consolidated CSS variables');
 }
 
-export { KidsTasksBaseCard, KidsTasksCardOptimized as KidsTasksCard, KidsTasksChildCard, KidsTasksStyleManagerV2 as KidsTasksStyleManager, KidsTasksUtils };
+export { KidsTasksBaseCard, KidsTasksCard, KidsTasksChildCard, KidsTasksManagerCard, KidsTasksStyleManagerV2 as KidsTasksStyleManager, KidsTasksUtils };
 //# sourceMappingURL=kids-tasks-card.dev.js.map

@@ -610,15 +610,145 @@ class KidsTasksBaseCard extends HTMLElement {
 
   // Common data access methods (to be overridden)
   getChildren() {
-    return [];
+    if (!this._hass) return [];
+
+    const children = [];
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.state !== 'unavailable') {
+          const childId = entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+          children.push({
+            id: childId,
+            name: entity.attributes.friendly_name || childId,
+            points: parseInt(entity.state) || 0,
+            coins: entity.attributes.coins || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || entity.attributes.cosmetics?.avatar?.emoji || '👤',
+            ...entity.attributes
+          });
+        }
+      }
+    });
+
+    return children.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getTasks() {
-    return [];
+    if (!this._hass) return [];
+
+    const taskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'))
+      .map(id => this._hass.states[id]);
+
+    return taskEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      name: entity.attributes.friendly_name || 'Tâche',
+      description: entity.attributes.description,
+      status: entity.state,
+      points: entity.attributes.points || 0,
+      coins: entity.attributes.coins || 0,
+      penalty_points: entity.attributes.penalty_points || 0,
+      category: entity.attributes.category,
+      frequency: entity.attributes.frequency || 'daily',
+      assigned_children: entity.attributes.assigned_children || [],
+      active: entity.attributes.active !== false,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
   }
 
   getRewards() {
-    return [];
+    if (!this._hass) return [];
+
+    const rewardEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_reward_'))
+      .map(id => this._hass.states[id]);
+
+    return rewardEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
+      name: entity.attributes.friendly_name || 'Récompense',
+      description: entity.attributes.description,
+      cost: entity.attributes.cost || 0,
+      coin_cost: entity.attributes.coin_cost || 0,
+      category: entity.attributes.category,
+      remaining_quantity: entity.attributes.remaining_quantity,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
+  }
+
+  // Task management utilities
+  filterTasks(tasks, filter) {
+    switch (filter) {
+      case 'active':
+        return tasks.filter(task => task.frequency !== 'none' && task.active !== false && this.isTaskInPeriod(task));
+      case 'inactive':
+        return tasks.filter(task => task.frequency !== 'none' && task.active === false);
+      case 'bonus':
+        return tasks.filter(task => task.frequency === 'bonus' || task.category === 'bonus');
+      case 'out-of-period':
+        return tasks.filter(task => task.frequency !== 'none' && task.active !== false && !this.isTaskInPeriod(task));
+      case 'all':
+      default:
+        return tasks;
+    }
+  }
+
+  isTaskInPeriod(task) {
+    // Simple implementation - can be extended
+    return true;
+  }
+
+  getFrequencyLabel(frequency) {
+    const labels = {
+      'daily': 'Quotidienne',
+      'weekly': 'Hebdomadaire',
+      'monthly': 'Mensuelle',
+      'bonus': 'Bonus',
+      'none': 'Désactivée'
+    };
+    return labels[frequency] || frequency;
+  }
+
+  getCategoryLabel(category) {
+    const labels = {
+      'chores': 'Corvées',
+      'homework': 'Devoirs',
+      'hygiene': 'Hygiène',
+      'bonus': 'Bonus',
+      'cosmetic': 'Cosmétique',
+      'reward': 'Récompense'
+    };
+    return labels[category] || category;
+  }
+
+  getCategoryIcon(item) {
+    if (item.icon) return item.icon;
+
+    const icons = {
+      'chores': '🧹',
+      'homework': '📚',
+      'hygiene': '🦷',
+      'bonus': '⭐',
+      'cosmetic': '🎨',
+      'reward': '🎁'
+    };
+    return icons[item.category] || '📋';
+  }
+
+  formatAssignedChildren(task) {
+    if (!task.assigned_children || task.assigned_children.length === 0) {
+      return 'Non assignée';
+    }
+
+    const children = this.getChildren();
+    const assignedNames = task.assigned_children.map(childId => {
+      const child = children.find(c => c.id === childId);
+      return child ? child.name : childId;
+    });
+
+    return assignedNames.join(', ');
   }
 
   getDynamicIcons() {
