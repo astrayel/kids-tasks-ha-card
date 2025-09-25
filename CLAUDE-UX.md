@@ -75,7 +75,6 @@ Ce document contient les spécifications d'amélioration UX pour la carte Kids T
 .clickable-item:hover {
   background-color: var(--kt-surface-variant);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px var(--kt-shadow-light);
 }
 
 .clickable-item:active {

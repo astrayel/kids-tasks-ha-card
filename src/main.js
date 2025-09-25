@@ -1,7 +1,7 @@
 // Kids Tasks Card v2.0 - Main Entry Point
 // This file imports all modular components and registers them with Home Assistant
 
-import { KidsTasksStyleManagerV2 as KidsTasksStyleManager } from './style-manager.js';
+import { KidsTasksStyleManager as KidsTasksStyleManager } from './style-manager.js';
 import { KidsTasksUtils } from './utils.js';
 import { KidsTasksBaseCard } from './base-card.js';
 import { KidsTasksCard } from './card.js';

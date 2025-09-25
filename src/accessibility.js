@@ -150,9 +150,9 @@ class KidsTasksAccessibility {
           </div>
         </div>
         <div class="kt-help-actions">
-          <button class="kt-btn kt-btn--primary" onclick="this.closest('.kt-help-modal').remove()">
+          <ha-button class="kt-btn kt-btn--primary" onclick="this.closest('.kt-help-modal').remove()">
             Close Help
-          </button>
+          </ha-button>
         </div>
       </div>
       <style>
@@ -180,7 +180,7 @@ class KidsTasksAccessibility {
           background: white;
           border-radius: 8px;
           padding: 24px;
-          max-width: 500px;
+          max-width: 1024px;
           max-height: 80vh;
           overflow-y: auto;
           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);

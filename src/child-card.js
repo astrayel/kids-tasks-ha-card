@@ -154,8 +154,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     this._allTimers.clear();
     
     // Performance monitoring cleanup
-    if (performanceMonitor) {
-      performanceMonitor.trackEventHandler('timers', this.constructor.name, 'remove');
+    if (this.performanceMonitor) {
+      this.performanceMonitor.trackEventHandler('timers', this.constructor.name, 'remove');
     }
   }
 
@@ -216,14 +216,17 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   render() {
     if (!this._hass || !this.config) {
-      this.shadowRoot.innerHTML = '<div class="loading">Chargement...</div>';
+      this.shadowRoot.innerHTML = `
+        ${this.getCommonStyles()}
+        <div class="loading">Chargement...</div>
+      `;
       return;
     }
 
     const child = this.getChild();
     if (!child) {
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
         <div class="error">
           Enfant non trouvé (ID: ${this.config.child_id})
         </div>
@@ -233,9 +236,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     try {
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
+        ${this.getChildSpecificStyles()}
         <div class="child-card-container">
-          ${this.renderHeader(child)}
+          ${this.renderChild(child)}
           ${this.renderTabs()}
           ${this.renderTabContent(child)}
         </div>
@@ -243,23 +247,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     } catch (error) {
       console.error('Error rendering child card:', error);
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
         <div class="error">Erreur: ${error.message}</div>
       `;
     }
   }
 
-  getStyles() {
+  getChildSpecificStyles() {
     return `
       <style>
-        :host {
-          display: block;
-          background: var(--card-background-color, white);
-          border-radius: var(--kt-radius-lg);
-          overflow: hidden;
-          box-shadow: var(--box-shadow, 0 2px 8px rgba(0,0,0,0.1));
-        }
-
         .child-card-container {
           padding: var(--kt-space-lg);
         }
@@ -272,17 +268,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-md);
         }
 
-        .child-avatar {
-          font-size: 4em;
-          margin-bottom: var(--kt-space-sm);
-          margin-right: var(--kt-space-md);
-        }
-
-        .child-name {
-          font-size: 1.5em;
-          font-weight: 700;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-sm);
+        .child-card-colorful {
+          border-bottom-right-radius: 0px;
+          border-bottom-left-radius: 0px;
         }
 
         .child-stats {
@@ -290,6 +278,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           gap: var(--kt-space-md);
           justify-content: center;
           flex-wrap: wrap;
+        }
+
+        .card-header, .navigation {
+          border-radius: 0px;
         }
 
         .stat {
@@ -445,69 +437,20 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           opacity: 0.6;
         }
 
-        /* Progress gauges */
+        /* Progress section styling */
         .progress-section {
           margin-bottom: var(--kt-space-lg);
         }
 
-        .gauge {
-          margin-bottom: var(--kt-space-md);
-        }
-
-        .gauge-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .gauge-label {
-          font-weight: 600;
-          color: var(--primary-text-color);
-        }
-
-        .gauge-value {
-          font-weight: 700;
-          color: var(--kt-primary);
-        }
-
-        .gauge-bar {
-          height: 8px;
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-sm);
-          overflow: hidden;
-        }
-
-        .gauge-fill {
-          height: 100%;
-          transition: width var(--kt-transition-medium);
-          border-radius: var(--kt-radius-sm);
-        }
-
-        .gauge-fill.tasks-fill {
-          background: linear-gradient(90deg, var(--kt-success) 0%, var(--kt-info) 100%);
-        }
-
-        .gauge-fill.points-fill {
-          background: var(--kt-success);
-        }
-
-        .gauge-fill.coins-fill {
-          background: var(--kt-coins-color);
-        }
-
-        /* Responsive */
+        /* Responsive adjustments for child card */
         @media (max-width: 768px) {
-          .child-card-container {
-            padding: var(--kt-space-md);
+          .child-stats {
+            flex-direction: column;
+            align-items: center;
           }
-          
+
           .tabs {
             flex-wrap: wrap;
-          }
-          
-          .child-stats {
-            justify-content: center;
           }
         }
       </style>
@@ -521,22 +464,33 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     
     return `
       <div class="child-header">
-        <div class="child-avatar">${this.getAvatar(child)}</div>
+        <div class="child-avatar">${this.getAvatar(child, '👶')}</div>
         <div class="child-name">${child.name}</div>
         <div class="child-stats">
           <span class="stat">${child.points || 0} 🎫 Points</span>
           <span class="stat">${child.coins || 0} 🪙 Pièces</span>
           <span class="stat">Niveau ${child.level || 1}</span>
         </div>
-        ${this.config.show_progress ? this.renderProgress(stats) : ''}
+        ${this.config.show_progress ? this.renderProgress(stats, child) : ''}
       </div>
     `;
   }
 
-  renderProgress(stats) {
+  renderProgress(stats, child) {
+    // Adapt stats to match renderGauges() expectations
+    const gaugeStats = {
+      level: child?.level || 1,
+      pointsInCurrentLevel: (child?.points || 0) % 100,
+      pointsToNextLevel: 100,
+      completedToday: stats.completedToday,
+      totalToday: stats.totalTasksToday,
+      totalPoints: child?.points || 0,
+      coins: stats.coins
+    };
+
     return `
       <div class="progress-section">
-        ${this.renderGauges(stats, true, stats.completedToday, stats.totalTasksToday)}
+        ${this.renderGauges(gaugeStats, true)}
       </div>
     `;
   }
@@ -549,16 +503,18 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     ].filter(tab => tab.show);
 
     return `
-      <div class="tabs">
-        ${tabs.map(tab => `
-          <button 
-            class="tab-button ${this.currentTab === tab.id ? 'active' : ''}"
-            data-action="switch-tab"
-            data-id="${tab.id}"
-          >
-            ${tab.label}
-          </button>
-        `).join('')}
+      <div class="card-header">
+        <div class="navigation">
+          ${tabs.map(tab => `
+            <button 
+              class="nav-button ${this.currentTab === tab.id ? 'active' : ''}"
+              data-action="switch-view"
+              data-id="${tab.id}"
+            >
+              ${tab.label}
+            </button>
+          `).join('')}
+        </div>
       </div>
     `;
   }
@@ -577,12 +533,31 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderTasksTab(child) {
-    const tasks = this.getChildTasks(child.id);
-    const filteredTasks = this.filterTasks(tasks);
+    const tasks = this.getChildTasks(child.child_id);
+    const filteredTasks = this.filterTasks(tasks, this.tasksFilter, 'child');
+
+    // Debug
+    console.log('=== DEBUG CHILD TASKS ===');
+    console.log('Child:', child);
+    console.log('Child ID used:', child.child_id);
+    console.log('Config child_id:', this.config.child_id);
+    console.log('All tasks found:', tasks);
+    console.log('Current filter:', this.tasksFilter);
+    console.log('Filtered tasks:', filteredTasks);
+    console.log('========================');
 
     return `
       <div class="tab-content">
         ${this.renderTaskFilters()}
+        <div style="background: #ffe; padding: 8px; border: 1px solid #ffa; margin: 8px 0; font-size: 12px;">
+          DEBUG:<br>
+          Config child_id: ${this.config.child_id}<br>
+          Child object ID: ${child.child_id}<br>
+          Child name: ${child.name}<br>
+          Total tasks found: ${tasks.length}<br>
+          Filter: ${this.tasksFilter}<br>
+          Filtered tasks: ${filteredTasks.length}
+        </div>
         ${filteredTasks.length > 0 ? `
           <div class="task-list">
             ${filteredTasks.map(task => this.renderTaskItem(task)).join('')}
@@ -595,23 +570,18 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   renderTaskFilters() {
     const filters = [
       { id: 'active', label: 'Actives' },
+      { id: 'bonus', label: 'Bonus' },
       { id: 'completed', label: 'Terminées' },
       { id: 'all', label: 'Toutes' }
     ];
 
-    return `
-      <div class="filters">
-        ${filters.map(filter => `
-          <button 
-            class="filter-btn ${this.tasksFilter === filter.id ? 'active' : ''}"
-            data-action="filter-tasks"
-            data-filter="${filter.id}"
-          >
-            ${filter.label}
-          </button>
-        `).join('')}
-      </div>
-    `;
+    return super.renderTaskFilters({
+      filters,
+      filterProperty: 'tasksFilter',
+      actionName: 'filter-tasks',
+      wrapper: true,
+      wrapperClass: 'filters'
+    });
   }
 
   renderTaskItem(task) {
@@ -677,7 +647,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   handleAction(action, id, event) {
     switch (action) {
-      case 'switch-tab':
+      case 'switch-view':
         this.currentTab = id;
         this.render();
         break;
@@ -696,16 +666,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
   }
 
-  filterTasks(tasks) {
-    switch (this.tasksFilter) {
-      case 'active':
-        return tasks.filter(t => t.status === 'todo' || t.status === 'pending');
-      case 'completed':
-        return tasks.filter(t => t.status === 'completed' || t.status === 'validated');
-      default:
-        return tasks;
-    }
-  }
 
   async completeTask(taskId) {
     try {
@@ -735,33 +695,101 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return this.getChildFromHass(this._hass, childId);
   }
 
-  getChildFromHass(hass, childId) {
-    const pointsEntityId = `sensor.kidtasks_${childId}_points`;
-    const entity = hass.states[pointsEntityId];
-    
-    if (!entity) return null;
-    
-    return {
-      id: childId,
-      name: entity.attributes.friendly_name || childId,
-      points: parseInt(entity.state) || 0,
-      coins: entity.attributes.coins || 0,
-      level: entity.attributes.level || 1,
-      ...entity.attributes
-    };
+  getChildFromHass(hass, childIdOrName) {
+    console.log('=== getChildFromHass DEBUG ===');
+    console.log('Looking for child:', childIdOrName);
+
+    // Get all points entities to see what we have
+    const pointsEntities = Object.keys(hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_') && id.endsWith('_points'));
+
+    console.log('All points entities:', pointsEntities);
+
+    // First, search by friendly_name (most common case)
+    for (const entityId of pointsEntities) {
+      const e = hass.states[entityId];
+      console.log(`Entity ${entityId}:`, {
+        friendly_name: e.attributes.friendly_name,
+        state: e.state,
+        attributes: e.attributes
+      });
+
+      if (e.attributes.friendly_name === childIdOrName || e.attributes.friendly_name?.toLowerCase() === childIdOrName.toLowerCase()) {
+        const realId = e.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+        console.log('Found by friendly_name! Real ID:', realId);
+        return {
+          id: realId,
+          name: e.attributes.friendly_name || realId,
+          points: parseInt(e.state) || 0,
+          coins: e.attributes.coins || 0,
+          level: e.attributes.level || 1,
+          ...e.attributes
+        };
+      }
+    }
+
+    // Then try direct ID (for UUID cases)
+    let pointsEntityId = `sensor.kidtasks_${childIdOrName}_points`;
+    let entity = hass.states[pointsEntityId];
+
+    if (entity) {
+      console.log('Found by direct ID:', childIdOrName);
+      return {
+        id: childIdOrName,
+        name: entity.attributes.friendly_name || childIdOrName,
+        points: parseInt(entity.state) || 0,
+        coins: entity.attributes.coins || 0,
+        level: entity.attributes.level || 1,
+        ...entity.attributes
+      };
+    }
+
+    console.log('Child not found!');
+    console.log('===============================');
+    return null;
   }
 
   getChildTasks(childId) {
     if (!this._hass) return [];
-    
+
+    console.log('=== getChildTasks DEBUG ===');
+    console.log('Input childId:', childId);
+
+    // Get all task entities
+    const allTaskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'));
+
+    console.log('All task entities:', allTaskEntities);
+
     const taskEntities = Object.keys(this._hass.states)
       .filter(id => id.startsWith('sensor.kidtasks_task_'))
       .map(id => this._hass.states[id])
-      .filter(entity => entity.attributes && 
-                      entity.attributes.assigned_children && 
-                      entity.attributes.assigned_children.includes(childId));
-    
-    return taskEntities.map(entity => ({
+      .filter(entity => {
+        if (!entity.attributes) return false;
+
+        // Support multiple assignment formats
+        const assignedChildIds = entity.attributes.assigned_child_ids ||
+                                (entity.attributes.assigned_children ? entity.attributes.assigned_children :
+                                (entity.attributes.assigned_child_id ? [entity.attributes.assigned_child_id] : []));
+
+        console.log(`Task ${entity.entity_id}:`, {
+          assigned_child_ids: entity.attributes.assigned_child_ids,
+          assigned_children: entity.attributes.assigned_children,
+          assigned_child_id: entity.attributes.assigned_child_id,
+          final_assignedChildIds: assignedChildIds,
+          searching_for: childId
+        });
+
+        const result = Array.isArray(assignedChildIds) ? assignedChildIds.includes(childId) : assignedChildIds === childId;
+        console.log('Match result:', result);
+        return result;
+      });
+
+    console.log('Filtered entities:', taskEntities.length);
+    console.log('==========================');
+
+
+    const result = taskEntities.map(entity => ({
       id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       description: entity.attributes.description,
@@ -771,15 +799,18 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       icon: entity.attributes.icon,
       ...entity.attributes
     }));
+
+    console.log('Final mapped tasks:', result);
+    return result;
   }
 
   getRewards() {
     if (!this._hass) return [];
-    
+
     const rewardEntities = Object.keys(this._hass.states)
       .filter(id => id.startsWith('sensor.kidtasks_reward_'))
       .map(id => this._hass.states[id]);
-    
+
     return rewardEntities.map(entity => ({
       id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
       name: entity.attributes.friendly_name || 'Récompense',
@@ -793,8 +824,16 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }));
   }
 
+  getChildRewards(childId) {
+    const child = this.getChildFromHass(this._hass, childId);
+    if (!child) return [];
+
+    const allRewards = this.getRewards();
+    return allRewards.filter(reward => (reward.min_level || 1) <= (child.level || 1));
+  }
+
   getChildStats(child) {
-    const tasks = this.getChildTasks(child.id);
+    const tasks = this.getChildTasks(child.child_id);
     const completedToday = tasks.filter(t => 
       (t.status === 'completed' || t.status === 'validated') && 
       this.isToday(t.completed_at)
@@ -810,24 +849,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
 
-  getAvatar(child) {
-    if (!child) {
-      return '👶';
-    }
-    const avatarType = child.avatar_type || 'emoji';
-    
-    if (avatarType === 'emoji') {
-      return child.avatar || '👶';
-    } else if (avatarType === 'url' && child.avatar_data) {
-      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}">`;
-    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
-      const personEntity = this._hass.states[child.person_entity_id];
-      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
-        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}">`;
-      }
-    }
-    return child.avatar || '👶';
-  }
 
 
   isToday(dateString) {

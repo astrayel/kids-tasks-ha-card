@@ -44,13 +44,14 @@ const config = {
       maxEmptyLines: isProduction ? 0 : 2
     }),
 
-    // CSS optimization
-    cssOptimizerPlugin({
-      removeUnused: true,
-      optimizeSelectors: true,
-      compressValues: true,
-      verbose: isDevelopment
-    })
+    // CSS optimization - DÉSACTIVÉ temporairement car il supprime .kt-hidden
+    // TODO: Réactiver après avoir fixé le problème de suppression des classes critiques
+    // cssOptimizerPlugin({
+    //   removeUnused: true,
+    //   optimizeSelectors: true,
+    //   compressValues: true,
+    //   verbose: isDevelopment
+    // })
   ],
   
   // Watch options for development

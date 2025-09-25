@@ -1,14 +1,14 @@
 // Kids Tasks Style Manager v2.0 - Optimized CSS System
 // Consolidated from 364+ variables to 45 essential variables based on usage analysis
 
-class KidsTasksStyleManagerV2 {
+class KidsTasksStyleManager {
   static instance = null;
   static injected = false;
   static currentVersion = 'v2.0.0-optimized';
   
   static getInstance() {
     if (!this.instance) {
-      this.instance = new KidsTasksStyleManagerV2();
+      this.instance = new KidsTasksStyleManager();
     }
     return this.instance;
   }
@@ -37,6 +37,7 @@ class KidsTasksStyleManagerV2 {
       :root {
         /* === CORE COLORS (6 variables) === */
         --kt-primary: var(--primary-color, #3f51b5);
+        --kt-active: var(--darker-primary-color, #1e3462ff);
         --kt-secondary: var(--accent-color, #ff4081);
         --kt-success: #4caf50;
         --kt-warning: #ff9800;
@@ -120,9 +121,7 @@ class KidsTasksStyleManagerV2 {
     return `
       /* Card Containers */
       .kt-card {
-        background: var(--kt-surface-primary);
         border-radius: var(--kt-radius-lg);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
         overflow: hidden;
         transition: all var(--kt-transition-fast);
       }
@@ -327,60 +326,27 @@ class KidsTasksStyleManagerV2 {
   
   static getInteractionStyles() {
     return `
-      /* Clickable Elements */
-      .kt-clickable {
-        cursor: pointer;
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .kt-clickable:hover {
-        background: var(--kt-button-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
-      }
-      
-      .kt-clickable:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 4px var(--kt-shadow-light);
-      }
-      
-      /* Loading States */
-      .kt-loading {
-        text-align: center;
-        padding: var(--kt-space-xl);
-        color: var(--secondary-text-color);
-      }
-      
-      /* Error States */
-      .kt-error {
-        background: var(--kt-error);
-        color: white;
-        padding: var(--kt-space-md);
-        border-radius: var(--kt-radius-md);
-        text-align: center;
-      }
-      
-      /* Focus States */
+      /* Focus States - utile globalement */
       .kt-focusable:focus {
         outline: 2px solid var(--kt-primary);
         outline-offset: 2px;
       }
-      
-      /* Animation States */
+
+      /* Animation States globales */
       @keyframes kt-fade-in {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      
+
       @keyframes kt-slide-up {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
-      
+
       .kt-fade-in {
         animation: kt-fade-in var(--kt-transition-medium) ease;
       }
-      
+
       .kt-slide-up {
         animation: kt-slide-up var(--kt-transition-medium) ease;
       }
@@ -424,13 +390,6 @@ class KidsTasksStyleManagerV2 {
         
         .kt-gap-md {
           gap: var(--kt-space-sm);
-        }
-      }
-      
-      /* Tablet */
-      @media (min-width: 481px) and (max-width: 768px) {
-        .kt-grid-auto {
-          grid-template-columns: repeat(2, 1fr);
         }
       }
       
@@ -550,7 +509,7 @@ class KidsTasksStyleManagerV2 {
 }
 
 // ES6 export
-export { KidsTasksStyleManagerV2 };
+export { KidsTasksStyleManager };
 
 // Backwards compatibility
-window.KidsTasksStyleManagerV2 = KidsTasksStyleManagerV2;
+window.KidsTasksStyleManager = KidsTasksStyleManager;

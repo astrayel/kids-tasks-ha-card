@@ -3,6 +3,7 @@
 class KidsTasksBaseCardEditor extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: 'open' });
     this._config = {};
     this._rendered = false;
     this._hass = null;
@@ -29,42 +30,24 @@ class KidsTasksBaseCardEditor extends HTMLElement {
   }
 
   _render() {
-    this.innerHTML = `
+    this.shadowRoot.innerHTML = `
       <div class="card-config">
-        <div class="option">
-          <label>Titre de la carte</label>
-          <input 
-            type="text" 
-            class="title-input"
-            value="${this._config.title || ''}"
-            placeholder="Gestionnaire de Tâches Enfants"
-          >
-        </div>
-        <div class="option">
-          <label>
-            <input 
-              type="checkbox" 
-              class="navigation-toggle"
-              ${this._config.show_navigation !== false ? 'checked' : ''}
-            >
-            Afficher la navigation
-          </label>
-        </div>
         ${this._renderSpecificOptions()}
       </div>
       <style>
         .card-config {
-          padding: 16px;
+          padding: var(--kt-space-lg);
           font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+          border-radius: var(--kt-radius-lg);
         }
         
         .option {
-          margin-bottom: 16px;
+          margin-bottom: var(--kt-space-md);
         }
         
         .option label {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: var(--kt-space-xs);
           font-weight: 500;
           color: var(--primary-text-color);
         }
@@ -98,19 +81,19 @@ class KidsTasksBaseCardEditor extends HTMLElement {
         }
         
         .section-title {
-          font-size: 16px;
+          font-size: var(--kt-font-size-md);
           font-weight: 600;
-          margin: 24px 0 12px 0;
+          margin: var(--kt-space-lg) 0 var(--kt-space-sm) 0;
           color: var(--primary-text-color);
           border-bottom: 1px solid var(--divider-color);
-          padding-bottom: 4px;
+          padding-bottom: var(--kt-space-xs);
         }
 
         .color-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          margin-bottom: 16px;
+          gap: var(--kt-space-md);
+          margin-bottom: var(--kt-space-md);
         }
 
         .color-option {
@@ -133,8 +116,6 @@ class KidsTasksBaseCardEditor extends HTMLElement {
           background: var(--card-background-color);
           cursor: pointer;
         }
-
-        }
       </style>
     `;
 
@@ -148,23 +129,6 @@ class KidsTasksBaseCardEditor extends HTMLElement {
   }
 
   _attachListeners() {
-    const titleInput = this.querySelector('.title-input');
-    const navToggle = this.querySelector('.navigation-toggle');
-
-    if (titleInput) {
-      titleInput.addEventListener('input', (e) => {
-        this._config.title = e.target.value;
-        this._fireConfigChanged();
-      });
-    }
-
-    if (navToggle) {
-      navToggle.addEventListener('change', (e) => {
-        this._config.show_navigation = e.target.checked;
-        this._fireConfigChanged();
-      });
-    }
-
     this._attachSpecificListeners();
   }
 
@@ -173,18 +137,6 @@ class KidsTasksBaseCardEditor extends HTMLElement {
   }
 
   _syncInputValues() {
-    // Sync base input values
-    const titleInput = this.querySelector('.title-input');
-    const navToggle = this.querySelector('.navigation-toggle');
-
-    if (titleInput && this._config.title !== undefined) {
-      titleInput.value = this._config.title;
-    }
-
-    if (navToggle && this._config.show_navigation !== undefined) {
-      navToggle.checked = this._config.show_navigation !== false;
-    }
-
     // Call specific sync method for subclasses
     this._syncSpecificInputValues();
   }
@@ -208,11 +160,11 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     return {
       tab_color: '#3f51b5',
       header_color: '#3f51b5',
+      tab_text_color: '#ffffff',
       dashboard_primary_color: '#3f51b5',
       dashboard_secondary_color: '#ff4081',
       child_gradient_start: '#4CAF50',
       child_gradient_end: '#8BC34A',
-      child_border_color: '#2E7D32',
       child_text_color: '#ffffff',
       button_hover_color: '#1565C0',
       progress_bar_color: '#4caf50',
@@ -224,10 +176,10 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
   _renderSpecificOptions() {
     const defaults = this.getDefaultColors();
     return `
-      <div class="section-title">Couleurs Carte Principale</div>
+      <div class="section-title">Carte Principale</div>
       <div class="color-grid">
         <div class="color-option">
-          <label>Couleur des onglets</label>
+          <label>Onglet actif</label>
           <input
             type="color"
             class="tab-color-input"
@@ -235,11 +187,19 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur d'entête</label>
+          <label>Onglets</label>
           <input
             type="color"
             class="header-color-input"
             value="${this._config.header_color || defaults.header_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Texte des onglets</label>
+          <input
+            type="color"
+            class="tab-text-color-input"
+            value="${this._config.tab_text_color || defaults.tab_text_color}"
           >
         </div>
         <div class="color-option">
@@ -260,10 +220,10 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
         </div>
       </div>
 
-      <div class="section-title">Couleurs Cartes Enfants</div>
+      <div class="section-title">Cartes Enfants</div>
       <div class="color-grid">
         <div class="color-option">
-          <label>Début dégradé cartes enfants</label>
+          <label>Début dégradé enfants</label>
           <input
             type="color"
             class="child-gradient-start-input"
@@ -271,7 +231,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Fin dégradé cartes enfants</label>
+          <label>Fin dégradé enfants</label>
           <input
             type="color"
             class="child-gradient-end-input"
@@ -279,15 +239,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur bordure cartes enfants</label>
-          <input
-            type="color"
-            class="child-border-color-input"
-            value="${this._config.child_border_color || defaults.child_border_color}"
-          >
-        </div>
-        <div class="color-option">
-          <label>Couleur texte cartes enfants</label>
+          <label>Texte cartes enfants</label>
           <input
             type="color"
             class="child-text-color-input"
@@ -296,10 +248,10 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
         </div>
       </div>
 
-      <div class="section-title">Couleurs Interface</div>
+      <div class="section-title">Interface</div>
       <div class="color-grid">
         <div class="color-option">
-          <label>Couleur des boutons au survol</label>
+          <label>Boutons au survol</label>
           <input
             type="color"
             class="button-hover-input"
@@ -307,7 +259,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur de la barre de progression</label>
+          <label>Barre de progression</label>
           <input
             type="color"
             class="progress-bar-input"
@@ -315,7 +267,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur des badges de points</label>
+          <label>Badges de points</label>
           <input
             type="color"
             class="points-badge-input"
@@ -323,7 +275,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur des icônes</label>
+          <label>Icônes</label>
           <input
             type="color"
             class="icon-color-input"
@@ -340,18 +292,18 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
   }
 
   _attachSpecificListeners() {
-    const tabColorInput = this.querySelector('.tab-color-input');
-    const headerColorInput = this.querySelector('.header-color-input');
-    const dashboardPrimaryInput = this.querySelector('.dashboard-primary-input');
-    const dashboardSecondaryInput = this.querySelector('.dashboard-secondary-input');
-    const childGradientStartInput = this.querySelector('.child-gradient-start-input');
-    const childGradientEndInput = this.querySelector('.child-gradient-end-input');
-    const childBorderColorInput = this.querySelector('.child-border-color-input');
-    const childTextColorInput = this.querySelector('.child-text-color-input');
-    const buttonHoverInput = this.querySelector('.button-hover-input');
-    const progressBarInput = this.querySelector('.progress-bar-input');
-    const pointsBadgeInput = this.querySelector('.points-badge-input');
-    const iconColorInput = this.querySelector('.icon-color-input');
+    const tabColorInput = this.shadowRoot.querySelector('.tab-color-input');
+    const headerColorInput = this.shadowRoot.querySelector('.header-color-input');
+    const tabTextColorInput = this.shadowRoot.querySelector('.tab-text-color-input');
+    const dashboardPrimaryInput = this.shadowRoot.querySelector('.dashboard-primary-input');
+    const dashboardSecondaryInput = this.shadowRoot.querySelector('.dashboard-secondary-input');
+    const childGradientStartInput = this.shadowRoot.querySelector('.child-gradient-start-input');
+    const childGradientEndInput = this.shadowRoot.querySelector('.child-gradient-end-input');
+    const childTextColorInput = this.shadowRoot.querySelector('.child-text-color-input');
+    const buttonHoverInput = this.shadowRoot.querySelector('.button-hover-input');
+    const progressBarInput = this.shadowRoot.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.shadowRoot.querySelector('.points-badge-input');
+    const iconColorInput = this.shadowRoot.querySelector('.icon-color-input');
 
     if (tabColorInput) {
       tabColorInput.addEventListener('change', (e) => {
@@ -363,6 +315,13 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     if (headerColorInput) {
       headerColorInput.addEventListener('change', (e) => {
         this._config.header_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (tabTextColorInput) {
+      tabTextColorInput.addEventListener('change', (e) => {
+        this._config.tab_text_color = e.target.value;
         this._fireConfigChanged();
       });
     }
@@ -395,12 +354,6 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
       });
     }
 
-    if (childBorderColorInput) {
-      childBorderColorInput.addEventListener('change', (e) => {
-        this._config.child_border_color = e.target.value;
-        this._fireConfigChanged();
-      });
-    }
 
     if (childTextColorInput) {
       childTextColorInput.addEventListener('change', (e) => {
@@ -445,11 +398,11 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     const colorInputs = [
       { input: '.tab-color-input', config: 'tab_color', default: defaults.tab_color },
       { input: '.header-color-input', config: 'header_color', default: defaults.header_color },
+      { input: '.tab-text-color-input', config: 'tab_text_color', default: defaults.tab_text_color },
       { input: '.dashboard-primary-input', config: 'dashboard_primary_color', default: defaults.dashboard_primary_color },
       { input: '.dashboard-secondary-input', config: 'dashboard_secondary_color', default: defaults.dashboard_secondary_color },
       { input: '.child-gradient-start-input', config: 'child_gradient_start', default: defaults.child_gradient_start },
       { input: '.child-gradient-end-input', config: 'child_gradient_end', default: defaults.child_gradient_end },
-      { input: '.child-border-color-input', config: 'child_border_color', default: defaults.child_border_color },
       { input: '.child-text-color-input', config: 'child_text_color', default: defaults.child_text_color },
       { input: '.button-hover-input', config: 'button_hover_color', default: defaults.button_hover_color },
       { input: '.progress-bar-input', config: 'progress_bar_color', default: defaults.progress_bar_color },
@@ -458,7 +411,7 @@ class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
     ];
 
     colorInputs.forEach(({ input, config, default: defaultValue }) => {
-      const element = this.querySelector(input);
+      const element = this.shadowRoot.querySelector(input);
       if (element) {
         const value = this._config[config] || defaultValue;
         element.value = value;
@@ -473,7 +426,7 @@ class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
       <div class="section-title">Personnalisation des couleurs</div>
       <div class="color-grid">
         <div class="color-option">
-          <label>Couleur des onglets</label>
+          <label>Onglet actif</label>
           <input
             type="color"
             class="tab-color-input"
@@ -481,11 +434,19 @@ class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
           >
         </div>
         <div class="color-option">
-          <label>Couleur de l'en-tête</label>
+          <label>Couleur des onglets</label>
           <input
             type="color"
             class="header-color-input"
             value="${this._config.header_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur du texte des onglets</label>
+          <input
+            type="color"
+            class="tab-text-color-input"
+            value="${this._config.tab_text_color || '#ffffff'}"
           >
         </div>
         <div class="color-option">
@@ -530,12 +491,13 @@ class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
   }
 
   _attachSpecificListeners() {
-    const tabColorInput = this.querySelector('.tab-color-input');
-    const headerColorInput = this.querySelector('.header-color-input');
-    const dashboardPrimaryInput = this.querySelector('.dashboard-primary-input');
-    const buttonHoverInput = this.querySelector('.button-hover-input');
-    const progressBarInput = this.querySelector('.progress-bar-input');
-    const pointsBadgeInput = this.querySelector('.points-badge-input');
+    const tabColorInput = this.shadowRoot.querySelector('.tab-color-input');
+    const headerColorInput = this.shadowRoot.querySelector('.header-color-input');
+    const tabTextColorInput = this.shadowRoot.querySelector('.tab-text-color-input');
+    const dashboardPrimaryInput = this.shadowRoot.querySelector('.dashboard-primary-input');
+    const buttonHoverInput = this.shadowRoot.querySelector('.button-hover-input');
+    const progressBarInput = this.shadowRoot.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.shadowRoot.querySelector('.points-badge-input');
 
     if (tabColorInput) {
       tabColorInput.addEventListener('change', (e) => {
@@ -547,6 +509,13 @@ class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
     if (headerColorInput) {
       headerColorInput.addEventListener('change', (e) => {
         this._config.header_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (tabTextColorInput) {
+      tabTextColorInput.addEventListener('change', (e) => {
+        this._config.tab_text_color = e.target.value;
         this._fireConfigChanged();
       });
     }
@@ -589,14 +558,14 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
       <div class="section-title">Configuration de l'enfant</div>
       <div class="option">
         <label>Sélectionner un enfant</label>
-        <select class="child-select" required>
-          <option value="">-- Choisir un enfant --</option>
-          ${children.map(child => `
-            <option value="${child.id}" ${this._config.child_id === child.id ? 'selected' : ''}>
-              ${child.name}
-            </option>
-          `).join('')}
-        </select>
+        <select id="child_select" required>
+          <option value="">Sélectionner un enfant...</option>
+            ${children.map(child => `
+              <option value="${child.child_id}" ${this._config.child_id === child.chil_id ? 'selected' : ''}>
+                ${child.name}
+              </option>
+            `).join('')}
+            </select>
         <div class="help-text">
           Si aucun enfant n'apparaît, assurez-vous que l'intégration Kids Tasks Manager est configurée.
         </div>
@@ -647,11 +616,11 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
   }
 
   _attachSpecificListeners() {
-    const childSelect = this.querySelector('.child-select');
-    const avatarToggle = this.querySelector('.show-avatar-toggle');
-    const progressToggle = this.querySelector('.show-progress-toggle');
-    const rewardsToggle = this.querySelector('.show-rewards-toggle');
-    const completedToggle = this.querySelector('.show-completed-toggle');
+    const childSelect = this.shadowRoot.querySelector('.child-select');
+    const avatarToggle = this.shadowRoot.querySelector('.show-avatar-toggle');
+    const progressToggle = this.shadowRoot.querySelector('.show-progress-toggle');
+    const rewardsToggle = this.shadowRoot.querySelector('.show-rewards-toggle');
+    const completedToggle = this.shadowRoot.querySelector('.show-completed-toggle');
 
     if (childSelect) {
       childSelect.addEventListener('change', (e) => {
@@ -691,23 +660,27 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
 
   _getChildren() {
     if (!this._hass) return [];
-    
+
     const children = [];
-    const entities = this._hass.states;
-    
-    Object.keys(entities).forEach(entityId => {
+    Object.keys(this._hass.states).forEach(entityId => {
       if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
-        const pointsEntity = entities[entityId];
-        if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.state !== 'unavailable') {
+          const childId = entityId.replace('sensor.kidtasks_', '').replace('_points', '');
           children.push({
-            id: pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
-            name: pointsEntity.attributes.friendly_name || entityId.replace('sensor.kidtasks_', '').replace('_points', '')
+            id: childId,
+            name: entity.attributes.friendly_name || childId,
+            points: parseInt(entity.state) || 0,
+            coins: entity.attributes.coins || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || entity.attributes.cosmetics?.avatar?.emoji || '👤',
+            ...entity.attributes
           });
         }
       }
     });
-    
-    return children;
+
+    return children.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 
