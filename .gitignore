@@ -4,3 +4,5 @@ dist
 .playright-mcp
 .github
 claude_desktop_config.json
+settings.local.json
+.vscode
