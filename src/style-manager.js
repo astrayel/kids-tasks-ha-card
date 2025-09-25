@@ -30,6 +30,96 @@ class KidsTasksStyleManager {
   static getVariableCount() {
     return 45; // Reduced from 364+ to 45 core variables
   }
+
+  static getTaskStyles() {
+    return `
+      /* Task styles from temp_working_version.js */
+      .task {
+        display: flex;
+        align-items: center;
+        padding: var(--kt-space-sm) 12px;
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: 6px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        transition: all 0.3s ease;
+        min-height: 48px;
+        gap: 12px;
+        position: relative;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task.completed {
+        border-left: 4px solid var(--kt-success);
+      }
+
+      .task.missed {
+        border-left: 4px solid var(--kt-error);
+      }
+
+      .item-icon {
+        font-size: 2em;
+        flex-shrink: 0;
+      }
+
+      .task-main {
+        display: flex;
+        flex-direction: column;
+        margin-left: 0.5em;
+        flex: 1;
+      }
+
+      .flex-content {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .task-name-row {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .task-name {
+        font-weight: 600;
+        color: var(--primary-text-color);
+      }
+
+      .task-validation {
+        font-style: italic;
+        font-size: 0.7em;
+        color: var(--secondary-text-color);
+      }
+
+      .task-points {
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+
+      .task-action {
+        flex-shrink: 0;
+        position: absolute;
+        right: 1em;
+      }
+
+      .task-result {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--kt-radius-round, 50%);
+        font-size: 1.2em;
+        flex-shrink: 0;
+      }
+
+      .task-result.success {
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      .task-result.penalty {
+        background: rgba(244, 67, 54, 0.1);
+      }
+    `;
+  }
   
   static getOptimizedGlobalStyles() {
     return `
@@ -95,6 +185,9 @@ class KidsTasksStyleManager {
         --kt-gauge-coins: var(--kt-coins-color);
         --kt-button-hover: rgba(0,0,0,0.1);
         --kt-overlay: rgba(0,0,0,0.5);
+
+        /* === ADDITIONAL VARIABLES === */
+        --kt-font-size-xs: 0.75em;
       }
 
       /* === OPTIMIZED GLOBAL COMPONENTS === */
@@ -321,6 +414,94 @@ class KidsTasksStyleManager {
         font-size: var(--kt-font-size-sm);
         opacity: 0.8;
       }
+
+      /* History Components */
+      .child-history-container {
+        max-width: 100%;
+      }
+
+      .history-header {
+        padding: var(--kt-space-md);
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        margin-bottom: var(--kt-space-md);
+      }
+
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+      }
+
+      .kt-child-details h3 {
+        margin: 0 0 var(--kt-space-xs) 0;
+        color: var(--primary-text-color);
+      }
+
+      .current-stats {
+        display: flex;
+        gap: var(--kt-space-sm);
+        flex-wrap: wrap;
+      }
+
+      .current-stats .stat {
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        background: var(--kt-primary);
+        color: white;
+        border-radius: var(--kt-radius-sm);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 600;
+      }
+
+      .history-content {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+
+      .history-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-lg);
+      }
+
+      .history-section h4 {
+        margin: 0 0 var(--kt-space-sm) 0;
+        color: var(--primary-text-color);
+        font-size: 1.1em;
+        padding-bottom: var(--kt-space-xs);
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+
+      .empty-history {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color);
+      }
+
+      .empty-history .empty-icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+
+      .loading {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--secondary-text-color);
+        font-style: italic;
+      }
+
+      .error {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--kt-error);
+        background: var(--kt-error-background);
+        border-radius: var(--kt-radius-sm);
+        margin: var(--kt-space-sm);
+      }
+
+      ${this.getTaskStyles()}
     `;
   }
   

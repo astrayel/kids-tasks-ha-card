@@ -191,6 +191,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
       case 'view-child':
         this.handleViewChild(id);
         break;
+      case 'show-child-history':
+        this.showChildHistory(id);
+        break;
       default:
         if (__DEV__) {
           console.warn('Unknown action:', action);

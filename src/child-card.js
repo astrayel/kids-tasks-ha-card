@@ -366,7 +366,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           font-size: 0.8em;
         }
 
-        .task-points, .reward-cost {
+        .reward-cost {
           background: var(--kt-success);
           color: white;
           padding: 2px 8px;
@@ -453,6 +453,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             flex-wrap: wrap;
           }
         }
+
+        /* Include task styles for history display */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
       </style>
     `;
   }
@@ -549,15 +552,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return `
       <div class="tab-content">
         ${this.renderTaskFilters()}
-        <div style="background: #ffe; padding: 8px; border: 1px solid #ffa; margin: 8px 0; font-size: 12px;">
-          DEBUG:<br>
-          Config child_id: ${this.config.child_id}<br>
-          Child object ID: ${child.child_id}<br>
-          Child name: ${child.name}<br>
-          Total tasks found: ${tasks.length}<br>
-          Filter: ${this.tasksFilter}<br>
-          Filtered tasks: ${filteredTasks.length}
-        </div>
         ${filteredTasks.length > 0 ? `
           <div class="task-list">
             ${filteredTasks.map(task => this.renderTaskItem(task)).join('')}
@@ -634,15 +628,32 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderHistoryTab(child) {
+    // Use a placeholder that will be populated asynchronously
+    setTimeout(() => this.loadHistoryContent(child), 100);
+
     return `
       <div class="tab-content">
-        <div class="empty-state">
-          <div class="empty-icon">📈</div>
-          <div class="empty-text">Historique</div>
-          <div class="empty-subtext">Fonctionnalité en développement</div>
+        <div class="history-content-placeholder" id="history-${child.child_id}">
+          <div class="loading">Chargement de l'historique...</div>
         </div>
       </div>
     `;
+  }
+
+  async loadHistoryContent(child) {
+    try {
+      const historyContent = await this.renderChildHistoryForTab(child);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = historyContent;
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = '<div class="error">Erreur lors du chargement de l\'historique</div>';
+      }
+    }
   }
 
   handleAction(action, id, event) {

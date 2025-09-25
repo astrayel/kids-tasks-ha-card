@@ -30,6 +30,96 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
     return 45;
   }
 
+  static getTaskStyles() {
+    return `
+      /* Task styles from temp_working_version.js */
+      .task {
+        display: flex;
+        align-items: center;
+        padding: var(--kt-space-sm) 12px;
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: 6px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        transition: all 0.3s ease;
+        min-height: 48px;
+        gap: 12px;
+        position: relative;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task.completed {
+        border-left: 4px solid var(--kt-success);
+      }
+
+      .task.missed {
+        border-left: 4px solid var(--kt-error);
+      }
+
+      .item-icon {
+        font-size: 2em;
+        flex-shrink: 0;
+      }
+
+      .task-main {
+        display: flex;
+        flex-direction: column;
+        margin-left: 0.5em;
+        flex: 1;
+      }
+
+      .flex-content {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .task-name-row {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .task-name {
+        font-weight: 600;
+        color: var(--primary-text-color);
+      }
+
+      .task-validation {
+        font-style: italic;
+        font-size: 0.7em;
+        color: var(--secondary-text-color);
+      }
+
+      .task-points {
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+
+      .task-action {
+        flex-shrink: 0;
+        position: absolute;
+        right: 1em;
+      }
+
+      .task-result {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--kt-radius-round, 50%);
+        font-size: 1.2em;
+        flex-shrink: 0;
+      }
+
+      .task-result.success {
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      .task-result.penalty {
+        background: rgba(244, 67, 54, 0.1);
+      }
+    `;
+  }
+
   static getOptimizedGlobalStyles() {
     return `
       /* === KIDS TASKS V2.0 - OPTIMIZED CSS VARIABLES === */
@@ -94,6 +184,9 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
         --kt-gauge-coins: var(--kt-coins-color);
         --kt-button-hover: rgba(0,0,0,0.1);
         --kt-overlay: rgba(0,0,0,0.5);
+
+        /* === ADDITIONAL VARIABLES === */
+        --kt-font-size-xs: 0.75em;
       }
 
       /* === OPTIMIZED GLOBAL COMPONENTS === */
@@ -320,6 +413,94 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
         font-size: var(--kt-font-size-sm);
         opacity: 0.8;
       }
+
+      /* History Components */
+      .child-history-container {
+        max-width: 100%;
+      }
+
+      .history-header {
+        padding: var(--kt-space-md);
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        margin-bottom: var(--kt-space-md);
+      }
+
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+      }
+
+      .kt-child-details h3 {
+        margin: 0 0 var(--kt-space-xs) 0;
+        color: var(--primary-text-color);
+      }
+
+      .current-stats {
+        display: flex;
+        gap: var(--kt-space-sm);
+        flex-wrap: wrap;
+      }
+
+      .current-stats .stat {
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        background: var(--kt-primary);
+        color: white;
+        border-radius: var(--kt-radius-sm);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 600;
+      }
+
+      .history-content {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+
+      .history-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-lg);
+      }
+
+      .history-section h4 {
+        margin: 0 0 var(--kt-space-sm) 0;
+        color: var(--primary-text-color);
+        font-size: 1.1em;
+        padding-bottom: var(--kt-space-xs);
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+
+      .empty-history {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color);
+      }
+
+      .empty-history .empty-icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+
+      .loading {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--secondary-text-color);
+        font-style: italic;
+      }
+
+      .error {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--kt-error);
+        background: var(--kt-error-background);
+        border-radius: var(--kt-radius-sm);
+        margin: var(--kt-space-sm);
+      }
+
+      ${this.getTaskStyles()}
     `;
   }
 
@@ -1824,8 +2005,7 @@ class KidsTasksBaseCard extends HTMLElement {
 
           <div class="gauges-section kt-clickable"
                data-action="show-child-history"
-               data-id="${child.child_id || child.id}"
-               onclick="event.stopPropagation();">
+               data-id="${child.child_id || child.id}">
             ${this.renderGauges(gaugeStats, true)}
           </div>
         </div>
@@ -2895,13 +3075,13 @@ showModal(content, title = '') {
     if (!filters.length) return '';
 
     const buttonsHtml = filters.map(filter => `
-      <ha-button
+      <button
         class="filter-btn ${this[filterProperty] === filter.id ? 'active' : ''}"
         data-action="${actionName}"
         data-filter="${filter.id}"
       >
         ${filter.label}
-      </ha-button>
+      </button>
     `).join('');
 
     return wrapper ? `<div class="${wrapperClass}">${buttonsHtml}</div>` : buttonsHtml;
@@ -2974,6 +3154,220 @@ showModal(content, title = '') {
 
   getRewardIcons() {
     return {};
+  }
+
+
+  async getChildHistory(childId) {
+    if (!this._hass) return [];
+
+
+    const children = this.getChildren();
+    const child = children.find(c => c.child_id === childId || c.id === childId);
+
+    if (!child) {
+      console.error(`Enfant avec l'ID ${childId} introuvable`);
+      return [];
+    }
+
+
+    let historyData = [];
+    try {
+      await this._hass.callService('kids_tasks', 'get_child_history', {
+        child_id: childId,
+        limit: 20
+      });
+
+
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    }
+
+    return historyData || [];
+  }
+
+  getActionIcon(actionType) {
+    const icons = {
+      'task_completed': '✅',
+      'task_validated': '🎯',
+      'task_penalty': '⚠️',
+      'reward_claimed': '🏆',
+      'manual_adjustment': '⚙️',
+      'level_up': '📈',
+      'bonus_points': '🌟',
+      'default': '📊'
+    };
+    return icons[actionType] || icons['default'];
+  }
+
+  getActionTypeLabel(actionType) {
+    const labels = {
+      'task_completed': 'Terminée',
+      'task_validated': 'Validée',
+      'task_penalty': 'Pénalité',
+      'reward_claimed': 'Récompense',
+      'manual_adjustment': 'Ajustement',
+      'level_up': 'Montée niveau',
+      'bonus_points': 'Points bonus',
+      'default': 'Autre'
+    };
+    return labels[actionType] || labels['default'];
+  }
+
+  renderHistoryAsTask(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'success' : 'penalty';
+    const actionIcon = this.getActionIcon(entry.action_type);
+
+
+    let taskClass = 'completed';
+    if (entry.points_delta < 0) {
+      taskClass = 'missed';
+    }
+
+    return `
+      <div class="task ${taskClass}">
+        <div class="item-icon">${actionIcon}</div>
+        <div class="task-main flex-content">
+          <div class="task-name-row">
+            <div class="task-name">${entry.description || 'Action inconnue'}</div>
+            <div class="task-validation">${dateStr} à ${timeStr}</div>
+          </div>
+          <div class="task-points">
+            <span style="color: ${entry.points_delta > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">${pointsDisplay} 🎫</span>
+            <span style="color: var(--secondary-text-color, #757575); font-size: 0.9em;">${this.getActionTypeLabel(entry.action_type)}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          <span class="task-result ${pointsClass}">${entry.points_delta > 0 ? '🎉' : '😞'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  async renderChildHistoryForTab(child) {
+    const history = await this.getChildHistory(child.child_id || child.id);
+
+    if (history.length === 0) {
+      return `
+        <div class="empty-history">
+          <div class="empty-icon">📈</div>
+          <p>Aucun historique</p>
+          <small>Les actions sur les points apparaîtront ici</small>
+        </div>
+      `;
+    }
+
+
+    const limitedHistory = history.slice(0, 15);
+
+    return `
+      <div class="task-list">
+        ${limitedHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+      </div>
+    `;
+  }
+
+  async renderChildHistoryContent(child, historyData = null, showHeader = true) {
+    const history = historyData || await this.getChildHistory(child.child_id || child.id);
+
+    const todayHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate.toDateString() === new Date().toDateString();
+    });
+
+    const thisWeekHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate >= weekAgo;
+    });
+
+    return `
+      <div class="child-history-container">
+        ${showHeader ? `
+          <div class="history-header">
+            <div class="kt-child-info">
+              <div class="kt-avatar">${this.getAvatar(child)}</div>
+              <div class="kt-child-details">
+                <h3>${child.name}</h3>
+                <div class="current-stats">
+                  <span class="stat">${child.points || 0} 🎫 Points</span>
+                  <span class="stat">${child.coins || 0} 🪙 Pièces</span>
+                  <span class="stat">Niveau ${child.level || 1}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="history-content">
+          ${history.length > 0 ? `
+            <div class="history-sections">
+              ${todayHistory.length > 0 ? `
+                <div class="history-section">
+                  <h4>🌟 Aujourd'hui</h4>
+                  ${todayHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${thisWeekHistory.length > todayHistory.length ? `
+                <div class="history-section">
+                  <h4>📅 Cette semaine</h4>
+                  ${thisWeekHistory.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    return entryDate.toDateString() !== new Date().toDateString();
+                  }).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${history.length > thisWeekHistory.length ? `
+                <div class="history-section">
+                  <h4>📈 Plus ancien</h4>
+                  ${history.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return entryDate < weekAgo;
+                  }).slice(0, 10).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="empty-history">
+              <div class="empty-icon">📈</div>
+              <p>Aucune activité dans l'historique</p>
+              <p>Les tâches complétées apparaîtront ici.</p>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+
+  async showChildHistory(childId) {
+    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
+    if (!child) return;
+
+    const content = await this.renderChildHistoryContent(child);
+    this.showModal(content, `Historique de ${child.name}`);
   }
 }
 
@@ -3164,6 +3558,9 @@ class KidsTasksCard extends KidsTasksBaseCard {
         break;
       case 'view-child':
         this.handleViewChild(id);
+        break;
+      case 'show-child-history':
+        this.showChildHistory(id);
         break;
       default:
         {
@@ -3652,7 +4049,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           font-size: 0.8em;
         }
 
-        .task-points, .reward-cost {
+        .reward-cost {
           background: var(--kt-success);
           color: white;
           padding: 2px 8px;
@@ -3739,6 +4136,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
             flex-wrap: wrap;
           }
         }
+
+        /* Include task styles for history display */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
       </style>
     `;
   }
@@ -3835,15 +4235,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return `
       <div class="tab-content">
         ${this.renderTaskFilters()}
-        <div style="background: #ffe; padding: 8px; border: 1px solid #ffa; margin: 8px 0; font-size: 12px;">
-          DEBUG:<br>
-          Config child_id: ${this.config.child_id}<br>
-          Child object ID: ${child.child_id}<br>
-          Child name: ${child.name}<br>
-          Total tasks found: ${tasks.length}<br>
-          Filter: ${this.tasksFilter}<br>
-          Filtered tasks: ${filteredTasks.length}
-        </div>
         ${filteredTasks.length > 0 ? `
           <div class="task-list">
             ${filteredTasks.map(task => this.renderTaskItem(task)).join('')}
@@ -3920,15 +4311,32 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderHistoryTab(child) {
+
+    setTimeout(() => this.loadHistoryContent(child), 100);
+
     return `
       <div class="tab-content">
-        <div class="empty-state">
-          <div class="empty-icon">📈</div>
-          <div class="empty-text">Historique</div>
-          <div class="empty-subtext">Fonctionnalité en développement</div>
+        <div class="history-content-placeholder" id="history-${child.child_id}">
+          <div class="loading">Chargement de l'historique...</div>
         </div>
       </div>
     `;
+  }
+
+  async loadHistoryContent(child) {
+    try {
+      const historyContent = await this.renderChildHistoryForTab(child);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = historyContent;
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = '<div class="error">Erreur lors du chargement de l\'historique</div>';
+      }
+    }
   }
 
   handleAction(action, id, event) {
@@ -4626,6 +5034,7 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     const children = this.getChildren();
     const child = editChildId ? children.find(c => c.child_id === editChildId || c.id === editChildId) : null;
     const isEdit = !!child;
+    const persons = this.getPersonEntities();
 
     const avatarOptions = ['👶', '👧', '👦', '🧒', '🧸', '🎈', '⭐', '🌟', '🏆', '🎯'];
 
@@ -4647,19 +5056,48 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           required
           value="${isEdit ? child.avatar_type || 'emoji' : 'emoji'}">
           <ha-list-item value="emoji">Emoji</ha-list-item>
+          <ha-list-item value="url">URL d'image</ha-list-item>
+          ${persons.length > 0 ? '<ha-list-item value="person_entity">Photo de la personne liée</ha-list-item>' : ''}
         </ha-select>
 
-        <div id="emoji-config">
-          <label class="form-label">Choisir un emoji</label>
-          <div class="avatar-options">
-            ${avatarOptions.map(avatar => `
-              <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}"
-                      data-avatar="${avatar}">
-                ${avatar}
-              </button>
-            `).join('')}
+        <div id="avatar-config">
+          <div id="emoji-config" style="display: ${isEdit && child.avatar_type !== 'emoji' ? 'none' : 'block'};">
+            <label class="form-label">Choisir un emoji</label>
+            <div class="avatar-options">
+              ${avatarOptions.map(avatar => `
+                <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}"
+                        data-avatar="${avatar}">
+                  ${avatar}
+                </button>
+              `).join('')}
+            </div>
+            <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
           </div>
-          <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
+
+          <div id="url-config" style="display: ${isEdit && child.avatar_type === 'url' ? 'block' : 'none'};">
+            <ha-textfield
+              label="URL de l'image"
+              name="avatar_url"
+              value="${isEdit && child.avatar_type === 'url' ? child.avatar_data || '' : ''}"
+              placeholder="https://example.com/photo.png">
+            </ha-textfield>
+          </div>
+
+          ${persons.length > 0 ? `
+          <div id="person_entity-config" style="display: ${isEdit && child.avatar_type === 'person_entity' ? 'block' : 'none'};">
+            <ha-select
+              label="Personne liée"
+              name="person_entity_id"
+              value="${isEdit ? child.person_entity_id || '' : ''}">
+              <ha-list-item value="">Aucune liaison</ha-list-item>
+              ${persons.map(person => `
+                <ha-list-item value="${person.entity_id}" ${isEdit && child.person_entity_id === person.entity_id ? 'selected' : ''}>
+                  ${person.name}
+                </ha-list-item>
+              `).join('')}
+            </ha-select>
+          </div>
+          ` : ''}
         </div>
 
         ${!isEdit ? `
@@ -4713,51 +5151,49 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
 
 
     setTimeout(() => {
-      const avatarButtons = dialog.querySelectorAll('.avatar-option');
-      const avatarInput = dialog.querySelector('[name="avatar"]');
 
-      avatarButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          avatarButtons.forEach(b => b.classList.remove('selected'));
-          button.classList.add('selected');
-          avatarInput.value = button.dataset.avatar;
+      const avatarTypeSelect = dialog.querySelector('ha-select[name="avatar_type"]');
+      const avatarConfig = dialog.querySelector('#avatar-config');
+
+      if (avatarTypeSelect && avatarConfig) {
+
+        const updateAvatarDisplay = (selectedType) => {
+          avatarConfig.querySelectorAll('[id$="-config"]').forEach(div => {
+            div.style.display = 'none';
+          });
+          const targetDiv = dialog.querySelector('#' + selectedType + '-config');
+          if (targetDiv) {
+            targetDiv.style.display = 'block';
+          }
+        };
+
+
+        avatarTypeSelect.addEventListener('selected', (e) => {
+          const selectedType = e.detail.value || e.target.value;
+          updateAvatarDisplay(selectedType);
         });
-      });
+
+
+        avatarTypeSelect.addEventListener('change', (e) => {
+          const selectedType = e.target.value;
+          updateAvatarDisplay(selectedType);
+        });
+
+
+        avatarConfig.querySelectorAll('.avatar-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            avatarConfig.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const avatarInput = dialog.querySelector('input[name="avatar"]');
+            if (avatarInput) {
+              avatarInput.value = btn.dataset.avatar;
+            }
+          });
+        });
+      }
     }, 100);
   }
 
-  showChildHistory(childId) {
-    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
-    if (!child) return;
-
-    const content = `
-      <div class="child-history-container">
-        <div class="history-header">
-          <div class="kt-child-info">
-            <div class="kt-avatar">${this.getAvatar(child)}</div>
-            <div class="kt-child-details">
-              <h3>${child.name}</h3>
-              <div class="current-stats">
-                <span class="stat">${child.points || 0} 🎫 Points</span>
-                <span class="stat">${child.coins || 0} 🪙 Pièces</span>
-                <span class="stat">Niveau ${child.level || 1}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="history-content">
-          <div class="empty-history">
-            <div class="empty-icon">📈</div>
-            <p>Historique temporairement indisponible</p>
-            <p>Cette fonctionnalité sera bientôt disponible.</p>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.showModal(content, `Historique de ${child.name}`);
-  }
 
   handleRemoveChild(childId) {
     const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
@@ -4798,14 +5234,30 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     const form = dialog.querySelector('form');
     if (!form) return;
 
+
     const name = form.querySelector('[name="name"]').value;
-    const avatar = form.querySelector('[name="avatar"]').value;
+    const person_entity_id = form.querySelector('[name="person_entity_id"]')?.value || null;
+    const avatar_type = form.querySelector('[name="avatar_type"]').value;
+
+    let avatar_data = null;
+    let avatar = '👶';
+
+
+    if (avatar_type === 'emoji') {
+      avatar = form.querySelector('[name="avatar"]').value;
+    } else if (avatar_type === 'url') {
+      avatar_data = form.querySelector('[name="avatar_url"]').value;
+    }
 
     const serviceData = {
       name,
       avatar,
-      avatar_type: 'emoji'
+      avatar_type,
     };
+
+
+    if (person_entity_id) serviceData.person_entity_id = person_entity_id;
+    if (avatar_data) serviceData.avatar_data = avatar_data;
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
@@ -4851,6 +5303,28 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     }
 
     dialog.close();
+  }
+
+  getPersonEntities() {
+    if (!this._hass) return [];
+
+    const persons = [];
+    const entities = this._hass.states;
+
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.startsWith('person.')) {
+        const personEntity = entities[entityId];
+        if (personEntity) {
+          persons.push({
+            entity_id: entityId,
+            name: personEntity.attributes.friendly_name || personEntity.attributes.name || entityId.replace('person.', ''),
+            picture: personEntity.attributes.entity_picture
+          });
+        }
+      }
+    });
+
+    return persons.sort((a, b) => a.name.localeCompare(b.name));
   }
 
 
