@@ -80,7 +80,9 @@ class KidsTasksStyleManager {
 
       .task-name {
         font-weight: 600;
-        color: var(--primary-text-color);
+        color: var(--primary-text-color, #212121);
+        font-size: 0.9em;
+        margin-bottom: 2px;
       }
 
       .task-validation {
@@ -98,6 +100,47 @@ class KidsTasksStyleManager {
         flex-shrink: 0;
         position: absolute;
         right: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-complete {
+        background: var(--kt-success);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: var(--kt-radius-sm);
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+        font-weight: 600;
+        font-size: 1em;
+      }
+
+      .btn-complete:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px var(--kt-shadow-light);
+      }
+
+      .status {
+        padding: 4px 8px;
+        border-radius: var(--kt-radius-md);
+        font-weight: 500;
+        text-align: center;
+        font-size: 0.8em;
+      }
+
+      .status.pending {
+        background-color: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
+      }
+
+      .status.completed {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #4caf50;
       }
 
       .task-result {
@@ -117,6 +160,118 @@ class KidsTasksStyleManager {
 
       .task-result.penalty {
         background: rgba(244, 67, 54, 0.1);
+      }
+
+      /* Task list and items styles */
+      .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .task-item {
+        display: flex;
+        flex-direction: row;
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .task-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .task-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 8px;
+        font-size: 0.75em;
+        color: var(--secondary-text-color, #757575);
+        flex-wrap: wrap;
+      }
+
+      .task-points {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+      }
+
+      .task-status {
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7em;
+      }
+
+      .task-status.todo { background: var(--kt-warning); color: white; }
+      .task-status.completed { background: var(--kt-success); color: white; }
+      .task-status.pending { background: var(--kt-info); color: white; }
+      .task-status.validated { background: var(--kt-success); color: white; }
+    `;
+  }
+
+  static getRewardStyles() {
+    return `
+      /* Reward styles */
+      .reward-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .reward-item {
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .reward-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .reward-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .reward-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .reward-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8em;
+      }
+
+      .reward-cost {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
       }
     `;
   }
@@ -502,6 +657,8 @@ class KidsTasksStyleManager {
       }
 
       ${this.getTaskStyles()}
+
+      ${this.getRewardStyles()}
     `;
   }
   

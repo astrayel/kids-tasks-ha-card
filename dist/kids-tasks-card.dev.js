@@ -79,7 +79,9 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
 
       .task-name {
         font-weight: 600;
-        color: var(--primary-text-color);
+        color: var(--primary-text-color, #212121);
+        font-size: 0.9em;
+        margin-bottom: 2px;
       }
 
       .task-validation {
@@ -97,6 +99,47 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
         flex-shrink: 0;
         position: absolute;
         right: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-complete {
+        background: var(--kt-success);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: var(--kt-radius-sm);
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+        font-weight: 600;
+        font-size: 1em;
+      }
+
+      .btn-complete:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px var(--kt-shadow-light);
+      }
+
+      .status {
+        padding: 4px 8px;
+        border-radius: var(--kt-radius-md);
+        font-weight: 500;
+        text-align: center;
+        font-size: 0.8em;
+      }
+
+      .status.pending {
+        background-color: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
+      }
+
+      .status.completed {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #4caf50;
       }
 
       .task-result {
@@ -116,6 +159,118 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
 
       .task-result.penalty {
         background: rgba(244, 67, 54, 0.1);
+      }
+
+      /* Task list and items styles */
+      .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .task-item {
+        display: flex;
+        flex-direction: row;
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .task-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .task-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 8px;
+        font-size: 0.75em;
+        color: var(--secondary-text-color, #757575);
+        flex-wrap: wrap;
+      }
+
+      .task-points {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+      }
+
+      .task-status {
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7em;
+      }
+
+      .task-status.todo { background: var(--kt-warning); color: white; }
+      .task-status.completed { background: var(--kt-success); color: white; }
+      .task-status.pending { background: var(--kt-info); color: white; }
+      .task-status.validated { background: var(--kt-success); color: white; }
+    `;
+  }
+
+  static getRewardStyles() {
+    return `
+      /* Reward styles */
+      .reward-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .reward-item {
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .reward-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .reward-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .reward-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .reward-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8em;
+      }
+
+      .reward-cost {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
       }
     `;
   }
@@ -501,6 +656,8 @@ let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
       }
 
       ${this.getTaskStyles()}
+
+      ${this.getRewardStyles()}
     `;
   }
 
@@ -2796,6 +2953,35 @@ showModal(content, title = '') {
         }
 
         /* Loading */
+                .filters {
+          display: flex;
+          gap: var(--kt-space-sm);
+          margin-bottom: var(--kt-space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filter-btn {
+          background: var(--kt-surface-variant);
+          border: 2px solid transparent;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all var(--kt-transition-fast);
+          font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .filter-btn.active {
+          border-color: var(--kt-primary);
+          background: var(--kt-primary);
+          color: white;
+        }
+          
         .kt-loading {
           text-align: center;
           padding: var(--kt-space-xl);
@@ -4012,63 +4198,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           min-height: 200px;
         }
 
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
-
-        .task-title, .reward-title {
-          font-weight: 600;
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-description, .reward-description {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          margin-bottom: var(--kt-space-sm);
-        }
-
-        .task-meta, .reward-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.8em;
-        }
-
-        .reward-cost {
-          background: var(--kt-success);
-          color: white;
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-        }
-
-        .task-status {
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-          text-transform: uppercase;
-          font-size: 0.7em;
-        }
-
-        .task-status.todo { background: var(--kt-warning); color: white; }
-        .task-status.completed { background: var(--kt-success); color: white; }
-        .task-status.pending { background: var(--kt-info); color: white; }
-        .task-status.validated { background: var(--kt-success); color: white; }
 
         .filters {
           display: flex;
@@ -4137,8 +4266,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           }
         }
 
-        /* Include task styles for history display */
+        /* Include task and reward styles for history display */
         ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
       </style>
     `;
   }
@@ -4263,12 +4393,26 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   renderTaskItem(task) {
     return `
-      <div class="task-item kt-clickable-item" data-action="complete-task" data-id="${task.id}">
-        <div class="task-title">${this.getCategoryIcon(task)} ${task.name}</div>
-        <div class="task-description">${task.description || ''}</div>
-        <div class="task-meta">
-          <span class="task-points">+${task.points || 0} 🎫</span>
-          <span class="task-status ${task.status}">${task.status}</span>
+      <div class="task-item">
+        <div class="item-icon">${this.getCategoryIcon(task)}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-description">${task.description || ''}</div>
+          <div class="task-meta">
+            <span class="task-points">+${task.points || 0} 🎫</span>
+            <span class="task-status ${task.status}">${task.status}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          ${task.status === 'todo' ? `
+            <button class="btn btn-complete"
+                    data-action="complete-task"
+                    data-id="${task.id}">✓</button>
+          ` : task.status === 'pending_validation' ? `
+            <span class="status pending">En attente de validation</span>
+          ` : `
+            <span class="status completed">✓</span>
+          `}
         </div>
       </div>
     `;
@@ -4640,11 +4784,14 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     `;
   }
 
-
   getStyles() {
     return `
       ${this.getCommonStyles()}
       <style>
+        /* Include task and reward styles */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+
         /* Manager-specific styles */
 
         .section {
@@ -4659,56 +4806,6 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           color: var(--primary-text-color);
         }
 
-        .filters {
-          display: flex;
-          gap: var(--kt-space-sm);
-          margin-bottom: var(--kt-space-lg);
-          flex-wrap: wrap;
-        }
-
-        .filter-btn {
-          background: var(--kt-surface-variant);
-          border: 2px solid transparent;
-          padding: var(--kt-space-xs) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
-          font-weight: 600;
-          transition: all var(--kt-transition-fast);
-          font-size: 0.9em;
-        }
-
-        .filter-btn:hover {
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .filter-btn.active {
-          border-color: var(--kt-primary);
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          display: flex;
-          align-items: center;
-          gap: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
 
         .task-item.inactive {
           opacity: 0.6;
@@ -4719,29 +4816,10 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           border-left: 4px solid var(--kt-warning);
         }
 
-        .item-icon {
-          font-size: 1.5em;
-          width: 40px;
-          text-align: center;
-        }
-
         .task-main, .reward-main {
           flex: 1;
         }
 
-        .task-name, .reward-name {
-          font-weight: 600;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-meta, .reward-meta {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          display: flex;
-          gap: var(--kt-space-sm);
-          flex-wrap: wrap;
-        }
 
         .task-rewards {
           display: flex;
@@ -4882,9 +4960,9 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
         <div class="task-main">
           <div class="task-name">${task.name}</div>
           <div class="task-meta">
-            <span>👤 ${childName}</span>
-            <span>📅 ${this.getFrequencyLabel(task.frequency)}</span>
-            <span>📂 ${this.getCategoryLabel(task.category)}</span>
+            <span>👤${childName}</span>
+            <span>📅${this.getFrequencyLabel(task.frequency)}</span>
+            <span>📂${this.getCategoryLabel(task.category)}</span>
           </div>
           ${task.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${task.description}</div>` : ''}
         </div>

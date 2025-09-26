@@ -1480,6 +1480,35 @@ showModal(content, title = '') {
         }
 
         /* Loading */
+                .filters {
+          display: flex;
+          gap: var(--kt-space-sm);
+          margin-bottom: var(--kt-space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filter-btn {
+          background: var(--kt-surface-variant);
+          border: 2px solid transparent;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all var(--kt-transition-fast);
+          font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .filter-btn.active {
+          border-color: var(--kt-primary);
+          background: var(--kt-primary);
+          color: white;
+        }
+          
         .kt-loading {
           text-align: center;
           padding: var(--kt-space-xl);

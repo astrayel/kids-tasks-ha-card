@@ -75,11 +75,14 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     `;
   }
 
-
   getStyles() {
     return `
       ${this.getCommonStyles()}
       <style>
+        /* Include task and reward styles */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+
         /* Manager-specific styles */
 
         .section {
@@ -94,56 +97,6 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           color: var(--primary-text-color);
         }
 
-        .filters {
-          display: flex;
-          gap: var(--kt-space-sm);
-          margin-bottom: var(--kt-space-lg);
-          flex-wrap: wrap;
-        }
-
-        .filter-btn {
-          background: var(--kt-surface-variant);
-          border: 2px solid transparent;
-          padding: var(--kt-space-xs) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
-          font-weight: 600;
-          transition: all var(--kt-transition-fast);
-          font-size: 0.9em;
-        }
-
-        .filter-btn:hover {
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .filter-btn.active {
-          border-color: var(--kt-primary);
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          display: flex;
-          align-items: center;
-          gap: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
 
         .task-item.inactive {
           opacity: 0.6;
@@ -154,29 +107,10 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           border-left: 4px solid var(--kt-warning);
         }
 
-        .item-icon {
-          font-size: 1.5em;
-          width: 40px;
-          text-align: center;
-        }
-
         .task-main, .reward-main {
           flex: 1;
         }
 
-        .task-name, .reward-name {
-          font-weight: 600;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-meta, .reward-meta {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          display: flex;
-          gap: var(--kt-space-sm);
-          flex-wrap: wrap;
-        }
 
         .task-rewards {
           display: flex;
@@ -317,9 +251,9 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
         <div class="task-main">
           <div class="task-name">${task.name}</div>
           <div class="task-meta">
-            <span>👤 ${childName}</span>
-            <span>📅 ${this.getFrequencyLabel(task.frequency)}</span>
-            <span>📂 ${this.getCategoryLabel(task.category)}</span>
+            <span>👤${childName}</span>
+            <span>📅${this.getFrequencyLabel(task.frequency)}</span>
+            <span>📂${this.getCategoryLabel(task.category)}</span>
           </div>
           ${task.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${task.description}</div>` : ''}
         </div>

@@ -329,63 +329,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           min-height: 200px;
         }
 
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
-
-        .task-title, .reward-title {
-          font-weight: 600;
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-description, .reward-description {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          margin-bottom: var(--kt-space-sm);
-        }
-
-        .task-meta, .reward-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.8em;
-        }
-
-        .reward-cost {
-          background: var(--kt-success);
-          color: white;
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-        }
-
-        .task-status {
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-          text-transform: uppercase;
-          font-size: 0.7em;
-        }
-
-        .task-status.todo { background: var(--kt-warning); color: white; }
-        .task-status.completed { background: var(--kt-success); color: white; }
-        .task-status.pending { background: var(--kt-info); color: white; }
-        .task-status.validated { background: var(--kt-success); color: white; }
 
         .filters {
           display: flex;
@@ -454,8 +397,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           }
         }
 
-        /* Include task styles for history display */
+        /* Include task and reward styles for history display */
         ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
       </style>
     `;
   }
@@ -580,12 +524,26 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   renderTaskItem(task) {
     return `
-      <div class="task-item kt-clickable-item" data-action="complete-task" data-id="${task.id}">
-        <div class="task-title">${this.getCategoryIcon(task)} ${task.name}</div>
-        <div class="task-description">${task.description || ''}</div>
-        <div class="task-meta">
-          <span class="task-points">+${task.points || 0} 🎫</span>
-          <span class="task-status ${task.status}">${task.status}</span>
+      <div class="task-item">
+        <div class="item-icon">${this.getCategoryIcon(task)}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-description">${task.description || ''}</div>
+          <div class="task-meta">
+            <span class="task-points">+${task.points || 0} 🎫</span>
+            <span class="task-status ${task.status}">${task.status}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          ${task.status === 'todo' ? `
+            <button class="btn btn-complete"
+                    data-action="complete-task"
+                    data-id="${task.id}">✓</button>
+          ` : task.status === 'pending_validation' ? `
+            <span class="status pending">En attente de validation</span>
+          ` : `
+            <span class="status completed">✓</span>
+          `}
         </div>
       </div>
     `;
