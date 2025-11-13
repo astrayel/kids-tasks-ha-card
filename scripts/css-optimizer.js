@@ -12,6 +12,15 @@ class CSSOptimizer {
     };
     this.usedVariables = new Set();
     this.definedVariables = new Set();
+
+    // Classes critiques qui ne doivent jamais être supprimées
+    this.protectedClasses = new Set([
+      '.kt-hidden',
+      '.kt-delete-confirmation',
+      '.kt-clickable',
+      '.kt-fade-in',
+      '.kt-slide-up'
+    ]);
     this.optimizationReport = {
       originalSize: 0,
       optimizedSize: 0,
@@ -24,7 +33,15 @@ class CSSOptimizer {
   // Main optimization method
   optimize(cssContent) {
     this.optimizationReport.originalSize = cssContent.length;
-    
+
+    // Debug: vérifier si .kt-hidden est présent AVANT optimisation
+    const hasKtHiddenBefore = cssContent.includes('.kt-hidden');
+    if (hasKtHiddenBefore) {
+      console.log('🔍 CSS Optimizer: .kt-hidden trouvé AVANT optimisation');
+    } else {
+      console.log('❌ CSS Optimizer: .kt-hidden PAS trouvé avant optimisation');
+    }
+
     let optimized = cssContent;
     
     if (this.options.removeUnused) {
@@ -41,7 +58,15 @@ class CSSOptimizer {
     
     this.optimizationReport.optimizedSize = optimized.length;
     this.optimizationReport.savings = this.optimizationReport.originalSize - this.optimizationReport.optimizedSize;
-    
+
+    // Debug: vérifier si .kt-hidden est présent APRÈS optimisation
+    const hasKtHiddenAfter = optimized.includes('.kt-hidden');
+    if (hasKtHiddenAfter) {
+      console.log('✅ CSS Optimizer: .kt-hidden trouvé APRÈS optimisation');
+    } else {
+      console.log('❌ CSS Optimizer: .kt-hidden PERDU après optimisation');
+    }
+
     return {
       css: optimized,
       report: this.optimizationReport
@@ -97,9 +122,12 @@ class CSSOptimizer {
       const [selector, properties] = rule.split('{');
       const cleanSelector = selector.trim();
       const cleanProperties = properties.replace('}', '').trim();
-      
-      if (selectorBlocks[cleanProperties]) {
-        // Merge selectors with identical properties
+
+      // Protéger les classes critiques de toute optimisation
+      const isProtected = this.protectedClasses.has(cleanSelector);
+
+      if (selectorBlocks[cleanProperties] && !isProtected) {
+        // Merge selectors with identical properties (sauf les classes protégées)
         selectorBlocks[cleanProperties] += ', ' + cleanSelector;
         // Remove the duplicate rule
         optimized = optimized.replace(rule, '');
@@ -202,8 +230,11 @@ function cssOptimizerPlugin(options = {}) {
   return {
     name: 'css-optimizer',
     generateBundle(outputOptions, bundle) {
+      console.log('🎨 CSS Optimizer: Analyzing bundle for CSS content...');
+
       Object.keys(bundle).forEach(fileName => {
         const file = bundle[fileName];
+        console.log(`📄 Examining file: ${fileName}, type: ${file.type}`);
         
         if (file.type === 'chunk' && file.code) {
           // Extract CSS from JavaScript template literals
@@ -213,6 +244,9 @@ function cssOptimizerPlugin(options = {}) {
           
           while ((match = cssRegex.exec(file.code)) !== null) {
             const cssContent = match[1];
+            console.log(`🎯 CSS trouvé dans ${fileName}, longueur: ${cssContent.length} chars`);
+            console.log(`🔍 Contient .kt-hidden: ${cssContent.includes('.kt-hidden')}`);
+
             const optimizer = new CSSOptimizer(options);
             const result = optimizer.optimize(cssContent);
             

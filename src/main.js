@@ -1,14 +1,16 @@
 // Kids Tasks Card v2.0 - Main Entry Point
 // This file imports all modular components and registers them with Home Assistant
 
-import { KidsTasksStyleManagerV2 as KidsTasksStyleManager } from './style-manager-v2.js';
+import { KidsTasksStyleManager as KidsTasksStyleManager } from './style-manager.js';
 import { KidsTasksUtils } from './utils.js';
 import { KidsTasksBaseCard } from './base-card.js';
-import { KidsTasksCard } from './card-optimized.js';
+import { KidsTasksCard } from './card.js';
 import { KidsTasksChildCard } from './child-card.js';
-import { 
-  KidsTasksCardEditor, 
-  KidsTasksChildCardEditor 
+import { KidsTasksManagerCard } from './manager-card.js';
+import {
+  KidsTasksCardEditor,
+  KidsTasksChildCardEditor,
+  KidsTasksManagerEditor
 } from './editors.js';
 import logger from './logger.js';
 import performanceMonitor from './performance-monitor.js';
@@ -29,27 +31,42 @@ window.KidsTasksUtils = KidsTasksUtils;
 window.KidsTasksStyleManager = KidsTasksStyleManager;
 
 // Register custom elements with error boundaries
+// Use -dev suffix in development to avoid conflicts with production
 const cardSuffix = __DEV__ ? '-dev' : '';
-customElements.define(`kids-tasks-card${cardSuffix}`, withErrorBoundary(KidsTasksCard));
-customElements.define(`kids-tasks-child-card${cardSuffix}`, withErrorBoundary(KidsTasksChildCard));
-customElements.define(`kids-tasks-card${cardSuffix}-editor`, KidsTasksCardEditor);
-customElements.define(`kids-tasks-child-card${cardSuffix}-editor`, KidsTasksChildCardEditor);
+window.KidsTasksCardSuffix = cardSuffix;
+const mainCardType = `kids-tasks-card${cardSuffix}`;
+const childCardType = `kids-tasks-child-card${cardSuffix}`;
+const managerCardType = `kids-tasks-manager${cardSuffix}`;
+
+customElements.define(mainCardType, withErrorBoundary(KidsTasksCard));
+customElements.define(childCardType, withErrorBoundary(KidsTasksChildCard));
+customElements.define(managerCardType, withErrorBoundary(KidsTasksManagerCard));
+customElements.define(`kids-tasks-card-editor${cardSuffix}`, KidsTasksCardEditor);
+customElements.define(`kids-tasks-child-card-editor${cardSuffix}`, KidsTasksChildCardEditor);
+customElements.define(`kids-tasks-manager-editor${cardSuffix}`, KidsTasksManagerEditor);
 
 // Register with Home Assistant card picker
 window.customCards = window.customCards || [];
 const devSuffix = __DEV__ ? ' (Dev)' : '';
 window.customCards.push(
   {
-    type: `kids-tasks-card${cardSuffix}`,
-    name: `Kids Tasks Card${devSuffix}`,
+    type: mainCardType,
+    name: `Kids Tasks Card${__DEV__ ? ' (Dev)' : ''}`,
     description: 'Manage children\'s tasks and rewards with an engaging interface',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   },
   {
-    type: `kids-tasks-child-card${cardSuffix}`,
-    name: `Kids Tasks Child Card${devSuffix}`, 
+    type: childCardType,
+    name: `Kids Tasks Child Card${__DEV__ ? ' (Dev)' : ''}`,
     description: 'Individual child view for tasks and rewards',
+    preview: true,
+    documentationURL: 'https://github.com/astrayel/kids-tasks-card'
+  },
+  {
+    type: managerCardType,
+    name: `Kids Tasks Manager${__DEV__ ? ' (Dev)' : ''}`,
+    description: 'Administration interface for managing tasks, rewards and cosmetics',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   }
@@ -121,6 +138,7 @@ if (__DEV__ && typeof window !== 'undefined') {
   // Expose components for debugging
   window.KidsTasksCard = KidsTasksCard;
   window.KidsTasksChildCard = KidsTasksChildCard;
+  window.KidsTasksManagerCard = KidsTasksManagerCard;
   window.KidsTasksBaseCard = KidsTasksBaseCard;
   
   // Development utilities
@@ -134,7 +152,8 @@ if (__DEV__ && typeof window !== 'undefined') {
     },
     
     reloadAllCards: () => {
-      document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').forEach(card => {
+      const selector = __DEV__ ? 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' : 'kids-tasks-card, kids-tasks-child-card, kids-tasks-manager';
+      document.querySelectorAll(selector).forEach(card => {
         window.KidsTasksDebug.reloadCard(card);
       });
       logger.debug('🔄 All cards reloaded');
@@ -169,15 +188,18 @@ if (__DEV__ && typeof window !== 'undefined') {
     },
 
     // System info
-    systemInfo: () => ({
-      cards: document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').length,
-      performance: performanceMonitor?.generateReport()?.summary,
-      errors: errorBoundary.getErrorStats(),
-      memory: performance.memory ? {
-        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB'
-      } : null
-    })
+    systemInfo: () => {
+      const selector = __DEV__ ? 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' : 'kids-tasks-card, kids-tasks-child-card, kids-tasks-manager';
+      return {
+        cards: document.querySelectorAll(selector).length,
+        performance: performanceMonitor?.generateReport()?.summary,
+        errors: errorBoundary.getErrorStats(),
+        memory: performance.memory ? {
+          used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+          total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB'
+        } : null
+      };
+    }
   };
   
   logger.info('🛠️ Development utilities available as window.KidsTasksDebug');
@@ -200,6 +222,7 @@ if (__DEV__) {
 export {
   KidsTasksCard,
   KidsTasksChildCard,
+  KidsTasksManagerCard,
   KidsTasksBaseCard,
   KidsTasksStyleManager,
   KidsTasksUtils

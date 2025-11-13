@@ -44,13 +44,14 @@ const config = {
       maxEmptyLines: isProduction ? 0 : 2
     }),
 
-    // CSS optimization
-    cssOptimizerPlugin({
-      removeUnused: true,
-      optimizeSelectors: true,
-      compressValues: true,
-      verbose: isDevelopment
-    })
+    // CSS optimization - DÉSACTIVÉ temporairement car il supprime .kt-hidden
+    // TODO: Réactiver après avoir fixé le problème de suppression des classes critiques
+    // cssOptimizerPlugin({
+    //   removeUnused: true,
+    //   optimizeSelectors: true,
+    //   compressValues: true,
+    //   verbose: isDevelopment
+    // })
   ],
   
   // Watch options for development
@@ -77,7 +78,7 @@ if (isDevelopment) {
     serve({
       open: false,
       contentBase: ['dist', '.'],
-      host: 'localhost',
+      host: '0.0.0.0', // Listen on all interfaces for network access
       port: 8080,
       headers: {
         'Access-Control-Allow-Origin': '*'

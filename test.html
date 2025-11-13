@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Tasks Card - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .card-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .editor-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de la carte Kids Tasks</h1>
+
+    <div class="editor-container">
+        <h2>Éditeur de configuration</h2>
+        <kids-tasks-card-editor id="editor"></kids-tasks-card-editor>
+    </div>
+
+    <div class="card-container">
+        <h2>Aperçu de la carte</h2>
+        <kids-tasks-card id="card"></kids-tasks-card>
+    </div>
+
+    <script type="module" src="./dist/kids-tasks-card.dev.js"></script>
+    <script>
+        // Mock Home Assistant object
+        const mockHass = {
+            states: {
+                'sensor.kidtasks_child1_total_points': {
+                    state: '150',
+                    attributes: {
+                        friendly_name: 'Child 1 Total Points'
+                    }
+                },
+                'sensor.kidtasks_child1_level': {
+                    state: '3',
+                    attributes: {
+                        friendly_name: 'Child 1 Level'
+                    }
+                }
+            },
+            callService: (domain, service, data) => {
+                console.log('Service call:', domain, service, data);
+                return Promise.resolve();
+            }
+        };
+
+        // Configuration par défaut
+        const defaultConfig = {
+            type: 'custom:kids-tasks-card',
+            title: 'Test Dashboard',
+            show_navigation: true,
+            show_completed: false,
+            show_rewards: true,
+            tab_color: '#3f51b5',
+            header_color: '#3f51b5',
+            dashboard_primary_color: '#3f51b5',
+            dashboard_secondary_color: '#ff4081',
+            child_gradient_start: '#4CAF50',
+            child_gradient_end: '#8BC34A',
+            child_border_color: '#2E7D32',
+            child_text_color: '#ffffff',
+            button_hover_color: '#1565C0',
+            progress_bar_color: '#4caf50',
+            points_badge_color: '#ff9800',
+            icon_color: '#757575'
+        };
+
+        // Attendre que les éléments personnalisés soient définis
+        window.addEventListener('load', () => {
+            const card = document.getElementById('card');
+            const editor = document.getElementById('editor');
+
+            // Configurer la carte
+            if (card && card.setConfig) {
+                card.setConfig(defaultConfig);
+                card.hass = mockHass;
+            }
+
+            // Configurer l'éditeur
+            if (editor && editor.setConfig) {
+                editor.setConfig(defaultConfig);
+                editor.hass = mockHass;
+
+                // Écouter les changements de configuration
+                editor.addEventListener('config-changed', (event) => {
+                    console.log('Config changed:', event.detail.config);
+                    if (card && card.setConfig) {
+                        card.setConfig(event.detail.config);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
