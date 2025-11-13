@@ -1,12 +1,12 @@
 /* Kids Tasks Card v2.0.0 - Development Build */
-class KidsTasksStyleManagerV2 {
+let KidsTasksStyleManager$1 = class KidsTasksStyleManager {
   static instance = null;
   static injected = false;
   static currentVersion = 'v2.0.0-optimized';
 
   static getInstance() {
     if (!this.instance) {
-      this.instance = new KidsTasksStyleManagerV2();
+      this.instance = new KidsTasksStyleManager();
     }
     return this.instance;
   }
@@ -29,12 +29,258 @@ class KidsTasksStyleManagerV2 {
     return 45;
   }
 
+  static getTaskStyles() {
+    return `
+      /* Task styles from temp_working_version.js */
+      .task {
+        display: flex;
+        align-items: center;
+        padding: var(--kt-space-sm) 12px;
+        background: var(--secondary-background-color, #fafafa);
+        border-radius: 6px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        transition: all 0.3s ease;
+        min-height: 48px;
+        gap: 12px;
+        position: relative;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task.completed {
+        border-left: 4px solid var(--kt-success);
+      }
+
+      .task.missed {
+        border-left: 4px solid var(--kt-error);
+      }
+
+      .item-icon {
+        font-size: 2em;
+        flex-shrink: 0;
+      }
+
+      .task-main {
+        display: flex;
+        flex-direction: column;
+        margin-left: 0.5em;
+        flex: 1;
+      }
+
+      .flex-content {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .task-name-row {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .task-name {
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+        font-size: 0.9em;
+        margin-bottom: 2px;
+      }
+
+      .task-validation {
+        font-style: italic;
+        font-size: 0.7em;
+        color: var(--secondary-text-color);
+      }
+
+      .task-points {
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+
+      .task-action {
+        flex-shrink: 0;
+        position: absolute;
+        right: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-complete {
+        background: var(--kt-success);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: var(--kt-radius-sm);
+        cursor: pointer;
+        transition: all var(--kt-transition-fast);
+        font-weight: 600;
+        font-size: 1em;
+      }
+
+      .btn-complete:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px var(--kt-shadow-light);
+      }
+
+      .status {
+        padding: 4px 8px;
+        border-radius: var(--kt-radius-md);
+        font-weight: 500;
+        text-align: center;
+        font-size: 0.8em;
+      }
+
+      .status.pending {
+        background-color: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
+      }
+
+      .status.completed {
+        background-color: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #4caf50;
+      }
+
+      .task-result {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--kt-radius-round, 50%);
+        font-size: 1.2em;
+        flex-shrink: 0;
+      }
+
+      .task-result.success {
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      .task-result.penalty {
+        background: rgba(244, 67, 54, 0.1);
+      }
+
+      /* Task list and items styles */
+      .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .task-item {
+        display: flex;
+        flex-direction: row;
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .task-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .task-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .task-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 8px;
+        font-size: 0.75em;
+        color: var(--secondary-text-color, #757575);
+        flex-wrap: wrap;
+      }
+
+      .task-points {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+      }
+
+      .task-status {
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7em;
+      }
+
+      .task-status.todo { background: var(--kt-warning); color: white; }
+      .task-status.completed { background: var(--kt-success); color: white; }
+      .task-status.pending { background: var(--kt-info); color: white; }
+      .task-status.validated { background: var(--kt-success); color: white; }
+    `;
+  }
+
+  static getRewardStyles() {
+    return `
+      /* Reward styles */
+      .reward-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-sm);
+      }
+
+      .reward-item {
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        padding: var(--kt-space-md);
+        transition: all var(--kt-transition-fast);
+        cursor: pointer;
+      }
+
+      .reward-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--kt-shadow-light);
+      }
+
+      .reward-title {
+        font-weight: 600;
+        margin-bottom: var(--kt-space-xs);
+      }
+
+      .reward-description {
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-bottom: var(--kt-space-sm);
+      }
+
+      .reward-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8em;
+      }
+
+      .reward-cost {
+        background: var(--kt-success);
+        color: white;
+        padding: 2px 8px;
+        border-radius: var(--kt-radius-sm);
+        font-weight: 600;
+      }
+    `;
+  }
+
   static getOptimizedGlobalStyles() {
     return `
       /* === KIDS TASKS V2.0 - OPTIMIZED CSS VARIABLES === */
       :root {
         /* === CORE COLORS (6 variables) === */
         --kt-primary: var(--primary-color, #3f51b5);
+        --kt-active: var(--darker-primary-color, #1e3462ff);
         --kt-secondary: var(--accent-color, #ff4081);
         --kt-success: #4caf50;
         --kt-warning: #ff9800;
@@ -92,6 +338,9 @@ class KidsTasksStyleManagerV2 {
         --kt-gauge-coins: var(--kt-coins-color);
         --kt-button-hover: rgba(0,0,0,0.1);
         --kt-overlay: rgba(0,0,0,0.5);
+
+        /* === ADDITIONAL VARIABLES === */
+        --kt-font-size-xs: 0.75em;
       }
 
       /* === OPTIMIZED GLOBAL COMPONENTS === */
@@ -118,9 +367,7 @@ class KidsTasksStyleManagerV2 {
     return `
       /* Card Containers */
       .kt-card {
-        background: var(--kt-surface-primary);
         border-radius: var(--kt-radius-lg);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
         overflow: hidden;
         transition: all var(--kt-transition-fast);
       }
@@ -320,65 +567,122 @@ class KidsTasksStyleManagerV2 {
         font-size: var(--kt-font-size-sm);
         opacity: 0.8;
       }
+
+      /* History Components */
+      .child-history-container {
+        max-width: 100%;
+      }
+
+      .history-header {
+        padding: var(--kt-space-md);
+        background: var(--kt-surface-variant);
+        border-radius: var(--kt-radius-md);
+        margin-bottom: var(--kt-space-md);
+      }
+
+      .kt-child-info {
+        display: flex;
+        align-items: center;
+        gap: var(--kt-space-md);
+      }
+
+      .kt-child-details h3 {
+        margin: 0 0 var(--kt-space-xs) 0;
+        color: var(--primary-text-color);
+      }
+
+      .current-stats {
+        display: flex;
+        gap: var(--kt-space-sm);
+        flex-wrap: wrap;
+      }
+
+      .current-stats .stat {
+        padding: var(--kt-space-xs) var(--kt-space-sm);
+        background: var(--kt-primary);
+        color: white;
+        border-radius: var(--kt-radius-sm);
+        font-size: var(--kt-font-size-sm);
+        font-weight: 600;
+      }
+
+      .history-content {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+
+      .history-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kt-space-lg);
+      }
+
+      .history-section h4 {
+        margin: 0 0 var(--kt-space-sm) 0;
+        color: var(--primary-text-color);
+        font-size: 1.1em;
+        padding-bottom: var(--kt-space-xs);
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+
+      .empty-history {
+        text-align: center;
+        padding: var(--kt-space-xl);
+        color: var(--secondary-text-color);
+      }
+
+      .empty-history .empty-icon {
+        font-size: 3em;
+        margin-bottom: var(--kt-space-md);
+        opacity: 0.6;
+      }
+
+      .loading {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--secondary-text-color);
+        font-style: italic;
+      }
+
+      .error {
+        text-align: center;
+        padding: var(--kt-space-lg);
+        color: var(--kt-error);
+        background: var(--kt-error-background);
+        border-radius: var(--kt-radius-sm);
+        margin: var(--kt-space-sm);
+      }
+
+      ${this.getTaskStyles()}
+
+      ${this.getRewardStyles()}
     `;
   }
 
   static getInteractionStyles() {
     return `
-      /* Clickable Elements */
-      .kt-clickable {
-        cursor: pointer;
-        transition: all var(--kt-transition-fast);
-      }
-      
-      .kt-clickable:hover {
-        background: var(--kt-button-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px var(--kt-shadow-light);
-      }
-      
-      .kt-clickable:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 4px var(--kt-shadow-light);
-      }
-      
-      /* Loading States */
-      .kt-loading {
-        text-align: center;
-        padding: var(--kt-space-xl);
-        color: var(--secondary-text-color);
-      }
-      
-      /* Error States */
-      .kt-error {
-        background: var(--kt-error);
-        color: white;
-        padding: var(--kt-space-md);
-        border-radius: var(--kt-radius-md);
-        text-align: center;
-      }
-      
-      /* Focus States */
+      /* Focus States - utile globalement */
       .kt-focusable:focus {
         outline: 2px solid var(--kt-primary);
         outline-offset: 2px;
       }
-      
-      /* Animation States */
+
+      /* Animation States globales */
       @keyframes kt-fade-in {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      
+
       @keyframes kt-slide-up {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
-      
+
       .kt-fade-in {
         animation: kt-fade-in var(--kt-transition-medium) ease;
       }
-      
+
       .kt-slide-up {
         animation: kt-slide-up var(--kt-transition-medium) ease;
       }
@@ -422,13 +726,6 @@ class KidsTasksStyleManagerV2 {
         
         .kt-gap-md {
           gap: var(--kt-space-sm);
-        }
-      }
-      
-      /* Tablet */
-      @media (min-width: 481px) and (max-width: 768px) {
-        .kt-grid-auto {
-          grid-template-columns: repeat(2, 1fr);
         }
       }
       
@@ -545,10 +842,10 @@ class KidsTasksStyleManagerV2 {
       }
     };
   }
-}
+};
 
 
-window.KidsTasksStyleManagerV2 = KidsTasksStyleManagerV2;
+window.KidsTasksStyleManager = KidsTasksStyleManager$1;
 
 class KidsTasksUtils {
 
@@ -1072,25 +1369,25 @@ class KidsTasksPerformanceMonitor {
 }
 
 
-let performanceMonitor$1;
+let performanceMonitor;
 
 
 if (typeof window !== 'undefined') {
-  performanceMonitor$1 = new KidsTasksPerformanceMonitor();
-  window.KidsTasksPerformanceMonitor = performanceMonitor$1;
+  performanceMonitor = new KidsTasksPerformanceMonitor();
+  window.KidsTasksPerformanceMonitor = performanceMonitor;
 
 
   {
     window.ktPerf = {
-      report: () => performanceMonitor$1.generateReport(),
-      toggle: () => performanceMonitor$1.toggle(),
-      clear: () => performanceMonitor$1.destroy()
+      report: () => performanceMonitor.generateReport(),
+      toggle: () => performanceMonitor.toggle(),
+      clear: () => performanceMonitor.destroy()
     };
 
     console.info('🛠️ Performance tools available: window.ktPerf');
   }
 }
-var performanceMonitor$2 = performanceMonitor$1;
+var performanceMonitor$1 = performanceMonitor;
 
 class KidsTasksLogger {
   constructor() {
@@ -1186,6 +1483,9 @@ class KidsTasksBaseCard extends HTMLElement {
     this._initialized = false;
 
 
+    this.performanceMonitor = performanceMonitor$1;
+
+
     this._lastRenderState = null;
     this._renderDebounceTimer = null;
     this._isRendering = false;
@@ -1202,8 +1502,8 @@ class KidsTasksBaseCard extends HTMLElement {
     }
 
 
-    if (performanceMonitor$2) {
-      performanceMonitor$2.trackEventHandler('constructor', this.constructor.name, 'add');
+    if (this.performanceMonitor) {
+      this.performanceMonitor.trackEventHandler('constructor', this.constructor.name, 'add');
     }
   }
 
@@ -1272,9 +1572,9 @@ class KidsTasksBaseCard extends HTMLElement {
       this._isRendering = false;
 
 
-      if (performanceMonitor$2) {
+      if (this.performanceMonitor) {
         const endTime = performance.now();
-        performanceMonitor$2.trackRender(this.constructor.name, startTime, endTime);
+        this.performanceMonitor.trackRender(this.constructor.name, startTime, endTime);
       }
     }
   }
@@ -1313,10 +1613,10 @@ class KidsTasksBaseCard extends HTMLElement {
         <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">
           <h3 style="color: #c33; margin: 0 0 8px 0;">Card Error</h3>
           <p style="margin: 0; font-size: 14px;">${error.message}</p>
-          <button onclick="this.closest('kids-tasks-card, kids-tasks-child-card').smartRender(true)" 
+          <ha-button onclick="this.closest('kids-tasks-card, kids-tasks-child-card').smartRender(true)" 
                   style="margin-top: 8px; padding: 4px 8px; background: #c33; color: white; border: none; border-radius: 2px; cursor: pointer;">
             Retry
-          </button>
+          </ha-button>
         </div>
       `;
     }
@@ -1379,8 +1679,8 @@ class KidsTasksBaseCard extends HTMLElement {
 
     for (const controller of this._touchControllers.values()) {
       controller.abort();
-      if (performanceMonitor$2) {
-        performanceMonitor$2.trackEventHandler('touch', this.constructor.name, 'remove');
+      if (this.performanceMonitor) {
+        this.performanceMonitor.trackEventHandler('touch', this.constructor.name, 'remove');
       }
     }
     this._touchControllers.clear();
@@ -1405,8 +1705,8 @@ class KidsTasksBaseCard extends HTMLElement {
     }
 
 
-    if (performanceMonitor$2) {
-      performanceMonitor$2.trackEventHandler('disconnect', this.constructor.name, 'remove');
+    if (this.performanceMonitor) {
+      this.performanceMonitor.trackEventHandler('disconnect', this.constructor.name, 'remove');
     }
   }
 
@@ -1427,8 +1727,8 @@ class KidsTasksBaseCard extends HTMLElement {
       capture: false
     });
 
-    if (performanceMonitor$2) {
-      performanceMonitor$2.trackEventHandler('delegation', this.constructor.name, 'add');
+    if (this.performanceMonitor) {
+      this.performanceMonitor.trackEventHandler('delegation', this.constructor.name, 'add');
     }
 
     this._eventDelegationSetup = true;
@@ -1448,7 +1748,7 @@ class KidsTasksBaseCard extends HTMLElement {
 
     const handleStart = (e) => {
       const longPressItem = e.target.closest('.kt-long-press-item');
-      if (!longPressItem || longPressItem.querySelector('.kt-delete-confirmation:not(.hidden)')) {
+      if (!longPressItem || longPressItem.querySelector('.kt-delete-confirmation:not(.kt-hidden)')) {
         return;
       }
 
@@ -1530,7 +1830,7 @@ class KidsTasksBaseCard extends HTMLElement {
 
     const confirmation = item.querySelector('.kt-delete-confirmation');
     if (confirmation) {
-      confirmation.classList.remove('hidden');
+      confirmation.classList.remove('kt-hidden');
 
       const confirmBtn = confirmation.querySelector('.kt-confirm-delete');
       const cancelBtn = confirmation.querySelector('.kt-cancel-delete');
@@ -1563,7 +1863,7 @@ class KidsTasksBaseCard extends HTMLElement {
   hideDeleteConfirmation(item) {
     const confirmation = item.querySelector('.kt-delete-confirmation');
     if (confirmation) {
-      confirmation.classList.add('hidden');
+      confirmation.classList.add('kt-hidden');
     }
     item.classList.remove('long-pressing');
 
@@ -1583,7 +1883,7 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
   _hideAllDeleteConfirmations(exceptItem = null) {
-    const openConfirmations = this.shadowRoot.querySelectorAll('.kt-delete-confirmation:not(.hidden)');
+    const openConfirmations = this.shadowRoot.querySelectorAll('.kt-delete-confirmation:not(.kt-hidden)');
 
     openConfirmations.forEach(confirmation => {
       const parentItem = confirmation.closest('.kt-long-press-item');
@@ -1712,18 +2012,15 @@ class KidsTasksBaseCard extends HTMLElement {
   }
 
 
-  renderGauges(stats, includeCoins = false, completedToday, totalTasksToday) {
+  renderGauges(stats, includeCoins = false) {
     if (!stats) return '';
-
-    const completed = completedToday !== undefined ? completedToday : (stats.completedToday || 0);
-    const total = totalTasksToday !== undefined ? totalTasksToday : (stats.totalTasksToday || 0);
 
     const renderGauge = (label, text, fillClass, width) => {
       return `
         <div class="gauge">
           <div class="gauge-header">
-            <span class="gauge-label">${label}</span>
-            <span class="gauge-value">${text}</span>
+            <div class="gauge-label">${label}</div>
+            <div class="gauge-text">${text}</div>
           </div>
           <div class="gauge-bar">
             <div class="gauge-fill ${fillClass}" style="width: ${width}%"></div>
@@ -1732,41 +2029,1068 @@ class KidsTasksBaseCard extends HTMLElement {
       `;
     };
 
-    const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
-    const progressGauge = renderGauge(
-      'Tâches du jour',
-      `${completed}/${total}`,
-      'tasks-fill',
-      progressPercent
+    let gaugesHtml = renderGauge(
+      `Niveau ${stats.level}`,
+      `${stats.pointsInCurrentLevel}/${stats.pointsToNextLevel}`,
+      'level-progress',
+      (stats.pointsInCurrentLevel / stats.pointsToNextLevel) * 100
     );
 
-    if (!includeCoins) {
-      return progressGauge;
+    gaugesHtml += renderGauge(
+      'Tâches',
+      `${stats.completedToday}/${stats.totalToday}`,
+      'tasks-progress',
+      stats.totalToday > 0 ? (stats.completedToday / stats.totalToday) * 100 : 0
+    );
+
+    gaugesHtml += renderGauge(
+      'Points',
+      stats.totalPoints,
+      'total-points',
+      Math.min((stats.totalPoints / 500) * 100, 100)
+    );
+
+    if (includeCoins && stats.coins !== undefined) {
+      gaugesHtml += renderGauge(
+        '🪙',
+        stats.coins,
+        'coins-progress',
+        Math.min(stats.coins, 100)
+      );
     }
 
-    const points = stats.points || 0;
-    const coins = stats.coins || 0;
+    return gaugesHtml;
+  }
 
-    const pointsGauge = renderGauge(
-      'Points',
-      `${points} 🎫`,
-      'points-fill',
-      Math.min(100, points)
-    );
 
-    const coinsGauge = renderGauge(
-      'Pièces',
-      `${coins} 🪙`,
-      'coins-fill',
-      Math.min(100, coins * 2)
-    );
+  getAvatar(child, defaultEmoji = '👤') {
+    if (!child) return defaultEmoji;
+
+    const avatarType = child.avatar_type || 'emoji';
+
+    if (avatarType === 'emoji') {
+      return child.avatar || defaultEmoji;
+    } else if (avatarType === 'url' && child.avatar_data) {
+      return `<img src="${child.avatar_data}" alt="${child.name || 'Enfant'}">`;
+    } else if (avatarType === 'person_entity' && child.person_entity_id && this._hass) {
+      const personEntity = this._hass.states[child.person_entity_id];
+      if (personEntity && personEntity.attributes && personEntity.attributes.entity_picture) {
+        return `<img src="${personEntity.attributes.entity_picture}" alt="${child.name || 'Enfant'}">`;
+      }
+    }
+
+    return child.avatar || defaultEmoji;
+  }
+
+
+  getChildStats(child) {
+    const tasks = this.getChildTasks(child.id);
+    const today = new Date().toDateString();
+
+    const completedToday = tasks.filter(t =>
+      (t.status === 'completed' || t.status === 'validated') &&
+      t.completed_at && new Date(t.completed_at).toDateString() === today
+    ).length;
+
+    const totalToday = tasks.filter(t => t.status === 'todo').length;
+
+    return {
+      completedToday,
+      totalToday,
+      totalTasks: tasks.length
+    };
+  }
+
+  getChildTasks(childId) {
+    if (!this._hass) return [];
+
+    const taskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'))
+      .map(id => this._hass.states[id])
+      .filter(entity => {
+        if (!entity.attributes) return false;
+
+
+        const assignedChildIds = entity.attributes.assigned_child_ids ||
+                                (entity.attributes.assigned_children ? entity.attributes.assigned_children :
+                                (entity.attributes.assigned_child_id ? [entity.attributes.assigned_child_id] : []));
+
+        return Array.isArray(assignedChildIds) ? assignedChildIds.includes(childId) : assignedChildIds === childId;
+      });
+
+    return taskEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      name: entity.attributes.friendly_name || 'Tâche',
+      status: entity.state,
+      completed_at: entity.attributes.completed_at,
+      ...entity.attributes
+    }));
+  }
+
+
+  renderChild(child) {
+    const stats = this.getChildStats(child);
+
+
+    const gaugeStats = {
+      totalPoints: child.points || 0,
+      level: child.level || 1,
+      pointsInCurrentLevel: (child.points || 0) % 100,
+      pointsToNextLevel: 100,
+      completedToday: stats.completedToday,
+      totalToday: stats.totalToday,
+      coins: child.coins || 0
+    };
+
 
     return `
-      <div class="gauges-container">
-        ${progressGauge}
-        ${pointsGauge}
-        ${coinsGauge}
+      <div class="child-card-colorful kt-clickable kt-long-press-item"
+           data-action="edit-child"
+           data-id="${child.child_id || child.id}"
+           data-delete-action="remove-child">
+        <div class="child-avatar">
+          <div class="child-name-header">${child.name}</div>
+          <div class="child-avatar-section">
+            <div class="child-avatar-colorful">
+              ${this.getAvatar(child)}
+            </div>
+            <div class="child-level-badge">Niveau ${child.level || 1}</div>
+          </div>
+        </div>
+        <div class="child-content-horizontal">
+
+          <div class="gauges-section kt-clickable"
+               data-action="show-child-history"
+               data-id="${child.child_id || child.id}">
+            ${this.renderGauges(gaugeStats, true)}
+          </div>
+        </div>
+
+        <!-- Confirmation de suppression pour appui long -->
+        <div class="kt-delete-confirmation kt-hidden">
+          <span style="color: white; font-weight: bold;">Supprimer ${child.name} ?</span>
+          <ha-button class="kt-confirm-delete">Confirmer</ha-button>
+          <ha-button class="kt-cancel-delete">Annuler</ha-button>
+        </div>
       </div>
+    `;
+  }
+
+showModal(content, title = '') {
+
+    const existingDialogs = document.querySelectorAll('ha-dialog');
+    existingDialogs.forEach(existingDialog => {
+      if (existingDialog && existingDialog.parentNode) {
+        existingDialog.close();
+        existingDialog.parentNode.removeChild(existingDialog);
+      }
+    });
+
+
+    const originalOverflow = document.body.style.overflow;
+
+
+    const dialog = document.createElement('ha-dialog');
+    dialog.heading = title;
+    dialog.hideActions = true;
+
+
+    const contentDiv = document.createElement('div');
+    contentDiv.innerHTML = `
+      <style>
+        /* Styles spécifiques pour les modales ha-dialog */
+        ha-dialog {
+          max-height: 90vh;
+          overflow-y: auto;
+          --mdc-dialog-max-width: 800px;
+          --mdc-dialog-min-width: 600px;
+          z-index: 10001 !important;
+        }
+        
+        ha-select {
+          --mdc-menu-max-height: 480px;
+          --mdc-menu-min-width: 100%;
+        }
+        
+        ha-select mwc-menu {
+          --mdc-menu-max-height: 480px;
+          --mdc-menu-item-height: 48px;
+        }
+        
+        /* Composants HA dans les modales */
+        ha-textfield, ha-textarea, ha-select, ha-formfield {
+          display: block;
+          margin-bottom: 16px;
+          width: 100%;
+          --mdc-typography-subtitle1-font-size: 16px;
+        }
+        
+        /* Effet hover pour les ha-formfield cliquables (validation requise, etc.) */
+        ha-formfield {
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
+        /* Styles des formulaires pour les modales */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .form-row { 
+          display: flex; 
+          gap: 12px; 
+          margin-bottom: 16px;
+        }
+        .form-row > * { 
+          flex: 1; 
+          margin-bottom: 0;
+        }
+        
+        /* Layout côte à côte pour enfants et jours */
+        .selection-row {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+        }
+        
+        .children-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .days-column {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        /* Quand la section des jours est masquée, masquer toute la colonne des jours */
+        .days-column .weekly-days-section[style*="display: none"],
+        .days-column .weekly-days-section[style*="display:none"] {
+          display: none !important;
+        }
+        
+        /* Masquer la colonne des jours si elle ne contient qu'une section masquée */
+        .days-column:has(.weekly-days-section[style*="display: none"]) {
+          display: none;
+        }
+        
+        .children-grid {
+          display: flex;
+          flex-direction: column;  
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+
+        .child-checkbox {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+          user-select: none;
+        }
+        
+        .child-checkbox:hover {
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
+        }
+        
+        .child-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
+        }
+
+        .child-info {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        /* Styles pour la section des jours de la semaine */
+        .weekly-days-section, .children-section {
+          margin-bottom: 20px;
+          padding: var(--kt-space-lg);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: var(--kt-radius-sm);
+          background: var(--secondary-background-color, #fafafa);
+        }
+        
+        .weekly-days-section .form-label, .children-section .form-label {
+          margin-bottom: 12px;
+          font-weight: 600;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .weekly-days-section .days-selector {
+          display: flex;
+          flex-direction: column;
+          margin-top: 8px;
+        }
+        
+        .day-checkbox {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+          user-select: none;
+        }
+        
+        .day-checkbox:hover {
+          background-color: var(--primary-color, #3f51b5);
+          color: white;
+        }
+        
+        .day-checkbox:hover .day-label {
+          color: white;
+        }
+        
+        .day-label {
+          font-size: 14px;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
+        }
+        
+        /* Actions des dialogues */
+        .dialog-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid var(--divider-color, #e0e0e0);
+        }
+        
+        /* Responsive design pour les modales */
+        @media (max-width: 768px) {
+          ha-dialog {
+            --mdc-dialog-max-width: 95vw;
+            --mdc-dialog-min-width: 320px;
+          }
+          
+          .selection-row {
+            flex-direction: column;
+            gap: 16px;
+          }
+          
+          .form-row > * {
+            margin-bottom: 16px;
+          }
+        }
+        
+        /* Styles avatar spécifiques aux modales */
+        .avatar-options { 
+          display: flex; 
+          gap: 8px; 
+          flex-wrap: wrap; 
+          margin-bottom: 8px; 
+        }
+        .avatar-option {
+          padding: var(--kt-space-sm);
+          border: 2px solid var(--divider-color);
+          border-radius: var(--kt-radius-sm);
+          background: var(--secondary-background-color);
+          cursor: pointer;
+          font-size: 1.5em;
+          transition: all 0.3s;
+        }
+        .avatar-option:hover { border-color: var(--primary-color); }
+        .avatar-option.selected {
+          border-color: var(--accent-color);
+          background: rgba(255, 64, 129, 0.1);
+        }
+        
+        /* Styles spécifiques pour le modal de détail des récompenses */
+        .reward-detail-content {
+          text-align: center;
+          padding: var(--kt-space-lg, 16px);
+        }
+        
+        .reward-modal-icon {
+          font-size: 4em;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .reward-modal-icon ha-icon {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+        }
+        
+        .reward-modal-name {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .reward-modal-price {
+          font-size: 1.2em;
+          color: var(--primary-color, #6b73ff);
+          font-weight: bold;
+          margin-bottom: 16px;
+        }
+        
+        .reward-modal-description {
+          color: var(--primary-text-color, #212121);
+          line-height: 1.5;
+          margin-bottom: 24px;
+          font-weight: 500;
+        }
+        
+        .btn-modal {
+          padding: var(--kt-space-md, 12px) 24px;
+          border: none;
+          border-radius: var(--kt-radius-xl, 20px);
+          cursor: pointer;
+          transition: all 0.2s;
+          font-weight: 500;
+          font-size: 1em;
+        }
+        
+        .btn-modal-purchase {
+          background: var(--success-color, #4CAF50);
+          color: white;
+        }
+        
+        .btn-modal-purchase:hover {
+          background: #45a049;
+          transform: translateY(-1px);
+        }
+        
+        .btn-modal-purchase:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+          transform: none;
+        }
+        
+        .btn-modal-cancel {
+          background: var(--secondary-background-color, #f5f5f5);
+          color: var(--primary-text-color, #212121);
+        }
+        
+        .btn-modal-cancel:hover {
+          background: var(--divider-color, #e0e0e0);
+        }
+      </style>
+      <div class="kids-tasks-scope">
+        ${content}
+      </div>
+    `;
+
+
+    dialog._cardInstance = this;
+    dialog._originalOverflow = originalOverflow;
+
+    dialog.appendChild(contentDiv);
+    document.body.appendChild(dialog);
+
+
+    dialog.addEventListener('closed', () => {
+
+      if (dialog._originalOverflow !== undefined) {
+        document.body.style.overflow = dialog._originalOverflow;
+      } else {
+
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+
+    dialog.show();
+
+    return dialog;
+  }
+
+
+  getCustomCSSVariables() {
+
+    const tabColor = this.config?.tab_color || 'var(--kt-primary)';
+    const headerColor = this.config?.header_color || 'var(--kt-primary)';
+    const tabTextColor = this.config?.tab_text_color || '#ffffff';
+    const dashboardPrimary = this.config?.dashboard_primary_color || 'var(--kt-primary)';
+    const dashboardSecondary = this.config?.dashboard_secondary_color || 'var(--kt-secondary)';
+    const childGradientStart = this.config?.child_gradient_start || '#4CAF50';
+    const childGradientEnd = this.config?.child_gradient_end || '#8BC34A';
+    const childTextColor = this.config?.child_text_color || '#ffffff';
+    const buttonHoverColor = this.config?.button_hover_color || '#1565C0';
+    const progressBarColor = this.config?.progress_bar_color || 'var(--kt-success)';
+    const pointsBadgeColor = this.config?.points_badge_color || 'var(--kt-warning)';
+    const iconColor = this.config?.icon_color || '#757575';
+
+    return `
+      /* Configurable colors from config */
+      :host {
+        --custom-tab-color: ${tabColor};
+        --custom-header-color: ${headerColor};
+        --custom-tab-text-color: ${tabTextColor};
+        --custom-dashboard-primary: ${dashboardPrimary};
+        --custom-dashboard-secondary: ${dashboardSecondary};
+        --custom-child-gradient-start: ${childGradientStart};
+        --custom-child-gradient-end: ${childGradientEnd};
+        --custom-child-text-color: ${childTextColor};
+        --custom-button-hover-color: ${buttonHoverColor};
+        --custom-progress-bar-color: ${progressBarColor};
+        --custom-points-badge-color: ${pointsBadgeColor};
+        --custom-icon-color: ${iconColor};
+      }
+    `;
+  }
+
+  getCommonStyles() {
+    return `
+      <style>
+        ${this.getCustomCSSVariables()}
+
+        :host {
+          display: block;
+          border-radius: var(--kt-radius-lg);
+          box-shadow: 0 2px 8px var(--kt-shadow-light);
+          overflow: hidden;
+        }
+
+        .card-content {
+          min-height: 200px;
+        }
+
+        .card-header {
+          background-size: 50% 4px;
+          background-repeat: no-repeat;
+          background-position: bottom;
+          padding: 0px;
+          margin: 0px 0px var(--kt-space-sm) 0px;
+          position: relative;
+          z-index: 1;
+          overflow: hidden;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0 0;
+        }
+
+        .kt-hidden {
+          display: none !important; 
+        }
+
+        /* Navigation */
+        .navigation {
+          display: flex;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0px 0px;
+          background-color: var(--custom-header-color, var(--divider-color, #e0e0e0));
+          overflow: hidden;
+        }
+
+        .nav-button {
+          flex: 1;
+          padding: var(--kt-space-md);
+          border: none;
+          background: transparent;
+          color: var(--custom-dashboard-primary, var(--secondary-text-color, #757575));
+          font-weight: 600;
+          font-size: 0.9em;
+          cursor: pointer;
+          transition: all 0.3s;
+          border-bottom: 3px solid transparent;
+        }
+
+        .nav-button:hover, .nav-button.active:hover {
+          color: var(--primary-text-color, #212121);
+        }
+
+        .nav-button.active {
+          color: var(--custom-tab-text-color, #ffffff);
+          border-bottom-color: var(--custom-tab-color, var(--kt-primary));
+          background: var(--custom-tab-color, var(--kt-active));
+          position: relative;
+          z-index: 2;
+        }
+
+        /* Grid system */
+        .children-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+          gap: var(--kt-space-lg);
+        }
+
+        .summary-stats {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: var(--kt-space-md);
+          margin-bottom: var(--kt-space-lg);
+        }
+
+        .summary-card {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-evenly;
+          gap: var(--kt-space-sm);
+          background: var(--kt-surface-variant);
+          padding: var(--kt-space-md);
+          border-radius: var(--kt-radius-md);
+          border-left: 3px solid var(--kt-primary);
+          text-align: center;
+        }
+
+        .summary-card:hover {
+          border-left: 3px solid var(--kt-secondary);
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .summary-icon {
+          font-size: 2em;
+          margin-bottom: var(--kt-space-xs);
+          opacity: 0.8;
+        }
+
+        .summary-number {
+          font-size: 2em;
+          font-weight: 700;
+          color: var(--kt-primary);
+          margin-bottom: var(--kt-space-xs);
+          text-align: right;
+        }
+
+        .summary-label {
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
+          font-weight: 600;
+        }
+
+        /* Child cards */
+        .child-card-colorful {
+          background: linear-gradient(135deg, var(--custom-child-gradient-start, #4CAF50) 0%, var(--custom-child-gradient-end, #8BC34A) 100%);
+          color: var(--custom-child-text-color, white);
+          border-left: 3px solid var(--kt-primary);
+          border-radius: var(--kt-radius-lg);
+          padding: var(--kt-space-sm);
+          transition: all var(--kt-transition-fast);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          min-height: 180px;
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .child-card-colorful:hover {
+          transform: translateY(-4px);
+          border-left: 3px solid var(--kt-secondary);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .child-name-header {
+          font-size: 1.8em;
+          font-weight: 700;
+          margin-bottom: 12px;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          text-align: left;
+          line-height: 1.2;
+          opacity: 1;
+          color: var(--custom-child-text-color, var(--primary-text-color));
+        }
+
+        .child-content-horizontal {
+          display: flex;
+          align-items: flex-start;
+          gap: 20px;
+          width: 100%;
+        }
+
+        .child-avatar {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .child-avatar-section {
+          position: relative;
+          flex-shrink: 0;
+        }
+
+        .child-avatar-colorful {
+          font-size: 3em;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--kt-radius-round);
+          background: var(--kt-avatar-background);
+          border: 2px solid var(--kt-cosmetic-background);
+          transition: all var(--kt-transition-fast);
+        }
+
+        .child-avatar-colorful img {
+          width: 2em;
+          height: 2em;
+          border-radius: var(--kt-radius-round) !important;
+          object-fit: cover !important;
+          border: 2px solid var(--kt-cosmetic-background, rgba(255, 255, 255, 0.2));
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .child-level-badge {
+          position: absolute;
+          bottom: -16px;
+          left: 16px;
+          border-radius: var(--kt-radius-md);
+          font-size: 0.8em;
+          font-weight: 600;
+          text-align: center;
+          z-index: 2;
+          background: var(--custom-points-badge-color, var(--primary-color, #3f51b5));
+          backdrop-filter: blur(10px);
+          padding: var(--kt-space-xs) 8px;
+          min-width: 60px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .gauges-section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          min-height: 60px;
+          justify-content: flex-start;
+          padding-left: 4px;
+          padding-top: 0px;
+          cursor: pointer;
+          border-radius: var(--kt-radius-sm);
+          transition: all var(--kt-transition-fast);
+        }
+
+        .gauges-section:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: scale(1.02);
+        }
+
+        .child-progress-colorful {
+          background: rgba(255, 255, 255, 0.15);
+          padding: var(--kt-space-md);
+          border-radius: var(--kt-radius-md);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-label {
+          font-size: 0.8em;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 4px;
+        }
+
+        .progress-value {
+          font-size: 1.1em;
+          font-weight: 600;
+          margin-bottom: var(--kt-space-xs);
+        }
+
+        .progress-bar-colorful {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: var(--kt-radius-sm);
+          overflow: hidden;
+        }
+
+        .progress-fill-colorful {
+          height: 100%;
+          background: rgba(255, 255, 255, 0.8);
+          transition: width var(--kt-transition-medium);
+          border-radius: var(--kt-radius-sm);
+        }
+
+        .child-card {
+          background: var(--kt-surface-variant);
+          border-radius: var(--kt-radius-md);
+          padding: var(--kt-space-lg);
+          transition: all var(--kt-transition-fast);
+          cursor: pointer;
+        }
+
+        .child-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px var(--kt-shadow-medium);
+        }
+
+        .child-header {
+          text-align: center;
+          margin-bottom: var(--kt-space-md);
+        }
+
+        .child-avatar {
+          font-size: 1.2em;
+          margin-bottom: var(--kt-space-sm);
+          margin-right: var(--kt-space-md);
+        }
+
+        .child-name {
+          font-size: 1.2em;
+          font-weight: 600;
+          color: var(--primary-text-color);
+          margin-bottom: var(--kt-space-xs);
+        }
+
+        .child-stats {
+          display: flex;
+          gap: var(--kt-space-sm);
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-bottom: var(--kt-space-md);
+        }
+
+        /* Progress bars */
+        .child-progress {
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
+          text-align: center;
+          margin-bottom: var(--kt-space-md);
+        }
+
+        .progress-bar {
+          height: 4px;
+          background: var(--kt-gauge-bg);
+          border-radius: var(--kt-radius-sm);
+          overflow: hidden;
+          margin-top: var(--kt-space-xs);
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: var(--custom-progress-bar-color, var(--kt-gauge-success));
+          transition: width var(--kt-transition-medium);
+        }
+
+        /* Gauges */
+        .gauge {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .gauge-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .gauge-label {
+          font-size: 0.65em;
+          opacity: 0.9;
+          font-weight: 500;
+        }
+
+        .gauge-value, .gauge-text {
+          font-size: 0.65em;
+          font-weight: bold;
+          opacity: 0.95;
+        }
+
+        .gauge-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 4px;
+          overflow: hidden;
+          position: relative;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .gauge-fill {
+          height: 100%;
+          border-radius: var(--kt-space-xs);
+          transition: width 0.6s ease;
+        }
+
+        .gauge-fill.total-points {
+          background: linear-gradient(90deg, #ffd700, #ffed4a);
+        }
+
+        .gauge-fill.level-progress {
+          background: linear-gradient(90deg, var(--custom-progress-bar-color, #4facfe), var(--custom-dashboard-secondary, #00f2fe));
+        }
+
+        .gauge-fill.tasks-progress, .gauge-fill.tasks-fill {
+          background: linear-gradient(90deg, var(--custom-progress-bar-color, #43e97b), var(--custom-dashboard-secondary, #38f9d7));
+        }
+
+        .gauge-fill.coins-progress, .gauge-fill.coins-fill {
+          background: linear-gradient(90deg, var(--kt-coins-color, #9C27B0), #E1BEE7);
+        }
+
+        .gauge-fill.points-fill {
+          background: linear-gradient(90deg, #ffd700, #ffed4a);
+        }
+
+        /* Empty states */
+        .empty-state, .kt-empty {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color);
+        }
+
+        .empty-state-icon, .kt-empty__icon {
+          font-size: 3em;
+          margin-bottom: var(--kt-space-md);
+          opacity: 0.6;
+        }
+
+        .kt-empty__text {
+          font-size: 1.1em;
+          font-weight: 600;
+          margin-bottom: var(--kt-space-xs);
+        }
+
+        .kt-empty__subtext {
+          font-size: 0.9em;
+          opacity: 0.8;
+        }
+
+        /* Loading */
+                .filters {
+          display: flex;
+          gap: var(--kt-space-sm);
+          margin-bottom: var(--kt-space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filter-btn {
+          background: var(--kt-surface-variant);
+          border: 2px solid transparent;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all var(--kt-transition-fast);
+          font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .filter-btn.active {
+          border-color: var(--kt-primary);
+          background: var(--kt-primary);
+          color: white;
+        }
+          
+        .kt-loading {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color);
+        }
+
+        /* Common buttons */
+        .add-btn {
+          background: var(--kt-primary);
+          color: white;
+          border: none;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+        }
+
+        .add-btn:hover {
+          background: var(--kt-success);
+          transform: translateY(-1px);
+        }
+
+        /* Utilities */
+        .kt-flex { display: flex; }
+        .kt-gap-md { gap: var(--kt-space-md); }
+        .kt-fade-in { animation: fadeIn 0.3s ease-in; }
+        .kt-clickable {
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+        }
+        .kt-p-lg { padding: var(--kt-space-lg); }
+
+        /* Utilities critiques dans Shadow DOM */
+        .kt-delete-confirmation {
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(244, 67, 54, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--kt-space-md);
+          border-radius: var(--kt-radius-md);
+          z-index: 10;
+        }
+
+        .kt-delete-confirmation.kt-hidden {
+          display: none !important;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Icons and secondary elements */
+        .kt-empty__icon,
+        ha-icon,
+        .icon-image,
+        .task-icon,
+        .reward-icon,
+        .child-icon {
+          color: var(--custom-icon-color, var(--secondary-text-color));
+        }
+
+        .summary-card,
+        .gauge-label,
+        .secondary-text,
+        .child-stats,
+        .progress-label {
+          color: var(--custom-dashboard-secondary, var(--secondary-text-color));
+        }
+
+        /* Navigation with color secondary */
+        .nav-button:not(.active) {
+          color: var(--custom-dashboard-secondary, var(--secondary-text-color));
+        }
+
+          .main-content {
+            padding: var(--kt-space-md);
+          }
+        }
+
+        @media (max-width: 480px) {
+
+          .card-content {
+            padding: var(--kt-space-sm);
+          }
+
+          .nav-button {
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
+          }
+        }
+
+        @media (max-width: 320px) {
+          .card-content {
+            padding: var(--kt-space-xs);
+          }
+
+          .child-card {
+            padding: var(--kt-space-md);
+          }
+
+          .summary-card {
+            padding: var(--kt-space-md);
+          }
+        }
+      </style>
     `;
   }
 
@@ -1785,15 +3109,228 @@ class KidsTasksBaseCard extends HTMLElement {
 
 
   getChildren() {
-    return [];
+    if (!this._hass) return [];
+
+    const children = [];
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.state !== 'unavailable') {
+          const childId = entity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+          children.push({
+            id: childId,
+            child_id: entity.attributes.child_id,
+            name: entity.attributes.friendly_name || childId,
+            points: parseInt(entity.state) || 0,
+            coins: entity.attributes.coins || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || entity.attributes.cosmetics?.avatar?.emoji || '👤',
+            ...entity.attributes
+          });
+        }
+      }
+    });
+
+    return children.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getTasks() {
-    return [];
+    if (!this._hass) return [];
+
+    const taskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'))
+      .map(id => this._hass.states[id]);
+
+    return taskEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      name: entity.attributes.friendly_name || 'Tâche',
+      description: entity.attributes.description,
+      status: entity.state,
+      points: entity.attributes.points || 0,
+      coins: entity.attributes.coins || 0,
+      penalty_points: entity.attributes.penalty_points || 0,
+      category: entity.attributes.category,
+      frequency: entity.attributes.frequency || 'daily',
+      assigned_children: entity.attributes.assigned_children || [],
+      active: entity.attributes.active !== false,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
   }
 
   getRewards() {
-    return [];
+    if (!this._hass) return [];
+
+    const rewardEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_reward_'))
+      .map(id => this._hass.states[id]);
+
+    return rewardEntities.map(entity => ({
+      id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
+      name: entity.attributes.friendly_name || 'Récompense',
+      description: entity.attributes.description,
+      cost: entity.attributes.cost || 0,
+      coin_cost: entity.attributes.coin_cost || 0,
+      category: entity.attributes.category,
+      remaining_quantity: entity.attributes.remaining_quantity,
+      icon: entity.attributes.icon,
+      ...entity.attributes
+    }));
+  }
+
+
+  filterTasks(tasks, filter, mode = 'manager') {
+    switch (filter) {
+      case 'active':
+        if (mode === 'child') {
+
+          return tasks.filter(t => t.status === 'todo' || t.status === 'pending');
+        } else {
+
+          return tasks.filter(task => task.frequency !== 'none' && task.active !== false && this.isTaskInPeriod(task));
+        }
+      case 'completed':
+
+        return tasks.filter(t => t.status === 'completed' || t.status === 'validated');
+      case 'inactive':
+        return tasks.filter(task => task.frequency !== 'none' && task.active === false);
+      case 'bonus':
+        return tasks.filter(task => task.frequency === 'none');
+      case 'out-of-period':
+        return tasks.filter(task => task.frequency !== 'none' && task.active !== false && !this.isTaskInPeriod(task));
+      case 'all':
+      default:
+        return tasks;
+    }
+  }
+
+  isTaskInPeriod(task) {
+
+    return true;
+  }
+
+  getFilterLabel(filter, customLabels = {}) {
+    const defaultLabels = {
+      'all': '',
+      'active': 'actives',
+      'completed': 'terminées',
+      'inactive': 'désactivées',
+      'bonus': 'bonus',
+      'out-of-period': 'hors période'
+    };
+
+    const labels = { ...defaultLabels, ...customLabels };
+    return labels[filter] || '';
+  }
+
+  renderChildSummary(child) {
+    const stats = this.getChildStats(child);
+
+    return `
+      <div class="child-card">
+        <div class="child-header">
+          <div class="child-avatar">${child.avatar || '👤'}</div>
+          <div class="child-name">${child.name}</div>
+        </div>
+        
+        <div class="kt-flex kt-gap-md">
+          <div class="summary-card">
+            <div class="summary-number">${stats.completedToday}</div>
+            <div class="summary-label">Tâches terminées</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-number">${child.points || 0}</div>
+            <div class="summary-label">Points</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderTaskFilters(options = {}) {
+    const {
+      filters = [],
+      currentFilter,
+      filterProperty = 'taskFilter',
+      actionName = 'filter-tasks',
+      wrapper = false,
+      wrapperClass = 'filters'
+    } = options;
+
+    if (!filters.length) return '';
+
+    const buttonsHtml = filters.map(filter => `
+      <button
+        class="filter-btn ${this[filterProperty] === filter.id ? 'active' : ''}"
+        data-action="${actionName}"
+        data-filter="${filter.id}"
+      >
+        ${filter.label}
+      </button>
+    `).join('');
+
+    return wrapper ? `<div class="${wrapperClass}">${buttonsHtml}</div>` : buttonsHtml;
+  }
+
+  getFrequencyLabel(frequency) {
+    const labels = {
+      'daily': 'Quotidienne',
+      'weekly': 'Hebdomadaire',
+      'monthly': 'Mensuelle',
+      'bonus': 'Bonus',
+      'none': 'Désactivée'
+    };
+    return labels[frequency] || frequency;
+  }
+
+  getCategoryLabel(category) {
+    const labels = {
+      'chores': 'Corvées',
+      'homework': 'Devoirs',
+      'hygiene': 'Hygiène',
+      'bonus': 'Bonus',
+      'cosmetic': 'Cosmétique',
+      'reward': 'Récompense'
+    };
+    return labels[category] || category;
+  }
+
+  getCategoryIcon(item) {
+    if (item.icon) return item.icon;
+
+    const icons = {
+      'chores': '🧹',
+      'homework': '📚',
+      'hygiene': '🦷',
+      'bonus': '⭐',
+      'cosmetic': '🎨',
+      'reward': '🎁'
+    };
+    return icons[item.category] || '📋';
+  }
+
+  formatAssignedChildren(task) {
+    const childrenNames = this.getAssignedChildrenNames(task);
+    if (childrenNames.length === 0) return 'Non assignée';
+    if (childrenNames.length === 1) return childrenNames[0];
+    return childrenNames.join(', ');
+  }
+
+  getAssignedChildrenNames(task) {
+    if (!this._hass || !task.assigned_child_ids) return [];
+
+    const children = this.getChildren();
+    const assignedIds = task.assigned_child_ids;
+
+    return assignedIds.map(assignedChildId => {
+
+      const child = children.find(c =>
+        c.child_id === assignedChildId ||
+        c.name === assignedChildId ||
+        c.id === assignedChildId
+      );
+      return child ? child.name : 'Enfant inconnu';
+    }).filter(name => name !== 'Enfant inconnu');
   }
 
   getDynamicIcons() {
@@ -1803,9 +3340,223 @@ class KidsTasksBaseCard extends HTMLElement {
   getRewardIcons() {
     return {};
   }
+
+
+  async getChildHistory(childId) {
+    if (!this._hass) return [];
+
+
+    const children = this.getChildren();
+    const child = children.find(c => c.child_id === childId || c.id === childId);
+
+    if (!child) {
+      console.error(`Enfant avec l'ID ${childId} introuvable`);
+      return [];
+    }
+
+
+    let historyData = [];
+    try {
+      await this._hass.callService('kids_tasks', 'get_child_history', {
+        child_id: childId,
+        limit: 20
+      });
+
+
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    }
+
+    return historyData || [];
+  }
+
+  getActionIcon(actionType) {
+    const icons = {
+      'task_completed': '✅',
+      'task_validated': '🎯',
+      'task_penalty': '⚠️',
+      'reward_claimed': '🏆',
+      'manual_adjustment': '⚙️',
+      'level_up': '📈',
+      'bonus_points': '🌟',
+      'default': '📊'
+    };
+    return icons[actionType] || icons['default'];
+  }
+
+  getActionTypeLabel(actionType) {
+    const labels = {
+      'task_completed': 'Terminée',
+      'task_validated': 'Validée',
+      'task_penalty': 'Pénalité',
+      'reward_claimed': 'Récompense',
+      'manual_adjustment': 'Ajustement',
+      'level_up': 'Montée niveau',
+      'bonus_points': 'Points bonus',
+      'default': 'Autre'
+    };
+    return labels[actionType] || labels['default'];
+  }
+
+  renderHistoryAsTask(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'success' : 'penalty';
+    const actionIcon = this.getActionIcon(entry.action_type);
+
+
+    let taskClass = 'completed';
+    if (entry.points_delta < 0) {
+      taskClass = 'missed';
+    }
+
+    return `
+      <div class="task ${taskClass}">
+        <div class="item-icon">${actionIcon}</div>
+        <div class="task-main flex-content">
+          <div class="task-name-row">
+            <div class="task-name">${entry.description || 'Action inconnue'}</div>
+            <div class="task-validation">${dateStr} à ${timeStr}</div>
+          </div>
+          <div class="task-points">
+            <span style="color: ${entry.points_delta > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">${pointsDisplay} 🎫</span>
+            <span style="color: var(--secondary-text-color, #757575); font-size: 0.9em;">${this.getActionTypeLabel(entry.action_type)}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          <span class="task-result ${pointsClass}">${entry.points_delta > 0 ? '🎉' : '😞'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  async renderChildHistoryForTab(child) {
+    const history = await this.getChildHistory(child.child_id || child.id);
+
+    if (history.length === 0) {
+      return `
+        <div class="empty-history">
+          <div class="empty-icon">📈</div>
+          <p>Aucun historique</p>
+          <small>Les actions sur les points apparaîtront ici</small>
+        </div>
+      `;
+    }
+
+
+    const limitedHistory = history.slice(0, 15);
+
+    return `
+      <div class="task-list">
+        ${limitedHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+      </div>
+    `;
+  }
+
+  async renderChildHistoryContent(child, historyData = null, showHeader = true) {
+    const history = historyData || await this.getChildHistory(child.child_id || child.id);
+
+    const todayHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate.toDateString() === new Date().toDateString();
+    });
+
+    const thisWeekHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate >= weekAgo;
+    });
+
+    return `
+      <div class="child-history-container">
+        ${showHeader ? `
+          <div class="history-header">
+            <div class="kt-child-info">
+              <div class="kt-avatar">${this.getAvatar(child)}</div>
+              <div class="kt-child-details">
+                <h3>${child.name}</h3>
+                <div class="current-stats">
+                  <span class="stat">${child.points || 0} 🎫 Points</span>
+                  <span class="stat">${child.coins || 0} 🪙 Pièces</span>
+                  <span class="stat">Niveau ${child.level || 1}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="history-content">
+          ${history.length > 0 ? `
+            <div class="history-sections">
+              ${todayHistory.length > 0 ? `
+                <div class="history-section">
+                  <h4>🌟 Aujourd'hui</h4>
+                  ${todayHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${thisWeekHistory.length > todayHistory.length ? `
+                <div class="history-section">
+                  <h4>📅 Cette semaine</h4>
+                  ${thisWeekHistory.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    return entryDate.toDateString() !== new Date().toDateString();
+                  }).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${history.length > thisWeekHistory.length ? `
+                <div class="history-section">
+                  <h4>📈 Plus ancien</h4>
+                  ${history.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return entryDate < weekAgo;
+                  }).slice(0, 10).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="empty-history">
+              <div class="empty-icon">📈</div>
+              <p>Aucune activité dans l'historique</p>
+              <p>Les tâches complétées apparaîtront ici.</p>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+
+  async showChildHistory(childId) {
+    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
+    if (!child) return;
+
+    const content = await this.renderChildHistoryContent(child);
+    this.showModal(content, `Historique de ${child.name}`);
+  }
 }
 
-class KidsTasksCardOptimized extends KidsTasksBaseCard {
+class KidsTasksCard extends KidsTasksBaseCard {
   constructor() {
     super();
     this.currentView = 'dashboard';
@@ -1843,238 +3594,30 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
     this.shadowRoot.innerHTML = `
       ${this.getOptimizedStyles()}
       <div class="card-content kids-tasks-scope">
-        <div class="card-header kt-p-lg">
-          <h2 class="card-title">${this.config.title}</h2>
+        <div class="card-header">
           ${this.config.show_navigation ? this.renderNavigation() : ''}
         </div>
 
-        <div class="main-content kt-p-lg">
+        <div class="main-content">
           ${this.renderCurrentView(children)}
         </div>
       </div>
     `;
   }
 
+
   getOptimizedStyles() {
-    return `<style>
-        :host {
-          display: block;
-          background: var(--kt-surface-primary);
-          border-radius: var(--kt-radius-lg);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-          overflow: hidden;
-        }
-
-        .card-content {
-          min-height: 200px;
-        }
-
+    return `
+      ${this.getCommonStyles()}
+      <style>
+        /* Dashboard-specific overrides */
         .card-header {
-          border-bottom: 2px solid var(--kt-surface-variant);
-          margin-bottom: var(--kt-space-lg);
+          background: linear-gradient(90deg, var(--custom-header-color, var(--kt-primary)) 0%, transparent 100%);
+          background-size: 100% 4px;
+          background-position: bottom;
         }
-
-        .card-title {
-          font-size: var(--kt-font-size-lg);
-          font-weight: 700;
-          color: var(--primary-text-color);
-          margin: 0 0 var(--kt-space-sm) 0;
-        }
-
-        .navigation {
-          display: flex;
-          gap: var(--kt-space-sm);
-          flex-wrap: wrap;
-        }
-
-        .nav-button {
-          background: var(--kt-surface-variant);
-          border: 2px solid transparent;
-          padding: var(--kt-space-xs) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
-          font-weight: 600;
-          font-size: .9em;
-          transition: all var(--kt-transition-fast);
-          color: var(--primary-text-color);
-        }
-
-        .nav-button.active {
-          border-color: var(--kt-primary);
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .nav-button:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px var(--kt-shadow-light);
-        }
-
-        /* Grid system using CSS custom properties */
-        .children-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: var(--kt-space-lg);
-        }
-
-        .child-card {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-lg);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .child-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px var(--kt-shadow-medium);
-        }
-
-        .child-header {
-          text-align: center;
-          margin-bottom: var(--kt-space-md);
-        }
-
-        .child-avatar {
-          font-size: 3em;
-          margin-bottom: var(--kt-space-sm);
-        }
-
-        .child-name {
-          font-size: 1.2em;
-          font-weight: 600;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .child-stats {
-          display: flex;
-          gap: var(--kt-space-sm);
-          justify-content: center;
-          flex-wrap: wrap;
-          margin-bottom: var(--kt-space-md);
-        }
-
-        .child-progress {
-          font-size: .9em;
-          color: var(--secondary-text-color);
-          text-align: center;
-          margin-bottom: var(--kt-space-md);
-        }
-
-        .progress-bar {
-          height: 4px;
-          background: var(--kt-gauge-bg);
-          border-radius: var(--kt-radius-sm);
-          overflow: hidden;
-          margin-top: var(--kt-space-xs);
-        }
-
-        .progress-fill {
-          height: 100%;
-          background: var(--kt-gauge-success);
-          transition: width var(--kt-transition-medium);
-        }
-
-        .summary-stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: var(--kt-space-md);
-          margin-bottom: var(--kt-space-lg);
-        }
-
-        .summary-card {
-          background: var(--kt-surface-variant);
-          padding: var(--kt-space-lg);
-          border-radius: var(--kt-radius-md);
-          text-align: center;
-        }
-
-        .summary-number {
-          font-size: 2em;
-          font-weight: 700;
-          color: var(--kt-primary);
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .summary-label {
-          font-size: .9em;
-          color: var(--secondary-text-color);
-          font-weight: 600;
-        }
-
-        /* Enhanced responsive optimizations */
-        @media (max-width: 1200px) {
-          .children-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--kt-space-md);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .children-grid {
-            grid-template-columns: 1fr;
-            gap: var(--kt-space-md);
-          }
-          
-          .navigation {
-            justify-content: center;
-            gap: var(--kt-space-xs);
-          }
-
-          .nav-button {
-            padding: var(--kt-space-xs);
-            font-size: .8em;
-          }
-
-          .summary-stats {
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--kt-space-sm);
-          }
-
-          .card-header {
-            padding: var(--kt-space-md);
-          }
-        }
-
-        @media (max-width: 480px) {
-          .child-stats {
-            flex-direction: column;
-            align-items: center;
-            gap: var(--kt-space-xs);
-          }
-
-          .summary-stats {
-            grid-template-columns: 1fr;
-          }
-
-          .card-content {
-            padding: var(--kt-space-sm);
-          }
-
-          .card-title {
-            font-size: var(--kt-font-size-md);
-            text-align: center;
-          }
-
-          .navigation {
-            flex-direction: column;
-            align-items: center;
-          }
-
-          .nav-button {
-            width: 100%;
-            max-width: 200px;
-            text-align: center;
-          }
-        }
-
-        @media (max-width: 320px) {
-          .card-content {
-            padding: var(--kt-space-xs);
-          }
-        }
-      </style>`;
+      </style>
+    `;
   }
 
   renderNavigation() {
@@ -2123,9 +3666,30 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
       `;
     }
 
+    const stats = this.calculateGlobalStats(children);
+
     return `
+      <div class="summary-stats kt-fade-in">
+        <div class="summary-card">
+          <div class="summary-icon">👦🏻</div>
+          <div class="summary-number">${children.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">📋</div>
+          <div class="summary-number">${stats.totalTasks}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">✅</div>
+          <div class="summary-number">${stats.completedToday}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">⏳</div>
+          <div class="summary-number">${stats.pendingTasks}</div>
+        </div>
+      </div>
+
       <div class="children-grid kt-fade-in">
-        ${children.map(child => this.renderChildCard(child)).join('')}
+        ${children.map(child => this.renderChild(child)).join('')}
       </div>
     `;
   }
@@ -2149,7 +3713,7 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         </div>
         <div class="summary-card">
           <div class="summary-number">${stats.totalPoints}</div>
-          <div class="summary-label">Points totaux</div>
+          <div class="summary-label">Points</div>
         </div>
       </div>
       
@@ -2171,62 +3735,6 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
     `;
   }
 
-  renderChildCard(child) {
-    const stats = this.getChildStats(child);
-    const progressPercent = stats.totalToday > 0 ? (stats.completedToday / stats.totalToday) * 100 : 0;
-
-    return `
-      <div class="child-card kt-clickable" data-action="view-child" data-id="${child.id}">
-        <div class="child-header">
-          <div class="child-avatar">${child.avatar || '👤'}</div>
-          <div class="child-name">${child.name}</div>
-          <div class="child-stats kt-flex kt-flex-wrap kt-gap-sm kt-flex-center">
-            <span class="kt-stat kt-stat--points">${child.points || 0} 🎫</span>
-            <span class="kt-stat kt-stat--coins">${child.coins || 0} 🪙</span>
-            <span class="kt-stat">Niv. ${child.level || 1}</span>
-          </div>
-        </div>
-        
-        <div class="child-progress">
-          Aujourd'hui: ${stats.completedToday}/${stats.totalToday} tâches
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${progressPercent}%"></div>
-          </div>
-        </div>
-        
-        <div class="child-actions">
-          <button class="kt-btn kt-btn--primary" data-action="view-child" data-id="${child.id}">
-            Voir les tâches
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  renderChildSummary(child) {
-    const stats = this.getChildStats(child);
-
-    return `
-      <div class="child-card">
-        <div class="child-header">
-          <div class="child-avatar">${child.avatar || '👤'}</div>
-          <div class="child-name">${child.name}</div>
-        </div>
-        
-        <div class="kt-flex kt-gap-md">
-          <div class="summary-card">
-            <div class="summary-number">${stats.completedToday}</div>
-            <div class="summary-label">Tâches terminées</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-number">${child.points || 0}</div>
-            <div class="summary-label">Points</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
   handleAction(action, id, event) {
     switch (action) {
       case 'switch-view':
@@ -2235,6 +3743,9 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
         break;
       case 'view-child':
         this.handleViewChild(id);
+        break;
+      case 'show-child-history':
+        this.showChildHistory(id);
         break;
       default:
         {
@@ -2320,23 +3831,32 @@ class KidsTasksCardOptimized extends KidsTasksBaseCard {
     let totalTasks = 0;
     let completedToday = 0;
     let totalPoints = 0;
+    let pendingTasks = 0;
 
     children.forEach(child => {
       const stats = this.getChildStats(child);
       totalTasks += stats.totalToday;
       completedToday += stats.completedToday;
       totalPoints += child.points || 0;
+
+
+      const childTasks = this.getChildTasks(child.id);
+      pendingTasks += childTasks.filter(task =>
+        task.status === 'completed' && !task.validated
+      ).length;
     });
 
     return {
       totalTasks,
       completedToday,
-      totalPoints
+      totalPoints,
+      pendingTasks
     };
   }
 
   static getConfigElement() {
-    return document.createElement('kids-tasks-card-editor');
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-card-editor${suffix}`);
   }
 
   static getStubConfig() {
@@ -2502,8 +4022,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     this._allTimers.clear();
 
 
-    if (performanceMonitor) {
-      performanceMonitor.trackEventHandler('timers', this.constructor.name, 'remove');
+    if (this.performanceMonitor) {
+      this.performanceMonitor.trackEventHandler('timers', this.constructor.name, 'remove');
     }
   }
 
@@ -2564,14 +4084,17 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   render() {
     if (!this._hass || !this.config) {
-      this.shadowRoot.innerHTML = '<div class="loading">Chargement...</div>';
+      this.shadowRoot.innerHTML = `
+        ${this.getCommonStyles()}
+        <div class="loading">Chargement...</div>
+      `;
       return;
     }
 
     const child = this.getChild();
     if (!child) {
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
         <div class="error">
           Enfant non trouvé (ID: ${this.config.child_id})
         </div>
@@ -2581,9 +4104,10 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     try {
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
+        ${this.getChildSpecificStyles()}
         <div class="child-card-container">
-          ${this.renderHeader(child)}
+          ${this.renderChild(child)}
           ${this.renderTabs()}
           ${this.renderTabContent(child)}
         </div>
@@ -2591,22 +4115,15 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     } catch (error) {
       console.error('Error rendering child card:', error);
       this.shadowRoot.innerHTML = `
-        ${this.getStyles()}
+        ${this.getCommonStyles()}
         <div class="error">Erreur: ${error.message}</div>
       `;
     }
   }
 
-  getStyles() {
-    return `<style>
-        :host {
-          display: block;
-          background: var(--card-background-color, white);
-          border-radius: var(--kt-radius-lg);
-          overflow: hidden;
-          box-shadow: var(--box-shadow, 0 2px 8px rgba(0,0,0,.1));
-        }
-
+  getChildSpecificStyles() {
+    return `
+      <style>
         .child-card-container {
           padding: var(--kt-space-lg);
         }
@@ -2619,16 +4136,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           border-radius: var(--kt-radius-md);
         }
 
-        .child-avatar {
-          font-size: 4em;
-          margin-bottom: var(--kt-space-sm);
-        }
-
-        .child-name {
-          font-size: 1.5em;
-          font-weight: 700;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-sm);
+        .child-card-colorful {
+          border-bottom-right-radius: 0px;
+          border-bottom-left-radius: 0px;
         }
 
         .child-stats {
@@ -2638,13 +4148,17 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           flex-wrap: wrap;
         }
 
+        .card-header, .navigation {
+          border-radius: 0px;
+        }
+
         .stat {
           background: var(--kt-primary);
           color: white;
           padding: var(--kt-space-xs) var(--kt-space-md);
           border-radius: var(--kt-radius-sm);
           font-weight: 600;
-          font-size: .9em;
+          font-size: 0.9em;
         }
 
         .tabs {
@@ -2676,69 +4190,13 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
         .tab-button.active:hover {
           background: var(--kt-primary);
-          opacity: .9;
+          opacity: 0.9;
         }
 
         .tab-content {
           min-height: 200px;
         }
 
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
-
-        .task-title, .reward-title {
-          font-weight: 600;
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-description, .reward-description {
-          font-size: .9em;
-          color: var(--secondary-text-color);
-          margin-bottom: var(--kt-space-sm);
-        }
-
-        .task-meta, .reward-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: .8em;
-        }
-
-        .task-points, .reward-cost {
-          background: var(--kt-success);
-          color: white;
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-        }
-
-        .task-status {
-          padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-          text-transform: uppercase;
-          font-size: .7em;
-        }
-
-        .task-status.todo { background: var(--kt-warning); color: white; }
-        .task-status.completed { background: var(--kt-success); color: white; }
-        .task-status.pending { background: var(--kt-info); color: white; }
 
         .filters {
           display: flex;
@@ -2755,7 +4213,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           cursor: pointer;
           font-weight: 600;
           transition: all var(--kt-transition-fast);
-          font-size: .85em;
+          font-size: 0.85em;
         }
 
         .filter-btn.active {
@@ -2778,78 +4236,40 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           text-align: center;
         }
 
+        .empty-state {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--secondary-text-color);
+        }
+
         .empty-icon {
           font-size: 3em;
           margin-bottom: var(--kt-space-md);
-          opacity: .6;
+          opacity: 0.6;
         }
 
-        /* Progress gauges */
+        /* Progress section styling */
         .progress-section {
           margin-bottom: var(--kt-space-lg);
         }
 
-        .gauge {
-          margin-bottom: var(--kt-space-md);
-        }
-
-        .gauge-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .gauge-label {
-          font-weight: 600;
-          color: var(--primary-text-color);
-        }
-
-        .gauge-value {
-          font-weight: 700;
-          color: var(--kt-primary);
-        }
-
-        .gauge-bar {
-          height: 8px;
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-sm);
-          overflow: hidden;
-        }
-
-        .gauge-fill {
-          height: 100%;
-          transition: width var(--kt-transition-medium);
-          border-radius: var(--kt-radius-sm);
-        }
-
-        .gauge-fill.tasks-fill {
-          background: linear-gradient(90deg, var(--kt-success) 0%, var(--kt-info) 100%);
-        }
-
-        .gauge-fill.points-fill {
-          background: var(--kt-success);
-        }
-
-        .gauge-fill.coins-fill {
-          background: var(--kt-coins-color);
-        }
-
-        /* Responsive */
+        /* Responsive adjustments for child card */
         @media (max-width: 768px) {
-          .child-card-container {
-            padding: var(--kt-space-md);
+          .child-stats {
+            flex-direction: column;
+            align-items: center;
           }
-          
+
           .tabs {
             flex-wrap: wrap;
           }
-          
-          .child-stats {
-            justify-content: center;
-          }
         }
-      </style>`;
+
+        /* Include task and reward styles for history display */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+      </style>
+    `;
   }
 
   renderHeader(child) {
@@ -2859,22 +4279,33 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
     return `
       <div class="child-header">
-        <div class="child-avatar">${this.getAvatar(child)}</div>
+        <div class="child-avatar">${this.getAvatar(child, '👶')}</div>
         <div class="child-name">${child.name}</div>
         <div class="child-stats">
           <span class="stat">${child.points || 0} 🎫 Points</span>
           <span class="stat">${child.coins || 0} 🪙 Pièces</span>
           <span class="stat">Niveau ${child.level || 1}</span>
         </div>
-        ${this.config.show_progress ? this.renderProgress(stats) : ''}
+        ${this.config.show_progress ? this.renderProgress(stats, child) : ''}
       </div>
     `;
   }
 
-  renderProgress(stats) {
+  renderProgress(stats, child) {
+
+    const gaugeStats = {
+      level: child?.level || 1,
+      pointsInCurrentLevel: (child?.points || 0) % 100,
+      pointsToNextLevel: 100,
+      completedToday: stats.completedToday,
+      totalToday: stats.totalTasksToday,
+      totalPoints: child?.points || 0,
+      coins: stats.coins
+    };
+
     return `
       <div class="progress-section">
-        ${this.renderGauges(stats, true, stats.completedToday, stats.totalTasksToday)}
+        ${this.renderGauges(gaugeStats, true)}
       </div>
     `;
   }
@@ -2887,16 +4318,18 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     ].filter(tab => tab.show);
 
     return `
-      <div class="tabs">
-        ${tabs.map(tab => `
-          <button 
-            class="tab-button ${this.currentTab === tab.id ? 'active' : ''}"
-            data-action="switch-tab"
-            data-id="${tab.id}"
-          >
-            ${tab.label}
-          </button>
-        `).join('')}
+      <div class="card-header">
+        <div class="navigation">
+          ${tabs.map(tab => `
+            <button 
+              class="nav-button ${this.currentTab === tab.id ? 'active' : ''}"
+              data-action="switch-view"
+              data-id="${tab.id}"
+            >
+              ${tab.label}
+            </button>
+          `).join('')}
+        </div>
       </div>
     `;
   }
@@ -2915,8 +4348,18 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderTasksTab(child) {
-    const tasks = this.getChildTasks(child.id);
-    const filteredTasks = this.filterTasks(tasks);
+    const tasks = this.getChildTasks(child.child_id);
+    const filteredTasks = this.filterTasks(tasks, this.tasksFilter, 'child');
+
+
+    console.log('=== DEBUG CHILD TASKS ===');
+    console.log('Child:', child);
+    console.log('Child ID used:', child.child_id);
+    console.log('Config child_id:', this.config.child_id);
+    console.log('All tasks found:', tasks);
+    console.log('Current filter:', this.tasksFilter);
+    console.log('Filtered tasks:', filteredTasks);
+    console.log('========================');
 
     return `
       <div class="tab-content">
@@ -2933,33 +4376,42 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   renderTaskFilters() {
     const filters = [
       { id: 'active', label: 'Actives' },
+      { id: 'bonus', label: 'Bonus' },
       { id: 'completed', label: 'Terminées' },
       { id: 'all', label: 'Toutes' }
     ];
 
-    return `
-      <div class="filters">
-        ${filters.map(filter => `
-          <button 
-            class="filter-btn ${this.tasksFilter === filter.id ? 'active' : ''}"
-            data-action="filter-tasks"
-            data-filter="${filter.id}"
-          >
-            ${filter.label}
-          </button>
-        `).join('')}
-      </div>
-    `;
+    return super.renderTaskFilters({
+      filters,
+      filterProperty: 'tasksFilter',
+      actionName: 'filter-tasks',
+      wrapper: true,
+      wrapperClass: 'filters'
+    });
   }
 
   renderTaskItem(task) {
     return `
-      <div class="task-item kt-clickable-item" data-action="complete-task" data-id="${task.id}">
-        <div class="task-title">${this.getCategoryIcon(task)} ${task.name}</div>
-        <div class="task-description">${task.description || ''}</div>
-        <div class="task-meta">
-          <span class="task-points">+${task.points || 0} 🎫</span>
-          <span class="task-status ${task.status}">${task.status}</span>
+      <div class="task-item">
+        <div class="item-icon">${this.getCategoryIcon(task)}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-description">${task.description || ''}</div>
+          <div class="task-meta">
+            <span class="task-points">+${task.points || 0} 🎫</span>
+            <span class="task-status ${task.status}">${task.status}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          ${task.status === 'todo' ? `
+            <button class="btn btn-complete"
+                    data-action="complete-task"
+                    data-id="${task.id}">✓</button>
+          ` : task.status === 'pending_validation' ? `
+            <span class="status pending">En attente de validation</span>
+          ` : `
+            <span class="status completed">✓</span>
+          `}
         </div>
       </div>
     `;
@@ -3002,20 +4454,37 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderHistoryTab(child) {
+
+    setTimeout(() => this.loadHistoryContent(child), 100);
+
     return `
       <div class="tab-content">
-        <div class="empty-state">
-          <div class="empty-icon">📈</div>
-          <div class="empty-text">Historique</div>
-          <div class="empty-subtext">Fonctionnalité en développement</div>
+        <div class="history-content-placeholder" id="history-${child.child_id}">
+          <div class="loading">Chargement de l'historique...</div>
         </div>
       </div>
     `;
   }
 
+  async loadHistoryContent(child) {
+    try {
+      const historyContent = await this.renderChildHistoryForTab(child);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = historyContent;
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+      const placeholder = this.shadowRoot.getElementById(`history-${child.child_id}`);
+      if (placeholder) {
+        placeholder.innerHTML = '<div class="error">Erreur lors du chargement de l\'historique</div>';
+      }
+    }
+  }
+
   handleAction(action, id, event) {
     switch (action) {
-      case 'switch-tab':
+      case 'switch-view':
         this.currentTab = id;
         this.render();
         break;
@@ -3034,16 +4503,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
   }
 
-  filterTasks(tasks) {
-    switch (this.tasksFilter) {
-      case 'active':
-        return tasks.filter(t => t.status === 'todo' || t.status === 'pending');
-      case 'completed':
-        return tasks.filter(t => t.status === 'completed' || t.status === 'validated');
-      default:
-        return tasks;
-    }
-  }
 
   async completeTask(taskId) {
     try {
@@ -3073,33 +4532,101 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     return this.getChildFromHass(this._hass, childId);
   }
 
-  getChildFromHass(hass, childId) {
-    const pointsEntityId = `sensor.kidtasks_${childId}_points`;
-    const entity = hass.states[pointsEntityId];
+  getChildFromHass(hass, childIdOrName) {
+    console.log('=== getChildFromHass DEBUG ===');
+    console.log('Looking for child:', childIdOrName);
 
-    if (!entity) return null;
 
-    return {
-      id: childId,
-      name: entity.attributes.friendly_name || childId,
-      points: parseInt(entity.state) || 0,
-      coins: entity.attributes.coins || 0,
-      level: entity.attributes.level || 1,
-      ...entity.attributes
-    };
+    const pointsEntities = Object.keys(hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_') && id.endsWith('_points'));
+
+    console.log('All points entities:', pointsEntities);
+
+
+    for (const entityId of pointsEntities) {
+      const e = hass.states[entityId];
+      console.log(`Entity ${entityId}:`, {
+        friendly_name: e.attributes.friendly_name,
+        state: e.state,
+        attributes: e.attributes
+      });
+
+      if (e.attributes.friendly_name === childIdOrName || e.attributes.friendly_name?.toLowerCase() === childIdOrName.toLowerCase()) {
+        const realId = e.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', '');
+        console.log('Found by friendly_name! Real ID:', realId);
+        return {
+          id: realId,
+          name: e.attributes.friendly_name || realId,
+          points: parseInt(e.state) || 0,
+          coins: e.attributes.coins || 0,
+          level: e.attributes.level || 1,
+          ...e.attributes
+        };
+      }
+    }
+
+
+    let pointsEntityId = `sensor.kidtasks_${childIdOrName}_points`;
+    let entity = hass.states[pointsEntityId];
+
+    if (entity) {
+      console.log('Found by direct ID:', childIdOrName);
+      return {
+        id: childIdOrName,
+        name: entity.attributes.friendly_name || childIdOrName,
+        points: parseInt(entity.state) || 0,
+        coins: entity.attributes.coins || 0,
+        level: entity.attributes.level || 1,
+        ...entity.attributes
+      };
+    }
+
+    console.log('Child not found!');
+    console.log('===============================');
+    return null;
   }
 
   getChildTasks(childId) {
     if (!this._hass) return [];
 
+    console.log('=== getChildTasks DEBUG ===');
+    console.log('Input childId:', childId);
+
+
+    const allTaskEntities = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_task_'));
+
+    console.log('All task entities:', allTaskEntities);
+
     const taskEntities = Object.keys(this._hass.states)
       .filter(id => id.startsWith('sensor.kidtasks_task_'))
       .map(id => this._hass.states[id])
-      .filter(entity => entity.attributes &&
-                      entity.attributes.assigned_children &&
-                      entity.attributes.assigned_children.includes(childId));
+      .filter(entity => {
+        if (!entity.attributes) return false;
 
-    return taskEntities.map(entity => ({
+
+        const assignedChildIds = entity.attributes.assigned_child_ids ||
+                                (entity.attributes.assigned_children ? entity.attributes.assigned_children :
+                                (entity.attributes.assigned_child_id ? [entity.attributes.assigned_child_id] : []));
+
+        console.log(`Task ${entity.entity_id}:`, {
+          assigned_child_ids: entity.attributes.assigned_child_ids,
+          assigned_children: entity.attributes.assigned_children,
+          assigned_child_id: entity.attributes.assigned_child_id,
+          final_assignedChildIds: assignedChildIds,
+          searching_for: childId
+        });
+
+        const result = Array.isArray(assignedChildIds) ? assignedChildIds.includes(childId) : assignedChildIds === childId;
+        console.log('Match result:', result);
+        return result;
+      });
+
+    console.log('Filtered entities:', taskEntities.length);
+    console.log('==========================');
+
+
+    const result = taskEntities.map(entity => ({
       id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       description: entity.attributes.description,
@@ -3109,6 +4636,9 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       icon: entity.attributes.icon,
       ...entity.attributes
     }));
+
+    console.log('Final mapped tasks:', result);
+    return result;
   }
 
   getRewards() {
@@ -3131,8 +4661,16 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }));
   }
 
+  getChildRewards(childId) {
+    const child = this.getChildFromHass(this._hass, childId);
+    if (!child) return [];
+
+    const allRewards = this.getRewards();
+    return allRewards.filter(reward => (reward.min_level || 1) <= (child.level || 1));
+  }
+
   getChildStats(child) {
-    const tasks = this.getChildTasks(child.id);
+    const tasks = this.getChildTasks(child.child_id);
     const completedToday = tasks.filter(t =>
       (t.status === 'completed' || t.status === 'validated') &&
       this.isToday(t.completed_at)
@@ -3147,9 +4685,6 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     };
   }
 
-  getAvatar(child) {
-    return child.avatar || child.cosmetics?.avatar?.emoji || '👤';
-  }
 
   isToday(dateString) {
     if (!dateString) return false;
@@ -3159,7 +4694,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
 
   static getConfigElement() {
-    return document.createElement('kids-tasks-child-card-editor');
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-child-card-editor${suffix}`);
   }
 
   static getStubConfig() {
@@ -3175,9 +4711,718 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 }
 
+class KidsTasksManagerCard extends KidsTasksBaseCard {
+  constructor() {
+    super();
+    this.currentView = 'children';
+    this.taskFilter = 'active';
+  }
+
+  setConfig(config) {
+    this.config = {
+      title: 'Gestion Tâches & Récompenses',
+      show_navigation: true,
+      ...config
+    };
+  }
+
+  shouldUpdate(oldHass, newHass) {
+    if (!oldHass) return true;
+
+
+    const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
+    const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_task_'));
+
+    if (oldTaskEntities.length !== newTaskEntities.length) return true;
+
+
+    for (const entityId of oldTaskEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state ||
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+
+
+    const oldRewardEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+    const newRewardEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_reward_'));
+
+    if (oldRewardEntities.length !== newRewardEntities.length) return true;
+
+    for (const entityId of oldRewardEntities) {
+      const oldEntity = oldHass.states[entityId];
+      const newEntity = newHass.states[entityId];
+      if (!newEntity || oldEntity.state !== newEntity.state ||
+          JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  render() {
+    if (!this._hass) {
+      this.shadowRoot.innerHTML = '<div class="kt-loading">Chargement...</div>';
+      return;
+    }
+
+    this.shadowRoot.innerHTML = `
+      ${this.getStyles()}
+      <div class="card-content kids-tasks-scope">
+        <div class="card-header">
+          ${this.config.show_navigation ? this.renderNavigation() : ''}
+        </div>
+
+        <div class="main-content">
+          ${this.renderCurrentView()}
+        </div>
+      </div>
+    `;
+  }
+
+  getStyles() {
+    return `
+      ${this.getCommonStyles()}
+      <style>
+        /* Include task and reward styles */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+
+        /* Manager-specific styles */
+
+        .section {
+          margin-bottom: var(--kt-space-lg);
+        }
+
+        .section h2 {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--kt-space-md);
+          color: var(--primary-text-color);
+        }
+
+
+        .task-item.inactive {
+          opacity: 0.6;
+          background: var(--kt-surface-variant);
+        }
+
+        .task-item.out-of-period {
+          border-left: 4px solid var(--kt-warning);
+        }
+
+        .task-main, .reward-main {
+          flex: 1;
+        }
+
+
+        .task-rewards {
+          display: flex;
+          gap: var(--kt-space-xs);
+          align-items: center;
+        }
+
+        .reward-points, .reward-coins {
+          background: var(--kt-success);
+          color: white;
+          padding: 2px 8px;
+          border-radius: var(--kt-radius-sm);
+          font-weight: 600;
+          font-size: 0.8em;
+        }
+
+        .reward-coins {
+          background: var(--kt-coins-color);
+        }
+
+        /* Manager responsive overrides */
+        @media (max-width: 768px) {
+          .nav-tabs {
+            flex-wrap: wrap;
+          }
+
+          .filters {
+            justify-content: center;
+          }
+        }
+      </style>
+    `;
+  }
+
+  renderNavigation() {
+    const tabs = [
+      { id: 'children', label: '👦🏻 Enfants' },
+      { id: 'tasks', label: '📝 Tâches' },
+      { id: 'rewards', label: '🎁 Récompenses' },
+      { id: 'cosmetics', label: '🎨 Cosmétiques' }
+    ];
+
+    return `
+      <div class="navigation">
+        ${tabs.map(tab => `
+          <button
+            class="nav-button ${this.currentView === tab.id ? 'active' : ''}"
+            data-action="switch-view"
+            data-id="${tab.id}"
+          >
+            ${tab.label}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderCurrentView() {
+    switch (this.currentView) {
+      case 'children':
+        return this.renderChildrenView();
+      case 'tasks':
+        return this.renderTasksView();
+      case 'rewards':
+        return this.renderRewardsView();
+      case 'cosmetics':
+        return this.renderCosmeticsView();
+      default:
+        return this.renderChildrenView();
+    }
+  }
+
+  renderChildrenView() {
+    const children = this.getChildren();
+    return `
+    <div class="children-grid">
+        ${children.map(child => this.renderChild(child)).join('')}
+    </div>
+    `;
+
+  }
+
+  renderTasksView() {
+    const allTasks = this.getTasks();
+    const tasks = this.filterTasks(allTasks, this.taskFilter);
+
+    return `
+      <div class="section">
+        <h2>
+          Gestion des tâches
+          <ha-button class="add-btn" data-action="add-task">Ajouter</ha-button>
+        </h2>
+
+        <div class="filters">
+          ${this.renderTaskFilters()}
+        </div>
+
+        ${tasks.length > 0 ? `
+          <div class="task-list">
+            ${tasks.map(task => this.renderTaskItem(task)).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <p>Aucune tâche ${this.getFilterLabel(this.taskFilter)}</p>
+            ${this.taskFilter === 'active' ? '<ha-button class="add-btn" data-action="add-task">Créer votre première tâche</ha-button>' : ''}
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderTaskFilters() {
+    const filters = [
+      { id: 'all', label: 'Toutes' },
+      { id: 'active', label: 'Actives' },
+      { id: 'bonus', label: 'Bonus' },
+      { id: 'inactive', label: 'Désactivées' },
+      { id: 'out-of-period', label: 'Hors période' }
+    ];
+
+    return super.renderTaskFilters({
+      filters,
+      filterProperty: 'taskFilter',
+      actionName: 'filter-tasks',
+      wrapper: false
+    });
+  }
+
+  renderTaskItem(task) {
+    const childName = this.formatAssignedChildren(task);
+    const taskIcon = this.getCategoryIcon(task);
+
+    return `
+      <div class="task-item kt-swipeable-item ${task.active === false ? 'inactive' : ''} ${!this.isTaskInPeriod(task) ? 'out-of-period' : ''}"
+           data-action="edit-task" data-id="${task.id}">
+        <div class="item-icon">${taskIcon}</div>
+        <div class="task-main">
+          <div class="task-name">${task.name}</div>
+          <div class="task-meta">
+            <span>👤${childName}</span>
+            <span>📅${this.getFrequencyLabel(task.frequency)}</span>
+            <span>📂${this.getCategoryLabel(task.category)}</span>
+          </div>
+          ${task.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${task.description}</div>` : ''}
+        </div>
+        <div class="task-rewards">
+          ${task.points > 0 ? `<span class="reward-points">+${task.points} 🎫</span>` : ''}
+          ${task.coins > 0 ? `<span class="reward-coins">+${task.coins} 🪙</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  renderRewardsView() {
+    const rewards = this.getRewards();
+
+    return `
+      <div class="section">
+        <h2>
+          Gestion des récompenses
+          <ha-button class="add-btn" data-action="add-reward">Ajouter</ha-button>
+        </h2>
+        ${rewards.length > 0 ? `
+          <div class="reward-list">
+            ${rewards.map(reward => this.renderRewardItem(reward)).join('')}
+          </div>
+        ` : `
+          <div class="empty-state">
+            <div class="empty-state-icon">🎁</div>
+            <p>Aucune récompense créée</p>
+            <ha-button class="add-btn" data-action="add-reward">Créer votre première récompense</ha-button>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderRewardItem(reward) {
+    const rewardIcon = this.getCategoryIcon(reward);
+
+    return `
+      <div class="reward-item kt-swipeable-item"
+           data-action="edit-reward" data-id="${reward.id}">
+        <div class="item-icon">${rewardIcon}</div>
+        <div class="reward-main">
+          <div class="reward-name">${reward.name}</div>
+          <div class="reward-meta">
+            <span>💰 ${reward.cost} 🎫${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''}</span>
+            <span>📂 ${this.getCategoryLabel(reward.category)}</span>
+            ${reward.remaining_quantity !== null ? `<span>📦 ${reward.remaining_quantity} restant(s)</span>` : ''}
+          </div>
+          ${reward.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${reward.description}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  renderCosmeticsView() {
+    const allRewards = this.getRewards();
+    const cosmeticsRewards = allRewards.filter(r =>
+      r.cosmetic_data || r.reward_type === 'cosmetic' || r.category === 'cosmetic'
+    );
+
+    if (cosmeticsRewards.length === 0) {
+      return `
+        <div class="section">
+          <h2>🎨 Cosmétiques</h2>
+          <div class="empty-state">
+            <div class="empty-state-icon">🎨</div>
+            <p>Aucun cosmétique disponible</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">Créez des récompenses de type cosmétique pour les voir apparaître ici.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="section">
+        <h2>🎨 Cosmétiques</h2>
+        <div class="reward-list">
+          ${cosmeticsRewards.map(cosmetic => this.renderRewardItem(cosmetic)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+
+  handleAction(action, id, event) {
+    console.log(`Action=${action}`);
+    switch (action) {
+      case 'switch-view':
+        this.currentView = id;
+        this.render();
+        break;
+      case 'filter-tasks':
+        this.taskFilter = event.target.dataset.filter;
+        this.render();
+        break;
+      case 'add-task':
+        this.handleAddTask();
+        break;
+      case 'edit-task':
+        this.handleEditTask(id);
+        break;
+      case 'add-reward':
+        this.handleAddReward();
+        break;
+      case 'edit-reward':
+        this.handleEditReward(id);
+        break;
+      case 'edit-child':
+        this.showChildForm(id);
+        break;
+      case 'show-child-history':
+        this.showChildHistory(id);
+        break;
+      case 'remove-child':
+        this.handleRemoveChild(id);
+        break;
+      default:
+        {
+          console.warn('Unknown action in manager card:', action);
+        }
+    }
+  }
+
+
+  async handleAddTask() {
+    console.info('Add task requested');
+
+  }
+
+  async handleEditTask(taskId) {
+    console.info('Edit task:', taskId);
+
+  }
+
+  async handleAddReward() {
+    console.info('Add reward requested');
+
+  }
+
+  async handleEditReward(rewardId) {
+    console.info('Edit reward:', rewardId);
+
+  }
+
+  showChildForm(editChildId = null) {
+    const children = this.getChildren();
+    const child = editChildId ? children.find(c => c.child_id === editChildId || c.id === editChildId) : null;
+    const isEdit = !!child;
+    const persons = this.getPersonEntities();
+
+    const avatarOptions = ['👶', '👧', '👦', '🧒', '🧸', '🎈', '⭐', '🌟', '🏆', '🎯'];
+
+    const content = `
+      <form>
+        ${isEdit ? `<input type="hidden" name="child_id" value="${child.child_id || child.id}">` : ''}
+
+        <ha-textfield
+          label="Nom de l'enfant *"
+          name="name"
+          required
+          value="${isEdit ? child.name : ''}"
+          placeholder="Prénom de l'enfant">
+        </ha-textfield>
+
+        <ha-select
+          label="Type d'avatar"
+          name="avatar_type"
+          required
+          value="${isEdit ? child.avatar_type || 'emoji' : 'emoji'}">
+          <ha-list-item value="emoji">Emoji</ha-list-item>
+          <ha-list-item value="url">URL d'image</ha-list-item>
+          ${persons.length > 0 ? '<ha-list-item value="person_entity">Photo de la personne liée</ha-list-item>' : ''}
+        </ha-select>
+
+        <div id="avatar-config">
+          <div id="emoji-config" style="display: ${isEdit && child.avatar_type !== 'emoji' ? 'none' : 'block'};">
+            <label class="form-label">Choisir un emoji</label>
+            <div class="avatar-options">
+              ${avatarOptions.map(avatar => `
+                <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}"
+                        data-avatar="${avatar}">
+                  ${avatar}
+                </button>
+              `).join('')}
+            </div>
+            <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
+          </div>
+
+          <div id="url-config" style="display: ${isEdit && child.avatar_type === 'url' ? 'block' : 'none'};">
+            <ha-textfield
+              label="URL de l'image"
+              name="avatar_url"
+              value="${isEdit && child.avatar_type === 'url' ? child.avatar_data || '' : ''}"
+              placeholder="https://example.com/photo.png">
+            </ha-textfield>
+          </div>
+
+          ${persons.length > 0 ? `
+          <div id="person_entity-config" style="display: ${isEdit && child.avatar_type === 'person_entity' ? 'block' : 'none'};">
+            <ha-select
+              label="Personne liée"
+              name="person_entity_id"
+              value="${isEdit ? child.person_entity_id || '' : ''}">
+              <ha-list-item value="">Aucune liaison</ha-list-item>
+              ${persons.map(person => `
+                <ha-list-item value="${person.entity_id}" ${isEdit && child.person_entity_id === person.entity_id ? 'selected' : ''}>
+                  ${person.name}
+                </ha-list-item>
+              `).join('')}
+            </ha-select>
+          </div>
+          ` : ''}
+        </div>
+
+        ${!isEdit ? `
+          <ha-textfield
+            label="Points initiaux"
+            name="initial_points"
+            type="number"
+            value="0"
+            min="0"
+            max="1000">
+          </ha-textfield>
+        ` : `
+          <div class="form-row">
+            <ha-textfield
+              label="Niveau"
+              name="level"
+              type="number"
+              value="${child.level || 1}"
+              min="1"
+              max="99">
+            </ha-textfield>
+            <ha-textfield
+              label="Points"
+              name="points"
+              type="number"
+              value="${child.points || 0}"
+              min="0">
+            </ha-textfield>
+            <ha-textfield
+              label="Pièces"
+              name="coins"
+              type="number"
+              value="${child.coins || 0}"
+              min="0">
+            </ha-textfield>
+          </div>
+        `}
+
+        <div class="dialog-actions">
+          <ha-button type="button" class="btn btn-secondary" onclick="this.closest('ha-dialog').close()">
+            Annuler
+          </ha-button>
+          <ha-button type="button" class="btn btn-primary" onclick="this.closest('ha-dialog')._cardInstance.submitChildForm(${isEdit})">
+            ${isEdit ? 'Modifier' : 'Créer'}
+          </ha-button>
+        </div>
+      </form>
+    `;
+
+    const dialog = this.showModal(content, isEdit ? 'Modifier l\'enfant' : 'Ajouter un enfant');
+
+
+    setTimeout(() => {
+
+      const avatarTypeSelect = dialog.querySelector('ha-select[name="avatar_type"]');
+      const avatarConfig = dialog.querySelector('#avatar-config');
+
+      if (avatarTypeSelect && avatarConfig) {
+
+        const updateAvatarDisplay = (selectedType) => {
+          avatarConfig.querySelectorAll('[id$="-config"]').forEach(div => {
+            div.style.display = 'none';
+          });
+          const targetDiv = dialog.querySelector('#' + selectedType + '-config');
+          if (targetDiv) {
+            targetDiv.style.display = 'block';
+          }
+        };
+
+
+        avatarTypeSelect.addEventListener('selected', (e) => {
+          const selectedType = e.detail.value || e.target.value;
+          updateAvatarDisplay(selectedType);
+        });
+
+
+        avatarTypeSelect.addEventListener('change', (e) => {
+          const selectedType = e.target.value;
+          updateAvatarDisplay(selectedType);
+        });
+
+
+        avatarConfig.querySelectorAll('.avatar-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            avatarConfig.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const avatarInput = dialog.querySelector('input[name="avatar"]');
+            if (avatarInput) {
+              avatarInput.value = btn.dataset.avatar;
+            }
+          });
+        });
+      }
+    }, 100);
+  }
+
+
+  handleRemoveChild(childId) {
+    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
+    const childName = child ? child.name : 'cet enfant';
+
+    const confirmMessage = `Êtes-vous sûr de vouloir supprimer ${childName} ?\n\n` +
+                          `Cette action supprimera définitivement :\n` +
+                          `• L'enfant et tous ses 🎫\n` +
+                          `• Toutes ses tâches assignées\n` +
+                          `• Tout l'historique de ses activités\n` +
+                          `• Tous les capteurs associés\n\n` +
+                          `Cette action est IRRÉVERSIBLE !`;
+
+    if (confirm(confirmMessage)) {
+      this.callService('kids_tasks', 'remove_child', {
+        child_id: childId,
+        force_remove_entities: true
+      });
+    }
+  }
+
+  async callService(domain, service, serviceData = {}) {
+    try {
+      await this._hass.callService(domain, service, serviceData);
+      this.showNotification(`Action "${service}" exécutée avec succès`, 'success');
+      setTimeout(() => { this.render(); }, 1000);
+      return true;
+    } catch (error) {
+      this.showNotification(`Erreur: ${error.message}`, 'error');
+      return false;
+    }
+  }
+
+  async submitChildForm(isEdit = false) {
+    const dialog = document.querySelector('ha-dialog');
+    if (!dialog) return;
+
+    const form = dialog.querySelector('form');
+    if (!form) return;
+
+
+    const name = form.querySelector('[name="name"]').value;
+    const person_entity_id = form.querySelector('[name="person_entity_id"]')?.value || null;
+    const avatar_type = form.querySelector('[name="avatar_type"]').value;
+
+    let avatar_data = null;
+    let avatar = '👶';
+
+
+    if (avatar_type === 'emoji') {
+      avatar = form.querySelector('[name="avatar"]').value;
+    } else if (avatar_type === 'url') {
+      avatar_data = form.querySelector('[name="avatar_url"]').value;
+    }
+
+    const serviceData = {
+      name,
+      avatar,
+      avatar_type,
+    };
+
+
+    if (person_entity_id) serviceData.person_entity_id = person_entity_id;
+    if (avatar_data) serviceData.avatar_data = avatar_data;
+
+    if (!isEdit) {
+      serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
+    } else {
+      const childId = form.querySelector('[name="child_id"]').value;
+      serviceData.child_id = childId;
+
+      parseInt(form.querySelector('[name="level"]')?.value || '1');
+      const newPoints = parseInt(form.querySelector('[name="points"]')?.value || '0');
+      const newCoins = parseInt(form.querySelector('[name="coins"]')?.value || '0');
+
+
+      const success = await this.callService('kids_tasks', 'update_child', serviceData);
+
+      if (success) {
+
+        const children = this.getChildren();
+        const currentChild = children.find(c => (c.child_id || c.id) === childId);
+
+        if (currentChild) {
+          const pointsDiff = newPoints - (currentChild.points || 0);
+          const coinsDiff = newCoins - (currentChild.coins || 0);
+
+          if (pointsDiff !== 0) {
+            await this.callService('kids_tasks', 'adjust_points', {
+              child_id: childId,
+              points: pointsDiff,
+              reason: 'Ajustement manuel par admin'
+            });
+          }
+
+          if (coinsDiff !== 0) {
+            await this.callService('kids_tasks', 'adjust_coins', {
+              child_id: childId,
+              coins: coinsDiff,
+              reason: 'Ajustement manuel par admin'
+            });
+          }
+        }
+      }
+
+
+    }
+
+    dialog.close();
+  }
+
+  getPersonEntities() {
+    if (!this._hass) return [];
+
+    const persons = [];
+    const entities = this._hass.states;
+
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.startsWith('person.')) {
+        const personEntity = entities[entityId];
+        if (personEntity) {
+          persons.push({
+            entity_id: entityId,
+            name: personEntity.attributes.friendly_name || personEntity.attributes.name || entityId.replace('person.', ''),
+            picture: personEntity.attributes.entity_picture
+          });
+        }
+      }
+    });
+
+    return persons.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+
+  static getConfigElement() {
+    const suffix = window.KidsTasksCardSuffix || '';
+    return document.createElement(`kids-tasks-manager-editor${suffix}`);
+  }
+
+  static getStubConfig() {
+    return {
+      type: 'custom:kids-tasks-manager',
+      title: 'Gestion Tâches & Récompenses',
+      show_navigation: true
+    };
+  }
+}
+
 class KidsTasksBaseCardEditor extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: 'open' });
     this._config = {};
     this._rendered = false;
     this._hass = null;
@@ -3185,7 +5430,11 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 
   setConfig(config) {
     this._config = { ...config };
-    this._fireConfigChanged();
+    if (this._rendered) {
+      this._render();
+    } else {
+      this._pendingConfig = true;
+    }
   }
 
   set hass(hass) {
@@ -3193,46 +5442,31 @@ class KidsTasksBaseCardEditor extends HTMLElement {
     if (!this._rendered) {
       this._render();
       this._rendered = true;
+    } else if (this._pendingConfig) {
+      this._syncInputValues();
+      this._pendingConfig = false;
     }
   }
 
   _render() {
-    this.innerHTML = `
+    this.shadowRoot.innerHTML = `
       <div class="card-config">
-        <div class="option">
-          <label>Titre de la carte</label>
-          <input 
-            type="text" 
-            class="title-input"
-            value="${this._config.title || ''}"
-            placeholder="Gestionnaire de Tâches Enfants"
-          >
-        </div>
-        <div class="option">
-          <label>
-            <input 
-              type="checkbox" 
-              class="navigation-toggle"
-              ${this._config.show_navigation !== false ? 'checked' : ''}
-            >
-            Afficher la navigation
-          </label>
-        </div>
         ${this._renderSpecificOptions()}
       </div>
       <style>
         .card-config {
-          padding: 16px;
+          padding: var(--kt-space-lg);
           font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+          border-radius: var(--kt-radius-lg);
         }
         
         .option {
-          margin-bottom: 16px;
+          margin-bottom: var(--kt-space-md);
         }
         
         .option label {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: var(--kt-space-xs);
           font-weight: 500;
           color: var(--primary-text-color);
         }
@@ -3266,17 +5500,46 @@ class KidsTasksBaseCardEditor extends HTMLElement {
         }
         
         .section-title {
-          font-size: 16px;
+          font-size: var(--kt-font-size-md);
           font-weight: 600;
-          margin: 24px 0 12px 0;
+          margin: var(--kt-space-lg) 0 var(--kt-space-sm) 0;
           color: var(--primary-text-color);
           border-bottom: 1px solid var(--divider-color);
-          padding-bottom: 4px;
+          padding-bottom: var(--kt-space-xs);
+        }
+
+        .color-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--kt-space-md);
+          margin-bottom: var(--kt-space-md);
+        }
+
+        .color-option {
+          margin-bottom: 0;
+        }
+
+        .color-option label {
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          font-size: 13px;
+        }
+
+        .color-option input[type="color"] {
+          width: 100%;
+          height: 40px;
+          border: 1px solid var(--divider-color);
+          border-radius: 4px;
+          background: var(--card-background-color);
+          cursor: pointer;
         }
       </style>
     `;
 
     this._attachListeners();
+    this._syncInputValues();
   }
 
   _renderSpecificOptions() {
@@ -3285,23 +5548,6 @@ class KidsTasksBaseCardEditor extends HTMLElement {
   }
 
   _attachListeners() {
-    const titleInput = this.querySelector('.title-input');
-    const navToggle = this.querySelector('.navigation-toggle');
-
-    if (titleInput) {
-      titleInput.addEventListener('input', (e) => {
-        this._config.title = e.target.value;
-        this._fireConfigChanged();
-      });
-    }
-
-    if (navToggle) {
-      navToggle.addEventListener('change', (e) => {
-        this._config.show_navigation = e.target.checked;
-        this._fireConfigChanged();
-      });
-    }
-
     this._attachSpecificListeners();
   }
 
@@ -3309,9 +5555,18 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 
   }
 
+  _syncInputValues() {
+
+    this._syncSpecificInputValues();
+  }
+
+  _syncSpecificInputValues() {
+
+  }
+
   _fireConfigChanged() {
     const event = new CustomEvent('config-changed', {
-      detail: { config: this._config },
+      detail: { config: { ...this._config } },
       bubbles: true,
       composed: true
     });
@@ -3320,65 +5575,394 @@ class KidsTasksBaseCardEditor extends HTMLElement {
 }
 
 class KidsTasksCardEditor extends KidsTasksBaseCardEditor {
+  getDefaultColors() {
+    return {
+      tab_color: '#3f51b5',
+      header_color: '#3f51b5',
+      tab_text_color: '#ffffff',
+      dashboard_primary_color: '#3f51b5',
+      dashboard_secondary_color: '#ff4081',
+      child_gradient_start: '#4CAF50',
+      child_gradient_end: '#8BC34A',
+      child_text_color: '#ffffff',
+      button_hover_color: '#1565C0',
+      progress_bar_color: '#4caf50',
+      points_badge_color: '#ff9800',
+      icon_color: '#757575'
+    };
+  }
+
   _renderSpecificOptions() {
+    const defaults = this.getDefaultColors();
     return `
-      <div class="section-title">Options d'affichage</div>
-      <div class="option">
-        <label>Mode d'affichage</label>
-        <select class="mode-select">
-          <option value="dashboard" ${this._config.mode === 'dashboard' ? 'selected' : ''}>
-            Tableau de bord
-          </option>
-          <option value="compact" ${this._config.mode === 'compact' ? 'selected' : ''}>
-            Vue compacte
-          </option>
-        </select>
-      </div>
-      <div class="option">
-        <label>
-          <input 
-            type="checkbox" 
-            class="show-completed-toggle"
-            ${this._config.show_completed !== false ? 'checked' : ''}
+      <div class="section-title">Carte Principale</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Onglet actif</label>
+          <input
+            type="color"
+            class="tab-color-input"
+            value="${this._config.tab_color || defaults.tab_color}"
           >
-          Afficher les tâches terminées
-        </label>
-      </div>
-      <div class="option">
-        <label>
-          <input 
-            type="checkbox" 
-            class="show-rewards-toggle"
-            ${this._config.show_rewards !== false ? 'checked' : ''}
+        </div>
+        <div class="color-option">
+          <label>Onglets</label>
+          <input
+            type="color"
+            class="header-color-input"
+            value="${this._config.header_color || defaults.header_color}"
           >
-          Afficher les récompenses
-        </label>
+        </div>
+        <div class="color-option">
+          <label>Texte des onglets</label>
+          <input
+            type="color"
+            class="tab-text-color-input"
+            value="${this._config.tab_text_color || defaults.tab_text_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur primaire dashboard</label>
+          <input
+            type="color"
+            class="dashboard-primary-input"
+            value="${this._config.dashboard_primary_color || defaults.dashboard_primary_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur secondaire dashboard</label>
+          <input
+            type="color"
+            class="dashboard-secondary-input"
+            value="${this._config.dashboard_secondary_color || defaults.dashboard_secondary_color}"
+          >
+        </div>
+      </div>
+
+      <div class="section-title">Cartes Enfants</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Début dégradé enfants</label>
+          <input
+            type="color"
+            class="child-gradient-start-input"
+            value="${this._config.child_gradient_start || defaults.child_gradient_start}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Fin dégradé enfants</label>
+          <input
+            type="color"
+            class="child-gradient-end-input"
+            value="${this._config.child_gradient_end || defaults.child_gradient_end}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Texte cartes enfants</label>
+          <input
+            type="color"
+            class="child-text-color-input"
+            value="${this._config.child_text_color || defaults.child_text_color}"
+          >
+        </div>
+      </div>
+
+      <div class="section-title">Interface</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Boutons au survol</label>
+          <input
+            type="color"
+            class="button-hover-input"
+            value="${this._config.button_hover_color || defaults.button_hover_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Barre de progression</label>
+          <input
+            type="color"
+            class="progress-bar-input"
+            value="${this._config.progress_bar_color || defaults.progress_bar_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Badges de points</label>
+          <input
+            type="color"
+            class="points-badge-input"
+            value="${this._config.points_badge_color || defaults.points_badge_color}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Icônes</label>
+          <input
+            type="color"
+            class="icon-color-input"
+            value="${this._config.icon_color || defaults.icon_color}"
+          >
+        </div>
+      </div>
+
+      <div class="help-text">
+        Cette carte affiche un tableau de bord avec tous les enfants et leurs tâches.
+        Personnalisez les couleurs pour harmoniser avec votre thème Home Assistant.
       </div>
     `;
   }
 
   _attachSpecificListeners() {
-    const modeSelect = this.querySelector('.mode-select');
-    const completedToggle = this.querySelector('.show-completed-toggle');
-    const rewardsToggle = this.querySelector('.show-rewards-toggle');
+    const tabColorInput = this.shadowRoot.querySelector('.tab-color-input');
+    const headerColorInput = this.shadowRoot.querySelector('.header-color-input');
+    const tabTextColorInput = this.shadowRoot.querySelector('.tab-text-color-input');
+    const dashboardPrimaryInput = this.shadowRoot.querySelector('.dashboard-primary-input');
+    const dashboardSecondaryInput = this.shadowRoot.querySelector('.dashboard-secondary-input');
+    const childGradientStartInput = this.shadowRoot.querySelector('.child-gradient-start-input');
+    const childGradientEndInput = this.shadowRoot.querySelector('.child-gradient-end-input');
+    const childTextColorInput = this.shadowRoot.querySelector('.child-text-color-input');
+    const buttonHoverInput = this.shadowRoot.querySelector('.button-hover-input');
+    const progressBarInput = this.shadowRoot.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.shadowRoot.querySelector('.points-badge-input');
+    const iconColorInput = this.shadowRoot.querySelector('.icon-color-input');
 
-    if (modeSelect) {
-      modeSelect.addEventListener('change', (e) => {
-        this._config.mode = e.target.value;
+    if (tabColorInput) {
+      tabColorInput.addEventListener('change', (e) => {
+        this._config.tab_color = e.target.value;
         this._fireConfigChanged();
       });
     }
 
-    if (completedToggle) {
-      completedToggle.addEventListener('change', (e) => {
-        this._config.show_completed = e.target.checked;
+    if (headerColorInput) {
+      headerColorInput.addEventListener('change', (e) => {
+        this._config.header_color = e.target.value;
         this._fireConfigChanged();
       });
     }
 
-    if (rewardsToggle) {
-      rewardsToggle.addEventListener('change', (e) => {
-        this._config.show_rewards = e.target.checked;
+    if (tabTextColorInput) {
+      tabTextColorInput.addEventListener('change', (e) => {
+        this._config.tab_text_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (dashboardPrimaryInput) {
+      dashboardPrimaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_primary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (dashboardSecondaryInput) {
+      dashboardSecondaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_secondary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childGradientStartInput) {
+      childGradientStartInput.addEventListener('change', (e) => {
+        this._config.child_gradient_start = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (childGradientEndInput) {
+      childGradientEndInput.addEventListener('change', (e) => {
+        this._config.child_gradient_end = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+
+    if (childTextColorInput) {
+      childTextColorInput.addEventListener('change', (e) => {
+        this._config.child_text_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (buttonHoverInput) {
+      buttonHoverInput.addEventListener('change', (e) => {
+        this._config.button_hover_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (progressBarInput) {
+      progressBarInput.addEventListener('change', (e) => {
+        this._config.progress_bar_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (pointsBadgeInput) {
+      pointsBadgeInput.addEventListener('change', (e) => {
+        this._config.points_badge_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (iconColorInput) {
+      iconColorInput.addEventListener('change', (e) => {
+        this._config.icon_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+  }
+
+  _syncSpecificInputValues() {
+    const defaults = this.getDefaultColors();
+
+
+    const colorInputs = [
+      { input: '.tab-color-input', config: 'tab_color', default: defaults.tab_color },
+      { input: '.header-color-input', config: 'header_color', default: defaults.header_color },
+      { input: '.tab-text-color-input', config: 'tab_text_color', default: defaults.tab_text_color },
+      { input: '.dashboard-primary-input', config: 'dashboard_primary_color', default: defaults.dashboard_primary_color },
+      { input: '.dashboard-secondary-input', config: 'dashboard_secondary_color', default: defaults.dashboard_secondary_color },
+      { input: '.child-gradient-start-input', config: 'child_gradient_start', default: defaults.child_gradient_start },
+      { input: '.child-gradient-end-input', config: 'child_gradient_end', default: defaults.child_gradient_end },
+      { input: '.child-text-color-input', config: 'child_text_color', default: defaults.child_text_color },
+      { input: '.button-hover-input', config: 'button_hover_color', default: defaults.button_hover_color },
+      { input: '.progress-bar-input', config: 'progress_bar_color', default: defaults.progress_bar_color },
+      { input: '.points-badge-input', config: 'points_badge_color', default: defaults.points_badge_color },
+      { input: '.icon-color-input', config: 'icon_color', default: defaults.icon_color }
+    ];
+
+    colorInputs.forEach(({ input, config, default: defaultValue }) => {
+      const element = this.shadowRoot.querySelector(input);
+      if (element) {
+        const value = this._config[config] || defaultValue;
+        element.value = value;
+      }
+    });
+  }
+}
+
+class KidsTasksManagerEditor extends KidsTasksBaseCardEditor {
+  _renderSpecificOptions() {
+    return `
+      <div class="section-title">Personnalisation des couleurs</div>
+      <div class="color-grid">
+        <div class="color-option">
+          <label>Onglet actif</label>
+          <input
+            type="color"
+            class="tab-color-input"
+            value="${this._config.tab_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des onglets</label>
+          <input
+            type="color"
+            class="header-color-input"
+            value="${this._config.header_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur du texte des onglets</label>
+          <input
+            type="color"
+            class="tab-text-color-input"
+            value="${this._config.tab_text_color || '#ffffff'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur primaire</label>
+          <input
+            type="color"
+            class="dashboard-primary-input"
+            value="${this._config.dashboard_primary_color || '#3f51b5'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des boutons au survol</label>
+          <input
+            type="color"
+            class="button-hover-input"
+            value="${this._config.button_hover_color || '#1565C0'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur de la barre de progression</label>
+          <input
+            type="color"
+            class="progress-bar-input"
+            value="${this._config.progress_bar_color || '#4caf50'}"
+          >
+        </div>
+        <div class="color-option">
+          <label>Couleur des badges de points</label>
+          <input
+            type="color"
+            class="points-badge-input"
+            value="${this._config.points_badge_color || '#ff9800'}"
+          >
+        </div>
+      </div>
+
+      <div class="help-text">
+        Cette carte permet de gérer les tâches, récompenses et cosmétiques.
+        Elle est destinée aux administrateurs du système Kids Tasks.
+      </div>
+    `;
+  }
+
+  _attachSpecificListeners() {
+    const tabColorInput = this.shadowRoot.querySelector('.tab-color-input');
+    const headerColorInput = this.shadowRoot.querySelector('.header-color-input');
+    const tabTextColorInput = this.shadowRoot.querySelector('.tab-text-color-input');
+    const dashboardPrimaryInput = this.shadowRoot.querySelector('.dashboard-primary-input');
+    const buttonHoverInput = this.shadowRoot.querySelector('.button-hover-input');
+    const progressBarInput = this.shadowRoot.querySelector('.progress-bar-input');
+    const pointsBadgeInput = this.shadowRoot.querySelector('.points-badge-input');
+
+    if (tabColorInput) {
+      tabColorInput.addEventListener('change', (e) => {
+        this._config.tab_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (headerColorInput) {
+      headerColorInput.addEventListener('change', (e) => {
+        this._config.header_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (tabTextColorInput) {
+      tabTextColorInput.addEventListener('change', (e) => {
+        this._config.tab_text_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (dashboardPrimaryInput) {
+      dashboardPrimaryInput.addEventListener('change', (e) => {
+        this._config.dashboard_primary_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (buttonHoverInput) {
+      buttonHoverInput.addEventListener('change', (e) => {
+        this._config.button_hover_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (progressBarInput) {
+      progressBarInput.addEventListener('change', (e) => {
+        this._config.progress_bar_color = e.target.value;
+        this._fireConfigChanged();
+      });
+    }
+
+    if (pointsBadgeInput) {
+      pointsBadgeInput.addEventListener('change', (e) => {
+        this._config.points_badge_color = e.target.value;
         this._fireConfigChanged();
       });
     }
@@ -3393,14 +5977,14 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
       <div class="section-title">Configuration de l'enfant</div>
       <div class="option">
         <label>Sélectionner un enfant</label>
-        <select class="child-select" required>
-          <option value="">-- Choisir un enfant --</option>
-          ${children.map(child => `
-            <option value="${child.id}" ${this._config.child_id === child.id ? 'selected' : ''}>
-              ${child.name}
-            </option>
-          `).join('')}
-        </select>
+        <select id="child_select" required>
+          <option value="">Sélectionner un enfant...</option>
+            ${children.map(child => `
+              <option value="${child.child_id}" ${this._config.child_id === child.chil_id ? 'selected' : ''}>
+                ${child.name}
+              </option>
+            `).join('')}
+            </select>
         <div class="help-text">
           Si aucun enfant n'apparaît, assurez-vous que l'intégration Kids Tasks Manager est configurée.
         </div>
@@ -3451,11 +6035,11 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
   }
 
   _attachSpecificListeners() {
-    const childSelect = this.querySelector('.child-select');
-    const avatarToggle = this.querySelector('.show-avatar-toggle');
-    const progressToggle = this.querySelector('.show-progress-toggle');
-    const rewardsToggle = this.querySelector('.show-rewards-toggle');
-    const completedToggle = this.querySelector('.show-completed-toggle');
+    const childSelect = this.shadowRoot.querySelector('.child-select');
+    const avatarToggle = this.shadowRoot.querySelector('.show-avatar-toggle');
+    const progressToggle = this.shadowRoot.querySelector('.show-progress-toggle');
+    const rewardsToggle = this.shadowRoot.querySelector('.show-rewards-toggle');
+    const completedToggle = this.shadowRoot.querySelector('.show-completed-toggle');
 
     if (childSelect) {
       childSelect.addEventListener('change', (e) => {
@@ -3497,21 +6081,25 @@ class KidsTasksChildCardEditor extends KidsTasksBaseCardEditor {
     if (!this._hass) return [];
 
     const children = [];
-    const entities = this._hass.states;
-
-    Object.keys(entities).forEach(entityId => {
+    Object.keys(this._hass.states).forEach(entityId => {
       if (entityId.startsWith('sensor.kidtasks_') && entityId.endsWith('_points')) {
-        const pointsEntity = entities[entityId];
-        if (pointsEntity && pointsEntity.attributes && pointsEntity.state !== 'unavailable') {
+        const entity = this._hass.states[entityId];
+        if (entity && entity.state !== 'unavailable') {
+          const childId = entityId.replace('sensor.kidtasks_', '').replace('_points', '');
           children.push({
-            id: pointsEntity.attributes.child_id || entityId.replace('sensor.kidtasks_', '').replace('_points', ''),
-            name: pointsEntity.attributes.friendly_name || entityId.replace('sensor.kidtasks_', '').replace('_points', '')
+            id: childId,
+            name: entity.attributes.friendly_name || childId,
+            points: parseInt(entity.state) || 0,
+            coins: entity.attributes.coins || 0,
+            level: entity.attributes.level || 1,
+            avatar: entity.attributes.avatar || entity.attributes.cosmetics?.avatar?.emoji || '👤',
+            ...entity.attributes
           });
         }
       }
     });
 
-    return children;
+    return children.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 
@@ -3721,13 +6309,13 @@ class KidsTasksErrorBoundary {
         
         <div class="kt-error-actions">
           ${isRetryable ? `
-            <button class="kt-error-btn kt-error-btn--retry" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('retry'))">
+            <ha-button class="kt-error-btn kt-error-btn--retry" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('retry'))">
               🔄 Try Again
-            </button>
+            </ha-button>
           ` : ''}
-          <button class="kt-error-btn kt-error-btn--reset" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('reset'))">
+          <ha-button class="kt-error-btn kt-error-btn--reset" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('reset'))">
             🔧 Reset Card
-          </button>
+          </ha-button>
           <span class="kt-error-toggle" onclick="
             const details = this.parentNode.parentNode.querySelector('.kt-error-details');
             details.style.display = details.style.display === 'block' ? 'none' : 'block';
@@ -4007,9 +6595,9 @@ class KidsTasksAccessibility {
           </div>
         </div>
         <div class="kt-help-actions">
-          <button class="kt-btn kt-btn--primary" onclick="this.closest('.kt-help-modal').remove()">
+          <ha-button class="kt-btn kt-btn--primary" onclick="this.closest('.kt-help-modal').remove()">
             Close Help
-          </button>
+          </ha-button>
         </div>
       </div>
       <style>
@@ -4037,7 +6625,7 @@ class KidsTasksAccessibility {
           background: white;
           border-radius: 8px;
           padding: 24px;
-          max-width: 500px;
+          max-width: 1024px;
           max-height: 80vh;
           overflow-y: auto;
           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -4390,34 +6978,47 @@ const accessibility = new KidsTasksAccessibility();
 }
 
 
-KidsTasksStyleManagerV2.injectGlobalStyles();
+KidsTasksStyleManager$1.injectGlobalStyles();
 
 
 window.KidsTasksUtils = KidsTasksUtils;
-window.KidsTasksStyleManager = KidsTasksStyleManagerV2;
+window.KidsTasksStyleManager = KidsTasksStyleManager$1;
 
 
 const cardSuffix = '-dev' ;
-customElements.define(`kids-tasks-card${cardSuffix}`, withErrorBoundary(KidsTasksCardOptimized));
-customElements.define(`kids-tasks-child-card${cardSuffix}`, withErrorBoundary(KidsTasksChildCard));
-customElements.define(`kids-tasks-card${cardSuffix}-editor`, KidsTasksCardEditor);
-customElements.define(`kids-tasks-child-card${cardSuffix}-editor`, KidsTasksChildCardEditor);
+window.KidsTasksCardSuffix = cardSuffix;
+const mainCardType = `kids-tasks-card${cardSuffix}`;
+const childCardType = `kids-tasks-child-card${cardSuffix}`;
+const managerCardType = `kids-tasks-manager${cardSuffix}`;
+
+customElements.define(mainCardType, withErrorBoundary(KidsTasksCard));
+customElements.define(childCardType, withErrorBoundary(KidsTasksChildCard));
+customElements.define(managerCardType, withErrorBoundary(KidsTasksManagerCard));
+customElements.define(`kids-tasks-card-editor${cardSuffix}`, KidsTasksCardEditor);
+customElements.define(`kids-tasks-child-card-editor${cardSuffix}`, KidsTasksChildCardEditor);
+customElements.define(`kids-tasks-manager-editor${cardSuffix}`, KidsTasksManagerEditor);
 
 
 window.customCards = window.customCards || [];
-const devSuffix = ' (Dev)' ;
 window.customCards.push(
   {
-    type: `kids-tasks-card${cardSuffix}`,
-    name: `Kids Tasks Card${devSuffix}`,
+    type: mainCardType,
+    name: `Kids Tasks Card${' (Dev)' }`,
     description: 'Manage children\'s tasks and rewards with an engaging interface',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   },
   {
-    type: `kids-tasks-child-card${cardSuffix}`,
-    name: `Kids Tasks Child Card${devSuffix}`,
+    type: childCardType,
+    name: `Kids Tasks Child Card${' (Dev)' }`,
     description: 'Individual child view for tasks and rewards',
+    preview: true,
+    documentationURL: 'https://github.com/astrayel/kids-tasks-card'
+  },
+  {
+    type: managerCardType,
+    name: `Kids Tasks Manager${' (Dev)' }`,
+    description: 'Administration interface for managing tasks, rewards and cosmetics',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   }
@@ -4487,8 +7088,9 @@ if (typeof window !== 'undefined') {
   }
 
 
-  window.KidsTasksCard = KidsTasksCardOptimized;
+  window.KidsTasksCard = KidsTasksCard;
   window.KidsTasksChildCard = KidsTasksChildCard;
+  window.KidsTasksManagerCard = KidsTasksManagerCard;
   window.KidsTasksBaseCard = KidsTasksBaseCard;
 
 
@@ -4502,7 +7104,8 @@ if (typeof window !== 'undefined') {
     },
 
     reloadAllCards: () => {
-      document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').forEach(card => {
+      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' ;
+      document.querySelectorAll(selector).forEach(card => {
         window.KidsTasksDebug.reloadCard(card);
       });
       logger.debug('🔄 All cards reloaded');
@@ -4519,9 +7122,9 @@ if (typeof window !== 'undefined') {
 
 
     performance: {
-      report: () => performanceMonitor$2?.generateReport(),
-      toggle: () => performanceMonitor$2?.toggle(),
-      clear: () => performanceMonitor$2?.destroy()
+      report: () => performanceMonitor$1?.generateReport(),
+      toggle: () => performanceMonitor$1?.toggle(),
+      clear: () => performanceMonitor$1?.destroy()
     },
 
 
@@ -4537,15 +7140,18 @@ if (typeof window !== 'undefined') {
     },
 
 
-    systemInfo: () => ({
-      cards: document.querySelectorAll('kids-tasks-card, kids-tasks-child-card').length,
-      performance: performanceMonitor$2?.generateReport()?.summary,
-      errors: errorBoundary.getErrorStats(),
-      memory: performance.memory ? {
-        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB'
-      } : null
-    })
+    systemInfo: () => {
+      const selector = 'kids-tasks-card-dev, kids-tasks-child-card-dev, kids-tasks-manager-dev' ;
+      return {
+        cards: document.querySelectorAll(selector).length,
+        performance: performanceMonitor$1?.generateReport()?.summary,
+        errors: errorBoundary.getErrorStats(),
+        memory: performance.memory ? {
+          used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+          total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB'
+        } : null
+      };
+    }
   };
 
   logger.info('🛠️ Development utilities available as window.KidsTasksDebug');
@@ -4563,5 +7169,5 @@ logger.info(`Kids Tasks Card v${version} loaded successfully!`);
   logger.info('🎨 Styles: Consolidated CSS variables');
 }
 
-export { KidsTasksBaseCard, KidsTasksCardOptimized as KidsTasksCard, KidsTasksChildCard, KidsTasksStyleManagerV2 as KidsTasksStyleManager, KidsTasksUtils };
+export { KidsTasksBaseCard, KidsTasksCard, KidsTasksChildCard, KidsTasksManagerCard, KidsTasksStyleManager$1 as KidsTasksStyleManager, KidsTasksUtils };
 //# sourceMappingURL=kids-tasks-card-ha-dev.js.map

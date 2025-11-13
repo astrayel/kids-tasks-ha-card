@@ -208,13 +208,13 @@ class KidsTasksErrorBoundary {
         
         <div class="kt-error-actions">
           ${isRetryable ? `
-            <button class="kt-error-btn kt-error-btn--retry" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('retry'))">
+            <ha-button class="kt-error-btn kt-error-btn--retry" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('retry'))">
               🔄 Try Again
-            </button>
+            </ha-button>
           ` : ''}
-          <button class="kt-error-btn kt-error-btn--reset" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('reset'))">
+          <ha-button class="kt-error-btn kt-error-btn--reset" onclick="this.closest('.kt-error-boundary').dispatchEvent(new CustomEvent('reset'))">
             🔧 Reset Card
-          </button>
+          </ha-button>
           <span class="kt-error-toggle" onclick="
             const details = this.parentNode.parentNode.querySelector('.kt-error-details');
             details.style.display = details.style.display === 'block' ? 'none' : 'block';

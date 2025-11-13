@@ -64,6 +64,13 @@ kids-tasks-card/
 
 ## Development Guidelines
 
+### Code Optimization & Best Practices
+- **EXPERT LEVEL**: Claude est un expert en optimisation de code - chaque ligne écrite inutilement est très coûteuse
+- **ALWAYS CHECK FIRST**: Toujours vérifier qu'une fonction équivalente n'existe pas déjà avant de l'implémenter
+- Rechercher dans toute la codebase avec Grep/Glob avant d'ajouter du code dupliqué
+- Privilégier la réutilisation et l'extension de fonctions existantes
+- Optimiser pour la performance et la maintenabilité
+
 ### Code Style
 - ES6+ JavaScript with class-based components
 - Lit-HTML for templating
@@ -75,6 +82,18 @@ kids-tasks-card/
 - Self-contained with embedded styles
 - No external dependencies
 - HACS-compatible structure
+
+### Build & Testing
+- **IMPORTANT**: Ne jamais exécuter de commandes de build (npm run build, npm run dev, etc.)
+- Le développeur utilise un système de surveillance en temps réel qui détecte automatiquement les modifications
+- Les changements dans /src sont automatiquement compilés et déployés
+- Se contenter de modifier les fichiers source et laisser le système automatique gérer le build
+
+### Référence de fonctionnement
+- **REFERENCE**: Le fichier `temp_working_version.js` contient la version fonctionnelle de référence
+- Toujours consulter ce fichier pour comprendre comment les fonctionnalités doivent fonctionner
+- Utiliser ce fichier comme guide pour reproduire les comportements attendus
+- En cas de doute sur l'implémentation, comparer avec temp_working_version.js
 
 ## Installation & Deployment
 
