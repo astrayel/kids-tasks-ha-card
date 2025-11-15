@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Tasks - Child Card with Cosmetics</title>
+    <style>
+        /* Kids Tasks CSS Variables */
+        :root {
+            --kt-primary: #4CAF50;
+            --kt-secondary: #2196F3;
+            --kt-accent: #FF9800;
+            --kt-surface: #FAFAFA;
+            --kt-surface-variant: #F5F5F5;
+            --kt-on-surface: #212121;
+            --kt-on-surface-variant: #757575;
+            --kt-outline: #E0E0E0;
+            --kt-success: #4CAF50;
+            --kt-warning: #FF9800;
+            --kt-error: #F44336;
+            --kt-space-xs: 4px;
+            --kt-space-sm: 8px;
+            --kt-space-md: 16px;
+            --kt-space-lg: 24px;
+            --kt-space-xl: 32px;
+            --kt-radius-sm: 4px;
+            --kt-radius-md: 8px;
+            --kt-radius-lg: 12px;
+            --kt-radius-xl: 16px;
+            --kt-transition-fast: 150ms ease;
+            --kt-transition-medium: 250ms ease;
+            --kt-shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --kt-shadow-md: 0 4px 6px rgba(0,0,0,0.16);
+            --kt-shadow-lg: 0 10px 20px rgba(0,0,0,0.19);
+            
+            /* Status Colors */
+            --kt-status-pending: #FF9800;
+            --kt-status-completed: #4CAF50;
+            --kt-status-validated: #2196F3;
+            
+            /* Cosmetics System */
+            --kt-rarity-common: #9e9e9e;
+            --kt-rarity-rare: #4caf50;
+            --kt-rarity-epic: #2196f3;
+            --kt-rarity-legendary: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: var(--kt-space-lg);
+        }
+
+        .mockup-header {
+            text-align: center;
+            margin-bottom: var(--kt-space-xl);
+            color: white;
+        }
+
+        .mockup-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: var(--kt-space-sm);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mockup-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--kt-space-xl);
+        }
+
+        /* Child Card Container */
+        .child-card {
+            background: var(--kt-surface);
+            border-radius: var(--kt-radius-xl);
+            padding: var(--kt-space-lg);
+            box-shadow: var(--kt-shadow-lg);
+            height: fit-content;
+        }
+
+        .child-header {
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-md);
+            margin-bottom: var(--kt-space-lg);
+            padding-bottom: var(--kt-space-md);
+            border-bottom: 2px solid var(--kt-outline);
+        }
+
+        .child-avatar-container {
+            position: relative;
+        }
+
+        .child-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--kt-shadow-md);
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+        }
+
+        .child-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: var(--kt-shadow-lg);
+        }
+
+        .avatar-svg {
+            width: 70px;
+            height: 70px;
+        }
+
+        .customize-btn {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 28px;
+            height: 28px;
+            background: var(--kt-primary);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            font-size: 12px;
+        }
+
+        .customize-btn:hover {
+            background: var(--kt-secondary);
+            transform: scale(1.1);
+        }
+
+        .child-info {
+            flex: 1;
+        }
+
+        .child-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--kt-space-xs);
+            color: var(--kt-on-surface);
+        }
+
+        .child-level {
+            font-size: 1rem;
+            color: var(--kt-on-surface-variant);
+            margin-bottom: var(--kt-space-sm);
+        }
+
+        .child-stats {
+            display: flex;
+            gap: var(--kt-space-md);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-xs);
+            font-size: 0.9rem;
+            color: var(--kt-on-surface-variant);
+        }
+
+        /* Tabs Navigation */
+        .tab-nav {
+            display: flex;
+            margin-bottom: var(--kt-space-lg);
+            background: var(--kt-surface-variant);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-xs);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: var(--kt-space-sm) var(--kt-space-md);
+            background: transparent;
+            border: none;
+            border-radius: var(--kt-radius-md);
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: var(--kt-primary);
+            color: white;
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .tab-btn:not(.active):hover {
+            background: var(--kt-outline);
+        }
+
+        .new-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: var(--kt-error);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tasks Tab */
+        .task-item {
+            background: white;
+            border-radius: var(--kt-radius-md);
+            padding: var(--kt-space-md);
+            margin-bottom: var(--kt-space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-md);
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .task-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .task-status.pending { background: var(--kt-status-pending); }
+        .task-status.completed { background: var(--kt-status-completed); }
+        .task-status.validated { background: var(--kt-status-validated); }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-points {
+            background: var(--kt-accent);
+            color: white;
+            padding: var(--kt-space-xs) var(--kt-space-sm);
+            border-radius: var(--kt-radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Cosmetics Tab */
+        .cosmetics-section {
+            margin-bottom: var(--kt-space-lg);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--kt-space-md);
+            color: var(--kt-on-surface);
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-sm);
+        }
+
+        .avatar-display {
+            text-align: center;
+            margin-bottom: var(--kt-space-lg);
+        }
+
+        .large-avatar {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto var(--kt-space-md);
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--kt-shadow-md);
+        }
+
+        .large-avatar-svg {
+            width: 130px;
+            height: 130px;
+        }
+
+        .cosmetic-inventory {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--kt-space-sm);
+            margin-bottom: var(--kt-space-md);
+        }
+
+        .cosmetic-slot {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid var(--kt-outline);
+            border-radius: var(--kt-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            position: relative;
+        }
+
+        .cosmetic-slot:hover {
+            border-color: var(--kt-primary);
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .cosmetic-slot.equipped {
+            border-color: var(--kt-success);
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .cosmetic-slot.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cosmetic-slot.new::after {
+            content: '✨';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 12px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+
+        .cosmetic-preview {
+            width: 80%;
+            height: 80%;
+            border-radius: var(--kt-radius-sm);
+        }
+
+        .unlock-requirement {
+            font-size: 0.8rem;
+            color: var(--kt-on-surface-variant);
+            text-align: center;
+            margin-top: var(--kt-space-xs);
+        }
+
+        /* Rewards Tab */
+        .recent-rewards {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: var(--kt-radius-lg);
+            padding: var(--kt-space-lg);
+            margin-bottom: var(--kt-space-lg);
+            color: white;
+            text-align: center;
+        }
+
+        .reward-item {
+            background: white;
+            border-radius: var(--kt-radius-md);
+            padding: var(--kt-space-md);
+            margin-bottom: var(--kt-space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--kt-space-md);
+            box-shadow: var(--kt-shadow-sm);
+        }
+
+        .reward-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--kt-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Buttons */
+        .kt-btn {
+            width: 100%;
+            padding: var(--kt-space-md);
+            border: none;
+            border-radius: var(--kt-radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--kt-transition-medium);
+            margin-top: var(--kt-space-md);
+        }
+
+        .kt-btn--primary {
+            background: var(--kt-primary);
+            color: white;
+        }
+
+        .kt-btn--primary:hover {
+            box-shadow: var(--kt-shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Avatar Comparison */
+        .avatar-comparison {
+            background: var(--kt-surface);
+            border-radius: var(--kt-radius-xl);
+            padding: var(--kt-space-lg);
+            box-shadow: var(--kt-shadow-lg);
+        }
+
+        .comparison-title {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: var(--kt-space-lg);
+            color: var(--kt-on-surface);
+        }
+
+        .avatar-versions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--kt-space-lg);
+        }
+
+        .avatar-version {
+            text-align: center;
+        }
+
+        .version-title {
+            font-weight: 600;
+            margin-bottom: var(--kt-space-md);
+            color: var(--kt-on-surface-variant);
+        }
+
+        .version-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--kt-space-md);
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--kt-shadow-md);
+        }
+
+        .version-avatar-svg {
+            width: 100px;
+            height: 100px;
+        }
+
+        .version-description {
+            font-size: 0.9rem;
+            color: var(--kt-on-surface-variant);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .demo-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .cosmetic-inventory {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .child-stats {
+                flex-direction: column;
+                gap: var(--kt-space-xs);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="mockup-header">
+        <h1>👧 Child Card + Cosmetics</h1>
+        <p>Intégration du système de cosmétiques dans la carte enfant existante</p>
+    </header>
+
+    <div class="demo-container">
+        <!-- Child Card with Cosmetics -->
+        <div class="child-card">
+            <div class="child-header">
+                <div class="child-avatar-container">
+                    <div class="child-avatar">
+                        <svg class="avatar-svg" viewBox="0 0 70 70">
+                            <circle cx="35" cy="40" r="25" fill="#F4A460"/>
+                            <circle cx="35" cy="30" r="18" fill="#F4A460"/>
+                            <ellipse cx="35" cy="25" rx="20" ry="12" fill="#FFD700"/>
+                            <circle cx="30" cy="28" r="3" fill="white"/>
+                            <circle cx="40" cy="28" r="3" fill="white"/>
+                            <circle cx="30" cy="28" r="1.5" fill="blue"/>
+                            <circle cx="40" cy="28" r="1.5" fill="blue"/>
+                            <rect x="25" y="36" width="20" height="15" rx="5" fill="#FF69B4"/>
+                            <polygon points="35,15 32,20 38,20" fill="#FFD700"/>
+                        </svg>
+                    </div>
+                    <div class="customize-btn">🎨</div>
+                </div>
+                
+                <div class="child-info">
+                    <h2 class="child-name">Emma</h2>
+                    <p class="child-level">Niveau 7 • Princesse</p>
+                    <div class="child-stats">
+                        <div class="stat-item">
+                            <span>⭐</span>
+                            <span>245 points</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>🏆</span>
+                            <span>12 tâches</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>💎</span>
+                            <span>8 cosmétiques</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="tasks">Tâches</button>
+                <button class="tab-btn" data-tab="cosmetics">
+                    Cosmétiques
+                    <div class="new-indicator"></div>
+                </button>
+                <button class="tab-btn" data-tab="rewards">Récompenses</button>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div class="tab-content active" id="tasks-tab">
+                <div class="task-item">
+                    <div class="task-status completed"></div>
+                    <div class="task-content">
+                        <div>Ranger sa chambre</div>
+                        <small style="color: var(--kt-on-surface-variant);">Terminée aujourd'hui</small>
+                    </div>
+                    <div class="task-points">+10</div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-status validated"></div>
+                    <div class="task-content">
+                        <div>Faire ses devoirs</div>
+                        <small style="color: var(--kt-on-surface-variant);">Validée par Papa</small>
+                    </div>
+                    <div class="task-points">+15</div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-status pending"></div>
+                    <div class="task-content">
+                        <div>Brosser ses dents</div>
+                        <small style="color: var(--kt-on-surface-variant);">En attente</small>
+                    </div>
+                    <div class="task-points">+5</div>
+                </div>
+            </div>
+
+            <!-- Cosmetics Tab -->
+            <div class="tab-content" id="cosmetics-tab">
+                <div class="cosmetics-section">
+                    <div class="section-title">
+                        👑 Mon Avatar
+                    </div>
+                    <div class="avatar-display">
+                        <div class="large-avatar">
+                            <svg class="large-avatar-svg" viewBox="0 0 130 130">
+                                <circle cx="65" cy="80" r="35" fill="#F4A460"/>
+                                <circle cx="65" cy="60" r="25" fill="#F4A460"/>
+                                <ellipse cx="65" cy="50" rx="28" ry="18" fill="#FFD700"/>
+                                <circle cx="55" cy="56" r="4" fill="white"/>
+                                <circle cx="75" cy="56" r="4" fill="white"/>
+                                <circle cx="55" cy="56" r="2" fill="blue"/>
+                                <circle cx="75" cy="56" r="2" fill="blue"/>
+                                <rect x="45" y="70" width="40" height="25" rx="8" fill="#FF69B4"/>
+                                <polygon points="65,30 60,40 70,40" fill="#FFD700"/>
+                                <circle cx="65" cy="37" r="2" fill="#FF1493"/>
+                            </svg>
+                        </div>
+                        <button class="kt-btn kt-btn--primary">Personnaliser l'Avatar</button>
+                    </div>
+                </div>
+
+                <div class="cosmetics-section">
+                    <div class="section-title">
+                        👗 Cosmétiques Équipés
+                    </div>
+                    <div class="cosmetic-inventory">
+                        <div class="cosmetic-slot equipped">
+                            <div class="cosmetic-preview" style="background: linear-gradient(45deg, #FFD700, #FFA500);"></div>
+                        </div>
+                        <div class="cosmetic-slot equipped">
+                            <div class="cosmetic-preview" style="background: #FF69B4;"></div>
+                        </div>
+                        <div class="cosmetic-slot equipped">
+                            <div class="cosmetic-preview" style="background: linear-gradient(45deg, #FFD700, #FF1493);"></div>
+                        </div>
+                        <div class="cosmetic-slot">
+                            <span style="color: var(--kt-on-surface-variant);">Vide</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cosmetics-section">
+                    <div class="section-title">
+                        🎁 Nouveaux Cosmétiques
+                    </div>
+                    <div class="cosmetic-inventory">
+                        <div class="cosmetic-slot new">
+                            <div class="cosmetic-preview" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
+                        </div>
+                        <div class="cosmetic-slot new">
+                            <div class="cosmetic-preview" style="background: #00BCD4;"></div>
+                        </div>
+                        <div class="cosmetic-slot locked">
+                            <div class="cosmetic-preview" style="background: #424242; opacity: 0.5;"></div>
+                        </div>
+                        <div class="cosmetic-slot locked">
+                            <div class="cosmetic-preview" style="background: #424242; opacity: 0.5;"></div>
+                        </div>
+                    </div>
+                    <div class="unlock-requirement">
+                        🔒 Complète 5 tâches de plus pour débloquer
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rewards Tab -->
+            <div class="tab-content" id="rewards-tab">
+                <div class="recent-rewards">
+                    <h3 style="margin-bottom: var(--kt-space-sm);">🎉 Dernière Récompense</h3>
+                    <p>Diadème Magique débloqué !</p>
+                    <small>Il y a 2 heures</small>
+                </div>
+
+                <div class="reward-item">
+                    <div class="reward-icon" style="background: linear-gradient(45deg, #FFD700, #FFA500);">👑</div>
+                    <div style="flex: 1;">
+                        <div>Couronne Dorée</div>
+                        <small style="color: var(--kt-on-surface-variant);">Cosmétique Légendaire</small>
+                    </div>
+                    <div style="color: var(--kt-success); font-weight: 600;">Obtenu</div>
+                </div>
+
+                <div class="reward-item">
+                    <div class="reward-icon" style="background: linear-gradient(45deg, #9C27B0, #E91E63);">💫</div>
+                    <div style="flex: 1;">
+                        <div>Diadème Magique</div>
+                        <small style="color: var(--kt-on-surface-variant);">Cosmétique Épique</small>
+                    </div>
+                    <div style="color: var(--kt-success); font-weight: 600;">Nouveau!</div>
+                </div>
+
+                <div class="reward-item">
+                    <div class="reward-icon" style="background: #424242; opacity: 0.5;">🦄</div>
+                    <div style="flex: 1;">
+                        <div style="opacity: 0.5;">Licorne Magique</div>
+                        <small style="color: var(--kt-on-surface-variant); opacity: 0.5;">Nécessite 50 tâches</small>
+                    </div>
+                    <div style="color: var(--kt-on-surface-variant);">🔒</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar Comparison -->
+        <div class="avatar-comparison">
+            <h2 class="comparison-title">Évolution du Système d'Avatar</h2>
+            
+            <div class="avatar-versions">
+                <div class="avatar-version">
+                    <h3 class="version-title">Version Actuelle (Emoji)</h3>
+                    <div class="version-avatar">
+                        <div style="font-size: 60px;">👧</div>
+                    </div>
+                    <p class="version-description">
+                        Simple emoji fixe, pas de personnalisation possible
+                    </p>
+                </div>
+
+                <div class="avatar-version">
+                    <h3 class="version-title">Nouvelle Version (SVG)</h3>
+                    <div class="version-avatar">
+                        <svg class="version-avatar-svg" viewBox="0 0 100 100">
+                            <circle cx="50" cy="65" r="30" fill="#F4A460"/>
+                            <circle cx="50" cy="45" r="20" fill="#F4A460"/>
+                            <ellipse cx="50" cy="40" rx="22" ry="15" fill="#FFD700"/>
+                            <circle cx="42" cy="43" r="3" fill="white"/>
+                            <circle cx="58" cy="43" r="3" fill="white"/>
+                            <circle cx="42" cy="43" r="1.5" fill="blue"/>
+                            <circle cx="58" cy="43" r="1.5" fill="blue"/>
+                            <rect x="35" y="55" width="30" height="20" rx="6" fill="#FF69B4"/>
+                            <polygon points="50,25 46,32 54,32" fill="#FFD700"/>
+                            <circle cx="50" cy="29" r="2" fill="#FF1493"/>
+                        </svg>
+                    </div>
+                    <p class="version-description">
+                        Avatar personnalisable avec système de couches et cosmétiques
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--kt-space-xl); padding: var(--kt-space-lg); background: var(--kt-surface-variant); border-radius: var(--kt-radius-lg);">
+                <h3 style="margin-bottom: var(--kt-space-md); color: var(--kt-on-surface);">🚀 Avantages du Nouveau Système</h3>
+                <ul style="list-style: none; color: var(--kt-on-surface-variant);">
+                    <li style="margin-bottom: var(--kt-space-sm);">✅ <strong>Personnalisation complète</strong> - Cheveux, tenues, accessoires</li>
+                    <li style="margin-bottom: var(--kt-space-sm);">✅ <strong>Système de récompenses</strong> - Déblocage par accomplissements</li>
+                    <li style="margin-bottom: var(--kt-space-sm);">✅ <strong>Motivation accrue</strong> - Progression visuelle claire</li>
+                    <li style="margin-bottom: var(--kt-space-sm);">✅ <strong>Inclusivité</strong> - Représentation diverse</li>
+                    <li style="margin-bottom: var(--kt-space-sm);">✅ <strong>Évolutivité</strong> - Nouvelles collections facilement ajoutables</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+
+                    // Update active tab button
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update active tab content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetTab + '-tab') {
+                            content.classList.add('active');
+                        }
+                    });
+
+                    // Remove new indicator when cosmetics tab is clicked
+                    if (targetTab === 'cosmetics') {
+                        const indicator = this.querySelector('.new-indicator');
+                        if (indicator) {
+                            indicator.style.display = 'none';
+                        }
+                    }
+                });
+            });
+
+            // Cosmetic slot interactions
+            const cosmeticSlots = document.querySelectorAll('.cosmetic-slot:not(.locked)');
+            cosmeticSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    if (this.classList.contains('new')) {
+                        this.classList.remove('new');
+                        this.classList.add('equipped');
+                        
+                        // Show notification
+                        const notification = document.createElement('div');
+                        notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            background: var(--kt-success);
+                            color: white;
+                            padding: var(--kt-space-md);
+                            border-radius: var(--kt-radius-md);
+                            box-shadow: var(--kt-shadow-lg);
+                            z-index: 1000;
+                            animation: slideIn 0.3s ease-out;
+                        `;
+                        notification.textContent = '✨ Cosmétique équipé !';
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 3000);
+                    }
+                });
+            });
+
+            // Avatar customization button
+            document.querySelector('.kt-btn--primary').addEventListener('click', function() {
+                alert('🎨 Ouverture de l\'Avatar Builder... (Mockup)');
+            });
+
+            // Customize button
+            document.querySelector('.customize-btn').addEventListener('click', function() {
+                alert('🎨 Personnalisation rapide de l\'avatar... (Mockup)');
+            });
+        });
+
+        // Add slide-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

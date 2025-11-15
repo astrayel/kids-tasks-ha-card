@@ -3,9 +3,10 @@
 import { KidsTasksBaseCard } from './base-card.js';
 import { KidsTasksUtils } from './utils.js';
 
-class KidsTasksParentCard extends KidsTasksBaseCard {
+class KidsTasksCard extends KidsTasksBaseCard {
   constructor() {
     super();
+    this.currentView = 'dashboard';
   }
 
   setConfig(config) {
@@ -21,31 +22,12 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   shouldUpdate(oldHass, newHass) {
     if (!oldHass) return true;
-
-    // Vérifier changements dans les entités kids tasks
+    
+    // Quick check: compare entity counts for kids tasks
     const oldTaskEntities = Object.keys(oldHass.states).filter(id => id.startsWith('sensor.kidtasks_'));
     const newTaskEntities = Object.keys(newHass.states).filter(id => id.startsWith('sensor.kidtasks_'));
-
-    // Nouveau nombre d'entités
-    if (oldTaskEntities.length !== newTaskEntities.length) return true;
-
-    // Vérifier si les états ou attributs ont changé
-    for (const entityId of newTaskEntities) {
-      const oldEntity = oldHass.states[entityId];
-      const newEntity = newHass.states[entityId];
-
-      if (!oldEntity) return true;
-
-      // Comparer état
-      if (oldEntity.state !== newEntity.state) return true;
-
-      // Comparer attributs (stringify pour deep compare)
-      if (JSON.stringify(oldEntity.attributes) !== JSON.stringify(newEntity.attributes)) {
-        return true;
-      }
-    }
-
-    return false;
+    
+    return oldTaskEntities.length !== newTaskEntities.length;
   }
 
   render() {
@@ -59,8 +41,12 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
     this.shadowRoot.innerHTML = `
       ${this.getOptimizedStyles()}
       <div class="card-content kids-tasks-scope">
+        <div class="card-header">
+          ${this.config.show_navigation ? this.renderNavigation() : ''}
+        </div>
+
         <div class="main-content">
-          ${this.renderDashboard(children)}
+          ${this.renderCurrentView(children)}
         </div>
       </div>
     `;
@@ -69,10 +55,8 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   getOptimizedStyles() {
     return `
-    
       ${this.getCommonStyles()}
       <style>
-        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
         /* Dashboard-specific overrides */
         .card-header {
           background: linear-gradient(90deg, var(--custom-header-color, var(--kt-primary)) 0%, transparent 100%);
@@ -83,6 +67,40 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
     `;
   }
 
+  renderNavigation() {
+    const views = [
+      { id: 'dashboard', label: '🏠 Tableau de bord' },
+      { id: 'summary', label: '📊 Résumé' },
+      { id: 'management', label: '⚙️ Gestion' }
+    ];
+
+    return `
+      <div class="navigation">
+        ${views.map(view => `
+          <button 
+            class="nav-button ${this.currentView === view.id ? 'active' : ''}"
+            data-action="switch-view"
+            data-id="${view.id}"
+          >
+            ${view.label}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderCurrentView(children) {
+    switch (this.currentView) {
+      case 'dashboard':
+        return this.renderDashboard(children);
+      case 'summary':
+        return this.renderSummary(children);
+      case 'management':
+        return this.renderManagement(children);
+      default:
+        return this.renderDashboard(children);
+    }
+  }
 
   renderDashboard(children) {
     if (children.length === 0) {
@@ -96,23 +114,8 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
     }
 
     const stats = this.calculateGlobalStats(children);
-    const allTasks = this.getTasks();
-    const pendingTasks = allTasks.filter(task => task.status === 'pending_validation');
-    const validatedTasks = allTasks.filter(task => task.status === 'validated');
 
     return `
-      ${pendingTasks.length > 0 ? `
-        <div class="validation-preview section kt-fade-in">
-          <h2>
-            ⏳ Tâches à valider
-            <span class="badge">${pendingTasks.length}</span>
-          </h2>
-          <div class="task-list">
-            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
-          </div>
-        </div>
-      ` : ''}
-
       <div class="summary-stats kt-fade-in">
         <div class="summary-card">
           <div class="summary-icon">👦🏻</div>
@@ -120,15 +123,15 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
         </div>
         <div class="summary-card">
           <div class="summary-icon">📋</div>
-          <div class="summary-number">${allTasks.length}</div>
+          <div class="summary-number">${stats.totalTasks}</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">✅</div>
-          <div class="summary-number">${validatedTasks.length}</div>
+          <div class="summary-number">${stats.completedToday}</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">⏳</div>
-          <div class="summary-number">${pendingTasks.length}</div>
+          <div class="summary-number">${stats.pendingTasks}</div>
         </div>
       </div>
 
@@ -138,30 +141,31 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
     `;
   }
 
-  renderValidation() {
-    const children = this.getChildren();
-    const allTasks = this.getTasks();
-    // Filtrer seulement les tâches en attente de validation
-    const pendingTasks = allTasks.filter(task => task.status === 'pending_validation');
-
+  renderSummary(children) {
+    const stats = this.calculateGlobalStats(children);
+    
     return `
-      <div class="section">
-        <h2>
-          Validation des tâches
-          ${pendingTasks.length > 0 ? `<span class="badge">${pendingTasks.length}</span>` : ''}
-        </h2>
-
-        ${pendingTasks.length > 0 ? `
-          <div class="task-list">
-            ${pendingTasks.map(task => this.renderValidationTask(task, children)).join('')}
-          </div>
-        ` : `
-          <div class="empty-state">
-            <div class="empty-state-icon">✅</div>
-            <p>Aucune tâche en attente de validation</p>
-            <p class="secondary-text">Les tâches complétées par les enfants apparaîtront ici.</p>
-          </div>
-        `}
+      <div class="summary-stats kt-fade-in">
+        <div class="summary-card">
+          <div class="summary-number">${children.length}</div>
+          <div class="summary-label">Enfants</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-number">${stats.totalTasks}</div>
+          <div class="summary-label">Tâches actives</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-number">${stats.completedToday}</div>
+          <div class="summary-label">Terminées aujourd'hui</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-number">${stats.totalPoints}</div>
+          <div class="summary-label">Points</div>
+        </div>
+      </div>
+      
+      <div class="children-grid">
+        ${children.map(child => this.renderChildSummary(child)).join('')}
       </div>
     `;
   }
@@ -180,15 +184,15 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   handleAction(action, id, event) {
     switch (action) {
+      case 'switch-view':
+        this.currentView = id;
+        this.render();
+        break;
       case 'view-child':
         this.handleViewChild(id);
         break;
       case 'show-child-history':
         this.showChildHistory(id);
-        break;
-      case 'validate-task':
-      case 'reject-task':
-        this.handleValidationAction(action, id);
         break;
       default:
         if (__DEV__) {
@@ -199,27 +203,12 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   handleViewChild(childId) {
     console.info('View child details:', childId);
-
+    
     const event = new CustomEvent('kids-tasks-view-child', {
       detail: { childId },
       bubbles: true
     });
     this.dispatchEvent(event);
-  }
-
-  // Swipe gesture handlers for validation tasks
-  handleSwipeLeft(item) {
-    const taskId = item.dataset.taskId;
-    if (item.classList.contains('kt-validation-item') && taskId) {
-      this.handleAction('reject-task', taskId);
-    }
-  }
-
-  handleSwipeRight(item) {
-    const taskId = item.dataset.taskId;
-    if (item.classList.contains('kt-validation-item') && taskId) {
-      this.handleAction('validate-task', taskId);
-    }
   }
 
   // Data methods (same as before)
@@ -251,20 +240,14 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
   getChildStats(child) {
     const tasks = this.getChildTasks(child.id);
     const today = new Date().toDateString();
-
-    const completedToday = tasks.filter(t =>
-      (t.status === 'completed' || t.status === 'validated') &&
+    
+    const completedToday = tasks.filter(t => 
+      (t.status === 'completed' || t.status === 'validated') && 
       t.completed_at && new Date(t.completed_at).toDateString() === today
     ).length;
-
-    // Compter les tâches actives (todo + pending_validation)
-    const todoToday = tasks.filter(t =>
-      t.status === 'todo' || t.status === 'pending_validation'
-    ).length;
-
-    // Total = tâches à faire + tâches complétées aujourd'hui
-    const totalToday = todoToday + completedToday;
-
+    
+    const totalToday = tasks.filter(t => t.status === 'todo').length;
+    
     return {
       completedToday,
       totalToday,
@@ -274,18 +257,16 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   getChildTasks(childId) {
     if (!this._hass) return [];
-
+    
     const taskEntities = Object.keys(this._hass.states)
       .filter(id => id.startsWith('sensor.kidtasks_task_'))
       .map(id => this._hass.states[id])
-      .filter(entity =>
-        entity.attributes &&
-        entity.attributes.assigned_child_ids &&
-        entity.attributes.assigned_child_ids.includes(childId)
-      );
-
+      .filter(entity => entity.attributes && 
+                      entity.attributes.assigned_children && 
+                      entity.attributes.assigned_children.includes(childId));
+    
     return taskEntities.map(entity => ({
-      id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       status: entity.state,
       completed_at: entity.attributes.completed_at,
@@ -305,10 +286,10 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
       completedToday += stats.completedToday;
       totalPoints += child.points || 0;
 
-      // Calculer les tâches en attente de validation
+      // Calculer les tâches en attente de validation (completed mais pas validated)
       const childTasks = this.getChildTasks(child.id);
       pendingTasks += childTasks.filter(task =>
-        task.status === 'pending_validation'
+        task.status === 'completed' && !task.validated
       ).length;
     });
 
@@ -322,13 +303,13 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
 
   static getConfigElement() {
     const suffix = window.KidsTasksCardSuffix || '';
-    return document.createElement(`kids-tasks-parent-card-editor${suffix}`);
+    return document.createElement(`kids-tasks-card-editor${suffix}`);
   }
 
   static getStubConfig() {
     return {
-      type: 'custom:kids-tasks-parent-card',
-      title: 'Kids Tasks Parent Dashboard',
+      type: 'custom:kids-tasks-card',
+      title: 'Kids Tasks Manager',
       show_navigation: true,
       show_completed: false,
       show_rewards: true,
@@ -337,4 +318,4 @@ class KidsTasksParentCard extends KidsTasksBaseCard {
   }
 }
 
-export { KidsTasksParentCard };
+export { KidsTasksCard };

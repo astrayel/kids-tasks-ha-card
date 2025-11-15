@@ -689,8 +689,7 @@ class KidsTasksBaseCard extends HTMLElement {
 
           <div class="gauges-section kt-clickable"
                data-action="show-child-history"
-               data-id="${child.child_id || child.id}"
-               onclick="event.stopPropagation();">
+               data-id="${child.child_id || child.id}">
             ${this.renderGauges(gaugeStats, true)}
           </div>
         </div>
@@ -1481,6 +1480,35 @@ showModal(content, title = '') {
         }
 
         /* Loading */
+                .filters {
+          display: flex;
+          gap: var(--kt-space-sm);
+          margin-bottom: var(--kt-space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filter-btn {
+          background: var(--kt-surface-variant);
+          border: 2px solid transparent;
+          padding: var(--kt-space-xs) var(--kt-space-md);
+          border-radius: var(--kt-radius-sm);
+          cursor: pointer;
+          font-weight: 600;
+          transition: all var(--kt-transition-fast);
+          font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+          background: var(--kt-primary);
+          color: white;
+        }
+
+        .filter-btn.active {
+          border-color: var(--kt-primary);
+          background: var(--kt-primary);
+          color: white;
+        }
+          
         .kt-loading {
           text-align: center;
           padding: var(--kt-space-xl);
@@ -1760,13 +1788,13 @@ showModal(content, title = '') {
     if (!filters.length) return '';
 
     const buttonsHtml = filters.map(filter => `
-      <ha-button
+      <button
         class="filter-btn ${this[filterProperty] === filter.id ? 'active' : ''}"
         data-action="${actionName}"
         data-filter="${filter.id}"
       >
         ${filter.label}
-      </ha-button>
+      </button>
     `).join('');
 
     return wrapper ? `<div class="${wrapperClass}">${buttonsHtml}</div>` : buttonsHtml;
@@ -1839,6 +1867,221 @@ showModal(content, title = '') {
 
   getRewardIcons() {
     return {};
+  }
+
+  // === CHILD HISTORY MANAGEMENT (Centralized) ===
+
+  async getChildHistory(childId) {
+    if (!this._hass) return [];
+
+    // Récupérer les données de l'enfant
+    const children = this.getChildren();
+    const child = children.find(c => c.child_id === childId || c.id === childId);
+
+    if (!child) {
+      console.error(`Enfant avec l'ID ${childId} introuvable`);
+      return [];
+    }
+
+    // Récupérer l'historique via le service backend
+    let historyData = [];
+    try {
+      await this._hass.callService('kids_tasks', 'get_child_history', {
+        child_id: childId,
+        limit: 20
+      });
+
+      // Fallback to sensor data since services don't return data directly
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'historique:', error);
+      // Fallback to sensor if service fails
+      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
+      const historyEntity = this._hass.states[historyEntityId];
+
+      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
+        historyData = historyEntity.attributes.points_history;
+      }
+    }
+
+    return historyData || [];
+  }
+
+  getActionIcon(actionType) {
+    const icons = {
+      'task_completed': '✅',
+      'task_validated': '🎯',
+      'task_penalty': '⚠️',
+      'reward_claimed': '🏆',
+      'manual_adjustment': '⚙️',
+      'level_up': '📈',
+      'bonus_points': '🌟',
+      'default': '📊'
+    };
+    return icons[actionType] || icons['default'];
+  }
+
+  getActionTypeLabel(actionType) {
+    const labels = {
+      'task_completed': 'Terminée',
+      'task_validated': 'Validée',
+      'task_penalty': 'Pénalité',
+      'reward_claimed': 'Récompense',
+      'manual_adjustment': 'Ajustement',
+      'level_up': 'Montée niveau',
+      'bonus_points': 'Points bonus',
+      'default': 'Autre'
+    };
+    return labels[actionType] || labels['default'];
+  }
+
+  renderHistoryAsTask(entry) {
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const pointsDisplay = entry.points_delta > 0 ? `+${entry.points_delta}` : `${entry.points_delta}`;
+    const pointsClass = entry.points_delta > 0 ? 'success' : 'penalty';
+    const actionIcon = this.getActionIcon(entry.action_type);
+
+    // Déterminer la classe de la tâche basée sur le type d'action
+    let taskClass = 'completed';
+    if (entry.points_delta < 0) {
+      taskClass = 'missed';
+    }
+
+    return `
+      <div class="task ${taskClass}">
+        <div class="item-icon">${actionIcon}</div>
+        <div class="task-main flex-content">
+          <div class="task-name-row">
+            <div class="task-name">${entry.description || 'Action inconnue'}</div>
+            <div class="task-validation">${dateStr} à ${timeStr}</div>
+          </div>
+          <div class="task-points">
+            <span style="color: ${entry.points_delta > 0 ? '#4CAF50' : '#f44336'}; font-weight: bold;">${pointsDisplay} 🎫</span>
+            <span style="color: var(--secondary-text-color, #757575); font-size: 0.9em;">${this.getActionTypeLabel(entry.action_type)}</span>
+          </div>
+        </div>
+        <div class="task-action">
+          <span class="task-result ${pointsClass}">${entry.points_delta > 0 ? '🎉' : '😞'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  async renderChildHistoryForTab(child) {
+    const history = await this.getChildHistory(child.child_id || child.id);
+
+    if (history.length === 0) {
+      return `
+        <div class="empty-history">
+          <div class="empty-icon">📈</div>
+          <p>Aucun historique</p>
+          <small>Les actions sur les points apparaîtront ici</small>
+        </div>
+      `;
+    }
+
+    // Limiter à 15 entrées comme dans l'original
+    const limitedHistory = history.slice(0, 15);
+
+    return `
+      <div class="task-list">
+        ${limitedHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+      </div>
+    `;
+  }
+
+  async renderChildHistoryContent(child, historyData = null, showHeader = true) {
+    const history = historyData || await this.getChildHistory(child.child_id || child.id);
+
+    const todayHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate.toDateString() === new Date().toDateString();
+    });
+
+    const thisWeekHistory = history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate >= weekAgo;
+    });
+
+    return `
+      <div class="child-history-container">
+        ${showHeader ? `
+          <div class="history-header">
+            <div class="kt-child-info">
+              <div class="kt-avatar">${this.getAvatar(child)}</div>
+              <div class="kt-child-details">
+                <h3>${child.name}</h3>
+                <div class="current-stats">
+                  <span class="stat">${child.points || 0} 🎫 Points</span>
+                  <span class="stat">${child.coins || 0} 🪙 Pièces</span>
+                  <span class="stat">Niveau ${child.level || 1}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="history-content">
+          ${history.length > 0 ? `
+            <div class="history-sections">
+              ${todayHistory.length > 0 ? `
+                <div class="history-section">
+                  <h4>🌟 Aujourd'hui</h4>
+                  ${todayHistory.map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${thisWeekHistory.length > todayHistory.length ? `
+                <div class="history-section">
+                  <h4>📅 Cette semaine</h4>
+                  ${thisWeekHistory.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    return entryDate.toDateString() !== new Date().toDateString();
+                  }).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+
+              ${history.length > thisWeekHistory.length ? `
+                <div class="history-section">
+                  <h4>📈 Plus ancien</h4>
+                  ${history.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return entryDate < weekAgo;
+                  }).slice(0, 10).map(entry => this.renderHistoryAsTask(entry)).join('')}
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="empty-history">
+              <div class="empty-icon">📈</div>
+              <p>Aucune activité dans l'historique</p>
+              <p>Les tâches complétées apparaîtront ici.</p>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+
+  async showChildHistory(childId) {
+    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
+    if (!child) return;
+
+    const content = await this.renderChildHistoryContent(child);
+    this.showModal(content, `Historique de ${child.name}`);
   }
 }
 

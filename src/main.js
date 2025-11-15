@@ -47,6 +47,7 @@ customElements.define(`kids-tasks-manager-editor${cardSuffix}`, KidsTasksManager
 
 // Register with Home Assistant card picker
 window.customCards = window.customCards || [];
+const devSuffix = __DEV__ ? ' (Dev)' : '';
 window.customCards.push(
   {
     type: mainCardType,

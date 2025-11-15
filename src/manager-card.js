@@ -75,11 +75,14 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     `;
   }
 
-
   getStyles() {
     return `
       ${this.getCommonStyles()}
       <style>
+        /* Include task and reward styles */
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
+        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+
         /* Manager-specific styles */
 
         .section {
@@ -94,56 +97,6 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           color: var(--primary-text-color);
         }
 
-        .filters {
-          display: flex;
-          gap: var(--kt-space-sm);
-          margin-bottom: var(--kt-space-lg);
-          flex-wrap: wrap;
-        }
-
-        .filter-btn {
-          background: var(--kt-surface-variant);
-          border: 2px solid transparent;
-          padding: var(--kt-space-xs) var(--kt-space-md);
-          border-radius: var(--kt-radius-sm);
-          cursor: pointer;
-          font-weight: 600;
-          transition: all var(--kt-transition-fast);
-          font-size: 0.9em;
-        }
-
-        .filter-btn:hover {
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .filter-btn.active {
-          border-color: var(--kt-primary);
-          background: var(--kt-primary);
-          color: white;
-        }
-
-        .task-list, .reward-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--kt-space-sm);
-        }
-
-        .task-item, .reward-item {
-          background: var(--kt-surface-variant);
-          border-radius: var(--kt-radius-md);
-          padding: var(--kt-space-md);
-          display: flex;
-          align-items: center;
-          gap: var(--kt-space-md);
-          transition: all var(--kt-transition-fast);
-          cursor: pointer;
-        }
-
-        .task-item:hover, .reward-item:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px var(--kt-shadow-light);
-        }
 
         .task-item.inactive {
           opacity: 0.6;
@@ -154,29 +107,10 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           border-left: 4px solid var(--kt-warning);
         }
 
-        .item-icon {
-          font-size: 1.5em;
-          width: 40px;
-          text-align: center;
-        }
-
         .task-main, .reward-main {
           flex: 1;
         }
 
-        .task-name, .reward-name {
-          font-weight: 600;
-          color: var(--primary-text-color);
-          margin-bottom: var(--kt-space-xs);
-        }
-
-        .task-meta, .reward-meta {
-          font-size: 0.9em;
-          color: var(--secondary-text-color);
-          display: flex;
-          gap: var(--kt-space-sm);
-          flex-wrap: wrap;
-        }
 
         .task-rewards {
           display: flex;
@@ -317,9 +251,9 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
         <div class="task-main">
           <div class="task-name">${task.name}</div>
           <div class="task-meta">
-            <span>👤 ${childName}</span>
-            <span>📅 ${this.getFrequencyLabel(task.frequency)}</span>
-            <span>📂 ${this.getCategoryLabel(task.category)}</span>
+            <span>👤${childName}</span>
+            <span>📅${this.getFrequencyLabel(task.frequency)}</span>
+            <span>📂${this.getCategoryLabel(task.category)}</span>
           </div>
           ${task.description ? `<div style="margin-top: 4px; font-size: 0.9em;">${task.description}</div>` : ''}
         </div>
@@ -469,6 +403,7 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     const children = this.getChildren();
     const child = editChildId ? children.find(c => c.child_id === editChildId || c.id === editChildId) : null;
     const isEdit = !!child;
+    const persons = this.getPersonEntities();
 
     const avatarOptions = ['👶', '👧', '👦', '🧒', '🧸', '🎈', '⭐', '🌟', '🏆', '🎯'];
 
@@ -490,19 +425,48 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           required
           value="${isEdit ? child.avatar_type || 'emoji' : 'emoji'}">
           <ha-list-item value="emoji">Emoji</ha-list-item>
+          <ha-list-item value="url">URL d'image</ha-list-item>
+          ${persons.length > 0 ? '<ha-list-item value="person_entity">Photo de la personne liée</ha-list-item>' : ''}
         </ha-select>
 
-        <div id="emoji-config">
-          <label class="form-label">Choisir un emoji</label>
-          <div class="avatar-options">
-            ${avatarOptions.map(avatar => `
-              <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}"
-                      data-avatar="${avatar}">
-                ${avatar}
-              </button>
-            `).join('')}
+        <div id="avatar-config">
+          <div id="emoji-config" style="display: ${isEdit && child.avatar_type !== 'emoji' ? 'none' : 'block'};">
+            <label class="form-label">Choisir un emoji</label>
+            <div class="avatar-options">
+              ${avatarOptions.map(avatar => `
+                <button type="button" class="avatar-option ${isEdit && child.avatar === avatar ? 'selected' : ''}"
+                        data-avatar="${avatar}">
+                  ${avatar}
+                </button>
+              `).join('')}
+            </div>
+            <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
           </div>
-          <input type="hidden" name="avatar" value="${isEdit ? child.avatar || '👶' : '👶'}">
+
+          <div id="url-config" style="display: ${isEdit && child.avatar_type === 'url' ? 'block' : 'none'};">
+            <ha-textfield
+              label="URL de l'image"
+              name="avatar_url"
+              value="${isEdit && child.avatar_type === 'url' ? child.avatar_data || '' : ''}"
+              placeholder="https://example.com/photo.png">
+            </ha-textfield>
+          </div>
+
+          ${persons.length > 0 ? `
+          <div id="person_entity-config" style="display: ${isEdit && child.avatar_type === 'person_entity' ? 'block' : 'none'};">
+            <ha-select
+              label="Personne liée"
+              name="person_entity_id"
+              value="${isEdit ? child.person_entity_id || '' : ''}">
+              <ha-list-item value="">Aucune liaison</ha-list-item>
+              ${persons.map(person => `
+                <ha-list-item value="${person.entity_id}" ${isEdit && child.person_entity_id === person.entity_id ? 'selected' : ''}>
+                  ${person.name}
+                </ha-list-item>
+              `).join('')}
+            </ha-select>
+          </div>
+          ` : ''}
         </div>
 
         ${!isEdit ? `
@@ -556,51 +520,50 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
 
     // Configuration des interactions avatar
     setTimeout(() => {
-      const avatarButtons = dialog.querySelectorAll('.avatar-option');
-      const avatarInput = dialog.querySelector('[name="avatar"]');
+      // Gérer le changement de type d'avatar
+      const avatarTypeSelect = dialog.querySelector('ha-select[name="avatar_type"]');
+      const avatarConfig = dialog.querySelector('#avatar-config');
 
-      avatarButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          avatarButtons.forEach(b => b.classList.remove('selected'));
-          button.classList.add('selected');
-          avatarInput.value = button.dataset.avatar;
+      if (avatarTypeSelect && avatarConfig) {
+        // Fonction pour mettre à jour l'affichage des sections d'avatar
+        const updateAvatarDisplay = (selectedType) => {
+          avatarConfig.querySelectorAll('[id$="-config"]').forEach(div => {
+            div.style.display = 'none';
+          });
+          const targetDiv = dialog.querySelector('#' + selectedType + '-config');
+          if (targetDiv) {
+            targetDiv.style.display = 'block';
+          }
+        };
+
+        // Event listener pour ha-select
+        avatarTypeSelect.addEventListener('selected', (e) => {
+          const selectedType = e.detail.value || e.target.value;
+          updateAvatarDisplay(selectedType);
         });
-      });
+
+        // Event listener alternatif pour change
+        avatarTypeSelect.addEventListener('change', (e) => {
+          const selectedType = e.target.value;
+          updateAvatarDisplay(selectedType);
+        });
+
+        // Gérer la sélection d'emoji
+        avatarConfig.querySelectorAll('.avatar-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            avatarConfig.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const avatarInput = dialog.querySelector('input[name="avatar"]');
+            if (avatarInput) {
+              avatarInput.value = btn.dataset.avatar;
+            }
+          });
+        });
+      }
     }, 100);
   }
 
-  showChildHistory(childId) {
-    const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
-    if (!child) return;
-
-    const content = `
-      <div class="child-history-container">
-        <div class="history-header">
-          <div class="kt-child-info">
-            <div class="kt-avatar">${this.getAvatar(child)}</div>
-            <div class="kt-child-details">
-              <h3>${child.name}</h3>
-              <div class="current-stats">
-                <span class="stat">${child.points || 0} 🎫 Points</span>
-                <span class="stat">${child.coins || 0} 🪙 Pièces</span>
-                <span class="stat">Niveau ${child.level || 1}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="history-content">
-          <div class="empty-history">
-            <div class="empty-icon">📈</div>
-            <p>Historique temporairement indisponible</p>
-            <p>Cette fonctionnalité sera bientôt disponible.</p>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.showModal(content, `Historique de ${child.name}`);
-  }
+  // Note: showChildHistory is now handled by base-card.js
 
   handleRemoveChild(childId) {
     const child = this.getChildren().find(c => c.child_id === childId || c.id === childId);
@@ -641,14 +604,30 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     const form = dialog.querySelector('form');
     if (!form) return;
 
+    // Récupérer les valeurs des composants HA
     const name = form.querySelector('[name="name"]').value;
-    const avatar = form.querySelector('[name="avatar"]').value;
+    const person_entity_id = form.querySelector('[name="person_entity_id"]')?.value || null;
+    const avatar_type = form.querySelector('[name="avatar_type"]').value;
+
+    let avatar_data = null;
+    let avatar = '👶';
+
+    // Déterminer les données d'avatar selon le type
+    if (avatar_type === 'emoji') {
+      avatar = form.querySelector('[name="avatar"]').value;
+    } else if (avatar_type === 'url') {
+      avatar_data = form.querySelector('[name="avatar_url"]').value;
+    }
 
     const serviceData = {
       name,
       avatar,
-      avatar_type: 'emoji'
+      avatar_type,
     };
+
+    // Ajouter seulement les champs non-null
+    if (person_entity_id) serviceData.person_entity_id = person_entity_id;
+    if (avatar_data) serviceData.avatar_data = avatar_data;
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
@@ -694,6 +673,28 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     }
 
     dialog.close();
+  }
+
+  getPersonEntities() {
+    if (!this._hass) return [];
+
+    const persons = [];
+    const entities = this._hass.states;
+
+    Object.keys(entities).forEach(entityId => {
+      if (entityId.startsWith('person.')) {
+        const personEntity = entities[entityId];
+        if (personEntity) {
+          persons.push({
+            entity_id: entityId,
+            name: personEntity.attributes.friendly_name || personEntity.attributes.name || entityId.replace('person.', ''),
+            picture: personEntity.attributes.entity_picture
+          });
+        }
+      }
+    });
+
+    return persons.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // Configuration
