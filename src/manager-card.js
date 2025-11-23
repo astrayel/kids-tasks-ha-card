@@ -378,25 +378,91 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     }
   }
 
-  // CRUD operations - placeholder implementations
+  // CRUD operations - Task management
   async handleAddTask() {
-    console.info('Add task requested');
-    // TODO: Implement task creation dialog/service call
+    if (typeof KidsTasksTaskForm === 'undefined') {
+      this.showNotification('TaskForm non chargé', 'error');
+      return;
+    }
+
+    const taskForm = new KidsTasksTaskForm(this._hass, {
+      onSubmit: () => {
+        this.showNotification('Tâche créée !', 'success');
+        setTimeout(() => this.render(), 500);
+      }
+    });
+
+    window.taskForm = taskForm;
+    taskForm.show();
   }
 
   async handleEditTask(taskId) {
-    console.info('Edit task:', taskId);
-    // TODO: Implement task edit dialog/service call
+    if (typeof KidsTasksTaskForm === 'undefined') {
+      this.showNotification('TaskForm non chargé', 'error');
+      return;
+    }
+
+    // Get task data
+    const tasks = this.getTasks();
+    const task = tasks.find(t => t.id === taskId);
+
+    if (!task) {
+      this.showNotification('Tâche introuvable', 'error');
+      return;
+    }
+
+    const taskForm = new KidsTasksTaskForm(this._hass, {
+      onSubmit: () => {
+        this.showNotification('Tâche modifiée !', 'success');
+        setTimeout(() => this.render(), 500);
+      }
+    });
+
+    window.taskForm = taskForm;
+    taskForm.show(task);
   }
 
   async handleAddReward() {
-    console.info('Add reward requested');
-    // TODO: Implement reward creation dialog/service call
+    if (typeof KidsTasksRewardForm === 'undefined') {
+      this.showNotification('RewardForm non chargé', 'error');
+      return;
+    }
+
+    const rewardForm = new KidsTasksRewardForm(this._hass, {
+      onSubmit: () => {
+        this.showNotification('Récompense créée !', 'success');
+        setTimeout(() => this.render(), 500);
+      }
+    });
+
+    window.rewardForm = rewardForm;
+    rewardForm.show();
   }
 
   async handleEditReward(rewardId) {
-    console.info('Edit reward:', rewardId);
-    // TODO: Implement reward edit dialog/service call
+    if (typeof KidsTasksRewardForm === 'undefined') {
+      this.showNotification('RewardForm non chargé', 'error');
+      return;
+    }
+
+    // Get reward data
+    const rewards = this.getRewards();
+    const reward = rewards.find(r => r.id === rewardId);
+
+    if (!reward) {
+      this.showNotification('Récompense introuvable', 'error');
+      return;
+    }
+
+    const rewardForm = new KidsTasksRewardForm(this._hass, {
+      onSubmit: () => {
+        this.showNotification('Récompense modifiée !', 'success');
+        setTimeout(() => this.render(), 500);
+      }
+    });
+
+    window.rewardForm = rewardForm;
+    rewardForm.show(reward);
   }
 
   showChildForm(editChildId = null) {

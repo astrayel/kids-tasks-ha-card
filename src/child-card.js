@@ -260,6 +260,103 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           padding: var(--kt-space-lg);
         }
 
+        /* New header layout with large avatar */
+        .child-header-new {
+          display: grid;
+          grid-template-columns: 300px 1fr;
+          gap: var(--kt-space-lg);
+          margin-bottom: var(--kt-space-lg);
+          padding: var(--kt-space-lg);
+          background: var(--kt-surface-variant);
+          border-radius: var(--kt-radius-md);
+        }
+
+        .avatar-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--kt-space-md);
+        }
+
+        .large-avatar-container {
+          width: 300px;
+          height: 300px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, var(--kt-primary-light) 0%, var(--kt-primary) 100%);
+          border-radius: var(--kt-radius-lg);
+          box-shadow: 0 4px 12px var(--kt-shadow-medium);
+        }
+
+        .large-avatar-emoji {
+          font-size: 10em;
+          text-align: center;
+        }
+
+        .btn-customize {
+          background: var(--kt-primary);
+          color: white;
+          border: none;
+          padding: var(--kt-space-sm) var(--kt-space-lg);
+          border-radius: var(--kt-radius-md);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+        }
+
+        .btn-customize:hover {
+          background: var(--kt-primary-dark);
+          transform: translateY(-2px);
+        }
+
+        .stats-section {
+          display: flex;
+          flex-direction: column;
+          gap: var(--kt-space-md);
+        }
+
+        .child-name-large {
+          font-size: 2em;
+          font-weight: 700;
+          color: var(--primary-text-color);
+        }
+
+        .child-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: var(--kt-space-md);
+        }
+
+        .stat-card {
+          background: white;
+          padding: var(--kt-space-md);
+          border-radius: var(--kt-radius-md);
+          display: flex;
+          align-items: center;
+          gap: var(--kt-space-sm);
+          box-shadow: 0 2px 4px var(--kt-shadow-light);
+        }
+
+        .stat-icon {
+          font-size: 2em;
+        }
+
+        .stat-content {
+          flex: 1;
+        }
+
+        .stat-value {
+          font-size: 1.5em;
+          font-weight: 700;
+          color: var(--kt-primary);
+        }
+
+        .stat-label {
+          font-size: 0.9em;
+          color: var(--secondary-text-color);
+        }
+
         .child-header {
           text-align: center;
           margin-bottom: var(--kt-space-lg);
@@ -380,6 +477,80 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
           opacity: 0.6;
         }
 
+        /* Task enhancements */
+        .task-deadline {
+          margin-left: var(--kt-space-sm);
+          padding: 2px 6px;
+          background: var(--kt-warning-light);
+          border-radius: var(--kt-radius-sm);
+          font-size: 0.85em;
+          font-weight: 600;
+        }
+
+        .task-streak {
+          margin-left: var(--kt-space-sm);
+          padding: 2px 6px;
+          background: var(--kt-error);
+          color: white;
+          border-radius: var(--kt-radius-sm);
+          font-size: 0.85em;
+          font-weight: 600;
+        }
+
+        .task-coins {
+          color: var(--kt-coins-color);
+        }
+
+        .validation-badge {
+          padding: 2px 6px;
+          background: var(--kt-info);
+          color: white;
+          border-radius: var(--kt-radius-sm);
+          font-size: 0.85em;
+        }
+
+        /* Claimed rewards */
+        .claimed-rewards-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--kt-space-sm);
+        }
+
+        .claimed-reward-item {
+          background: var(--kt-surface);
+          border: 1px solid var(--kt-surface-variant);
+          border-radius: var(--kt-radius-md);
+          padding: var(--kt-space-md);
+          display: flex;
+          align-items: center;
+          gap: var(--kt-space-md);
+        }
+
+        .cosmetic-badge {
+          background: var(--kt-primary);
+          color: white;
+          padding: 4px 8px;
+          border-radius: var(--kt-radius-sm);
+          font-size: 0.85em;
+          font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .child-header-new {
+            grid-template-columns: 1fr;
+          }
+
+          .large-avatar-container {
+            width: 200px;
+            height: 200px;
+          }
+
+          .child-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
         /* Progress section styling */
         .progress-section {
           margin-bottom: var(--kt-space-lg);
@@ -408,19 +579,65 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     if (!this.config.show_avatar) return '';
 
     const stats = this.getChildStats(child);
-    
+
     return `
-      <div class="child-header">
-        <div class="child-avatar">${this.getAvatar(child, '👶')}</div>
-        <div class="child-name">${child.name}</div>
-        <div class="child-stats">
-          <span class="stat">${child.points || 0} 🎫 Points</span>
-          <span class="stat">${child.coins || 0} 🪙 Pièces</span>
-          <span class="stat">Niveau ${child.level || 1}</span>
+      <div class="child-header-new">
+        <div class="avatar-section">
+          ${this.renderLargeAvatar(child)}
+          <button class="btn-customize" data-action="customize-avatar">
+            🎨 Personnaliser
+          </button>
         </div>
-        ${this.config.show_progress ? this.renderProgress(stats, child) : ''}
+        <div class="stats-section">
+          <div class="child-name-large">${child.name}</div>
+          <div class="child-stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">🎫</div>
+              <div class="stat-content">
+                <div class="stat-value">${child.points || 0}</div>
+                <div class="stat-label">Points</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🪙</div>
+              <div class="stat-content">
+                <div class="stat-value">${child.coins || 0}</div>
+                <div class="stat-label">Pièces</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⭐</div>
+              <div class="stat-content">
+                <div class="stat-value">${child.level || 1}</div>
+                <div class="stat-label">Niveau</div>
+              </div>
+            </div>
+          </div>
+          ${this.config.show_progress ? this.renderProgress(stats, child) : ''}
+        </div>
       </div>
     `;
+  }
+
+  renderLargeAvatar(child) {
+    // Use avatar system if available
+    if (typeof KidsTasksAvatarSystem !== 'undefined') {
+      try {
+        const avatarSystem = new KidsTasksAvatarSystem();
+        const avatarSvg = avatarSystem.generateAvatar(child, {
+          size: 300,
+          animate: true,
+          showAccessories: true
+        });
+        return `<div class="large-avatar-container">${avatarSvg}</div>`;
+      } catch (error) {
+        console.warn('Avatar system error, falling back to emoji:', error);
+      }
+    }
+
+    // Fallback to emoji
+    const avatar = this.getAvatar(child, '👶');
+    return `<div class="large-avatar-emoji">${avatar}</div>`;
   }
 
   renderProgress(stats, child) {
@@ -446,6 +663,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const tabs = [
       { id: 'tasks', label: '✅ Tâches', show: true },
       { id: 'rewards', label: '🎁 Récompenses', show: this.config.show_rewards },
+      { id: 'my-rewards', label: '🎁 Mes Récompenses', show: this.config.show_rewards },
       { id: 'history', label: '📈 Historique', show: this.config.show_completed }
     ].filter(tab => tab.show);
 
@@ -453,7 +671,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       <div class="card-header">
         <div class="navigation">
           ${tabs.map(tab => `
-            <button 
+            <button
               class="nav-button ${this.currentTab === tab.id ? 'active' : ''}"
               data-action="switch-view"
               data-id="${tab.id}"
@@ -472,6 +690,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         return this.renderTasksTab(child);
       case 'rewards':
         return this.renderRewardsTab(child);
+      case 'my-rewards':
+        return this.renderMyRewardsTab(child);
       case 'history':
         return this.renderHistoryTab(child);
       default:
@@ -507,9 +727,11 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
 
   renderTaskFilters() {
     const filters = [
-      { id: 'active', label: 'Actives' },
+      { id: 'active', label: 'À faire' },
+      { id: 'completed', label: 'Faites' },
       { id: 'bonus', label: 'Bonus' },
-      { id: 'completed', label: 'Terminées' },
+      { id: 'habits', label: '🔥 Habitudes' },
+      { id: 'tomorrow', label: '📅 Demain' },
       { id: 'all', label: 'Toutes' }
     ];
 
@@ -523,15 +745,24 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
   }
 
   renderTaskItem(task) {
+    const deadline = task.deadline_time ? `⏰ ${task.deadline_time}` : '';
+    const isHabit = task.frequency && task.frequency !== 'once' && task.frequency !== 'none';
+    const streakCount = isHabit ? this.getTaskStreak(task) : 0;
+
     return `
       <div class="task-item">
         <div class="item-icon">${this.getCategoryIcon(task)}</div>
         <div class="task-main">
-          <div class="task-name">${task.name}</div>
-          <div class="task-description">${task.description || ''}</div>
+          <div class="task-name">
+            ${task.name}
+            ${deadline ? `<span class="task-deadline">${deadline}</span>` : ''}
+            ${streakCount > 0 ? `<span class="task-streak">🔥 ${streakCount}</span>` : ''}
+          </div>
+          ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
           <div class="task-meta">
             <span class="task-points">+${task.points || 0} 🎫</span>
-            <span class="task-status ${task.status}">${task.status}</span>
+            ${task.coins > 0 ? `<span class="task-coins">+${task.coins} 🪙</span>` : ''}
+            ${task.validation_required ? `<span class="validation-badge">👀 Validation</span>` : ''}
           </div>
         </div>
         <div class="task-action">
@@ -540,13 +771,31 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
                     data-action="complete-task"
                     data-id="${task.id}">✓</button>
           ` : task.status === 'pending_validation' ? `
-            <span class="status pending">En attente de validation</span>
+            <span class="status pending">⏳ En attente</span>
           ` : `
-            <span class="status completed">✓</span>
+            <span class="status completed">✅</span>
           `}
         </div>
       </div>
     `;
+  }
+
+  getTaskStreak(task) {
+    // Calculate streak based on last_completed_at and frequency
+    if (!task.last_completed_at) return 0;
+
+    const lastCompleted = new Date(task.last_completed_at);
+    const now = new Date();
+    const diffDays = Math.floor((now - lastCompleted) / (1000 * 60 * 60 * 24));
+
+    // Simple streak: if completed within frequency window
+    if (task.frequency === 'daily' && diffDays <= 1) {
+      return task.streak_count || 1;
+    } else if (task.frequency === 'weekly' && diffDays <= 7) {
+      return task.streak_count || 1;
+    }
+
+    return 0;
   }
 
   renderRewardsTab(child) {
@@ -630,9 +879,83 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       case 'claim-reward':
         this.claimReward(id);
         break;
+      case 'customize-avatar':
+        this.openAvatarCustomizer();
+        break;
       default:
         console.warn('Unknown action:', action);
     }
+  }
+
+  openAvatarCustomizer() {
+    // TODO: Implement full avatar customizer
+    this.showNotification('Personnalisation d\'avatar en cours de développement', 'info');
+  }
+
+  renderMyRewardsTab(child) {
+    const claimedRewards = this.getClaimedRewards(child);
+
+    if (claimedRewards.length === 0) {
+      return `
+        <div class="tab-content">
+          ${this.emptySection('🎁', 'Aucune récompense', 'Vous n\'avez pas encore acheté de récompenses.')}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="tab-content">
+        <div class="claimed-rewards-list">
+          ${claimedRewards.map(reward => this.renderClaimedRewardItem(reward)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  renderClaimedRewardItem(reward) {
+    return `
+      <div class="claimed-reward-item">
+        <div class="item-icon">${this.getCategoryIcon(reward)}</div>
+        <div class="reward-info">
+          <div class="reward-name">${reward.name}</div>
+          <div class="reward-meta">
+            Acheté le ${this.formatDate(reward.claimed_at)}
+            · Coût: ${reward.cost} 🎫
+            ${reward.coin_cost > 0 ? ` + ${reward.coin_cost} 🪙` : ''}
+          </div>
+        </div>
+        ${reward.reward_type === 'cosmetic' ? `
+          <span class="cosmetic-badge">🎨 Cosmétique</span>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  getClaimedRewards(child) {
+    // Extract claimed rewards from history
+    const history = child.points_history || [];
+    const claimed = history
+      .filter(entry => entry.action_type === 'reward_claimed')
+      .map(entry => ({
+        name: entry.related_entity_name || 'Récompense',
+        cost: Math.abs(entry.points_delta),
+        coin_cost: 0,
+        claimed_at: entry.timestamp,
+        reward_type: entry.reward_type || 'real',
+        icon: entry.icon
+      }));
+
+    return claimed;
+  }
+
+  formatDate(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   }
 
 
