@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kids Tasks Card - Development</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin: 20px 0;
+    }
+    
+    .dev-info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2196f3;
+    }
+    
+    h1 {
+      color: #333;
+      margin: 0 0 20px 0;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .status.dev {
+      background: #4caf50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kids Tasks Card <span class="status dev">DEV</span></h1>
+    
+    <div class="dev-info">
+      <strong>🛠️ Development Mode</strong><br>
+      This page loads the development build of the Kids Tasks Card.<br>
+      Changes to source files will trigger automatic rebuilds.
+    </div>
+
+    <div class="card">
+      <kids-tasks-card id="main-card"></kids-tasks-card>
+    </div>
+
+    <div class="card">
+      <kids-tasks-child-card id="child-card"></kids-tasks-child-card>
+    </div>
+  </div>
+
+  <!-- Load the development build -->
+  <script type="module" src="./kids-tasks-card.dev.js"></script>
+  
+  <script>
+    // Mock Home Assistant environment for development
+    const mockHass = {
+      states: {
+        'sensor.kidtasks_child1_points': {
+          state: '150',
+          entity_id: 'sensor.kidtasks_child1_points',
+          attributes: {
+            friendly_name: 'Alice',
+            child_id: 'child1',
+            coins: 25,
+            level: 3,
+            avatar: '👧'
+          }
+        },
+        'sensor.kidtasks_child2_points': {
+          state: '89',
+          entity_id: 'sensor.kidtasks_child2_points',
+          attributes: {
+            friendly_name: 'Bob',
+            child_id: 'child2', 
+            coins: 12,
+            level: 2,
+            avatar: '👦'
+          }
+        }
+      },
+      callService: (domain, service, data) => {
+        console.log('Mock service call:', domain, service, data);
+        return Promise.resolve();
+      }
+    };
+
+    // Configure cards when they're loaded
+    window.addEventListener('load', () => {
+      const mainCard = document.getElementById('main-card');
+      const childCard = document.getElementById('child-card');
+      
+      if (mainCard) {
+        mainCard.setConfig({
+          title: 'Kids Tasks Manager (Dev)',
+          show_navigation: true
+        });
+        mainCard.hass = mockHass;
+      }
+      
+      if (childCard) {
+        childCard.setConfig({
+          child_id: 'child1',
+          title: 'Alice - Mes Tâches (Dev)',
+          show_avatar: true,
+          show_rewards: true
+        });
+        childCard.hass = mockHass;
+      }
+    });
+
+    // Hot reload support
+    if (typeof EventSource !== 'undefined') {
+      const eventSource = new EventSource('/livereload');
+      eventSource.onmessage = function(event) {
+        if (event.data === 'reload') {
+          location.reload();
+        }
+      };
+    }
+
+    console.log('🛠️ Kids Tasks Card Development Environment');
+    console.log('📦 Mock HASS object available as window.mockHass');
+    window.mockHass = mockHass;
+  </script>
+</body>
+</html>
