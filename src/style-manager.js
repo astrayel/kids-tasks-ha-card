@@ -1,5 +1,5 @@
 // Kids Tasks Style Manager v2.0 - Optimized CSS System
-// Consolidated from 364+ variables to 45 essential variables based on usage analysis
+// Consolidated from 364+ variables to 56 essential variables based on usage analysis
 
 class KidsTasksStyleManager {
   static instance = null;
@@ -28,7 +28,7 @@ class KidsTasksStyleManager {
   }
   
   static getVariableCount() {
-    return 45; // Reduced from 364+ to 45 core variables
+    return 56; // Optimized to 56 essential variables
   }
 
   static getTaskStyles() {
@@ -280,12 +280,14 @@ class KidsTasksStyleManager {
     return `
       /* === KIDS TASKS V2.0 - OPTIMIZED CSS VARIABLES === */
       :root {
-        /* === CORE COLORS (6 variables) === */
+        /* === CORE COLORS (9 variables) === */
         --kt-primary: var(--primary-color, #3f51b5);
+        --kt-primary-dark: var(--darker-primary-color, #303f9f);
         --kt-active: var(--darker-primary-color, #1e3462ff);
         --kt-secondary: var(--accent-color, #ff4081);
         --kt-success: #4caf50;
         --kt-warning: #ff9800;
+        --kt-warning-light: #ffb74d;
         --kt-error: #f44336;
         --kt-info: #2196f3;
         
@@ -306,10 +308,11 @@ class KidsTasksStyleManager {
         --kt-space-lg: 24px;     /* Used 16 times */
         --kt-space-xl: 32px;     /* Used 4 times */
         
-        /* === BORDER RADIUS (4 variables) === */
+        /* === BORDER RADIUS (5 variables) === */
         --kt-radius-sm: 8px;     /* Used 16 times */
         --kt-radius-md: 12px;    /* Used 11 times */
         --kt-radius-lg: 16px;    /* Used 4 times */
+        --kt-radius-xl: 20px;    /* Large cards */
         --kt-radius-round: 50%;  /* Used 4 times */
         
         /* === TRANSITIONS (2 variables - performance optimized) === */
@@ -320,26 +323,37 @@ class KidsTasksStyleManager {
         --kt-shadow-light: rgba(0, 0, 0, 0.1);  /* Used 7 times */
         --kt-shadow-medium: rgba(0, 0, 0, 0.2); /* Used 2 times */
         
-        /* === SURFACES (3 variables) === */
-        --kt-surface-variant: var(--secondary-background-color, #fafafa); /* Used 14 times */
+        /* === SURFACES (5 variables) === */
+        --kt-surface: var(--card-background-color, white);
         --kt-surface-primary: var(--card-background-color, white);
+        --kt-surface-variant: var(--secondary-background-color, #fafafa); /* Used 14 times */
+        --kt-surface-hover: var(--secondary-background-color, #f5f5f5);
         --kt-border: 1px solid var(--divider-color, #e0e0e0);
         
-        /* === TYPOGRAPHY (3 variables) === */
+        /* === TYPOGRAPHY (7 variables) === */
         --kt-font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
         --kt-font-size-sm: 0.85em;
+        --kt-font-size-md: 1em;
         --kt-font-size-lg: 1.2em;
+        --kt-text: var(--primary-text-color, #212121);
+        --kt-text-secondary: var(--secondary-text-color, #757575);
         
-        /* === COMPONENT SPECIFIC (9 variables) === */
+        /* === COMPONENT SPECIFIC (15 variables) === */
         --kt-avatar-bg: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+        --kt-avatar-background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
         --kt-cosmetic-border: rgba(0,0,0,0.1);
         --kt-cosmetic-bg: rgba(255,255,255,0.1);
+        --kt-cosmetic-background: rgba(255,255,255,0.05);
         --kt-gauge-bg: var(--kt-surface-variant);
         --kt-gauge-success: linear-gradient(90deg, var(--kt-success) 0%, var(--kt-info) 100%);
         --kt-gauge-points: var(--kt-success);
         --kt-gauge-coins: var(--kt-coins-color);
+        --kt-gradient-neutral: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
         --kt-button-hover: rgba(0,0,0,0.1);
         --kt-overlay: rgba(0,0,0,0.5);
+        --kt-error-background: rgba(244, 67, 54, 0.1);
+        --kt-warning-background: rgba(255, 152, 0, 0.1);
+        --kt-info-background: rgba(33, 150, 243, 0.1);
 
         /* === ADDITIONAL VARIABLES === */
         --kt-font-size-xs: 0.75em;
@@ -796,11 +810,19 @@ class KidsTasksStyleManager {
       /* Dark Mode Support */
       @media (prefers-color-scheme: dark) {
         :root {
+          --kt-surface: var(--card-background-color, #1e1e1e);
+          --kt-surface-primary: var(--card-background-color, #1e1e1e);
           --kt-surface-variant: var(--secondary-background-color, #2c2c2c);
+          --kt-surface-hover: var(--secondary-background-color, #3a3a3a);
           --kt-avatar-bg: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+          --kt-avatar-background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+          --kt-cosmetic-background: rgba(255,255,255,0.1);
+          --kt-gradient-neutral: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
           --kt-gauge-bg: var(--kt-surface-variant);
           --kt-shadow-light: rgba(0, 0, 0, 0.3);
           --kt-shadow-medium: rgba(0, 0, 0, 0.5);
+          --kt-text: var(--primary-text-color, #e0e0e0);
+          --kt-text-secondary: var(--secondary-text-color, #9e9e9e);
         }
       }
     `;
