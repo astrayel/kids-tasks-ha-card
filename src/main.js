@@ -7,11 +7,16 @@ import { KidsTasksBaseCard } from './base-card.js';
 import { KidsTasksCard } from './card.js';
 import { KidsTasksChildCard } from './child-card.js';
 import { KidsTasksManagerCard } from './manager-card.js';
+import { KidsTasksSupervisorCard } from './supervisor-card.js';
 import {
   KidsTasksCardEditor,
   KidsTasksChildCardEditor,
   KidsTasksManagerEditor
 } from './editors.js';
+import { KidsTasksAvatarSystem } from './cosmetics/avatar-system.js';
+import { KidsTasksCacheManager } from './cosmetics/cache-manager.js';
+import { KidsTasksTaskForm } from './forms/task-form.js';
+import { KidsTasksRewardForm } from './forms/reward-form.js';
 import logger from './logger.js';
 import performanceMonitor from './performance-monitor.js';
 import errorBoundary, { withErrorBoundary } from './error-boundary.js';
@@ -29,6 +34,10 @@ KidsTasksStyleManager.injectGlobalStyles();
 // Make utilities globally available for components
 window.KidsTasksUtils = KidsTasksUtils;
 window.KidsTasksStyleManager = KidsTasksStyleManager;
+window.KidsTasksAvatarSystem = KidsTasksAvatarSystem;
+window.KidsTasksCacheManager = KidsTasksCacheManager;
+window.KidsTasksTaskForm = KidsTasksTaskForm;
+window.KidsTasksRewardForm = KidsTasksRewardForm;
 
 // Register custom elements with error boundaries
 // Use -dev suffix in development to avoid conflicts with production
@@ -37,10 +46,12 @@ window.KidsTasksCardSuffix = cardSuffix;
 const mainCardType = `kids-tasks-card${cardSuffix}`;
 const childCardType = `kids-tasks-child-card${cardSuffix}`;
 const managerCardType = `kids-tasks-manager${cardSuffix}`;
+const supervisorCardType = `kids-tasks-supervisor${cardSuffix}`;
 
 customElements.define(mainCardType, withErrorBoundary(KidsTasksCard));
 customElements.define(childCardType, withErrorBoundary(KidsTasksChildCard));
 customElements.define(managerCardType, withErrorBoundary(KidsTasksManagerCard));
+customElements.define(supervisorCardType, withErrorBoundary(KidsTasksSupervisorCard));
 customElements.define(`kids-tasks-card-editor${cardSuffix}`, KidsTasksCardEditor);
 customElements.define(`kids-tasks-child-card-editor${cardSuffix}`, KidsTasksChildCardEditor);
 customElements.define(`kids-tasks-manager-editor${cardSuffix}`, KidsTasksManagerEditor);
@@ -67,6 +78,13 @@ window.customCards.push(
     type: managerCardType,
     name: `Kids Tasks Manager${__DEV__ ? ' (Dev)' : ''}`,
     description: 'Administration interface for managing tasks, rewards and cosmetics',
+    preview: true,
+    documentationURL: 'https://github.com/astrayel/kids-tasks-card'
+  },
+  {
+    type: supervisorCardType,
+    name: `Kids Tasks Supervisor${__DEV__ ? ' (Dev)' : ''}`,
+    description: 'Parent supervision interface for task validation and oversight',
     preview: true,
     documentationURL: 'https://github.com/astrayel/kids-tasks-card'
   }
@@ -139,6 +157,7 @@ if (__DEV__ && typeof window !== 'undefined') {
   window.KidsTasksCard = KidsTasksCard;
   window.KidsTasksChildCard = KidsTasksChildCard;
   window.KidsTasksManagerCard = KidsTasksManagerCard;
+  window.KidsTasksSupervisorCard = KidsTasksSupervisorCard;
   window.KidsTasksBaseCard = KidsTasksBaseCard;
   
   // Development utilities
@@ -223,7 +242,12 @@ export {
   KidsTasksCard,
   KidsTasksChildCard,
   KidsTasksManagerCard,
+  KidsTasksSupervisorCard,
   KidsTasksBaseCard,
   KidsTasksStyleManager,
-  KidsTasksUtils
+  KidsTasksUtils,
+  KidsTasksAvatarSystem,
+  KidsTasksCacheManager,
+  KidsTasksTaskForm,
+  KidsTasksRewardForm
 };

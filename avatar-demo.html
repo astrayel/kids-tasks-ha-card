@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kids Tasks - Avatar SVG Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 900px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .avatar-card {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .avatar-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .avatar-card h3 {
+      margin: 15px 0 5px 0;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .avatar-card p {
+      margin: 0;
+      color: #666;
+      font-size: 12px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+    }
+
+    .features {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+
+    .features h3 {
+      color: #1976d2;
+      margin-top: 0;
+    }
+
+    .features ul {
+      margin: 10px 0;
+      padding-left: 25px;
+      color: #333;
+    }
+
+    .features li {
+      margin: 8px 0;
+    }
+
+    .code-section {
+      background: #263238;
+      color: #aed581;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Kids Tasks - Avatar SVG Professionnel</h1>
+    <p class="subtitle">Avatars vectoriels avec layers composables et personnalisables</p>
+
+    <div class="avatar-grid">
+      <!-- Avatar Garçon Classique -->
+      <div class="avatar-card">
+        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Gradients pour effet 3D -->
+            <radialGradient id="skinGradient" cx="50%" cy="40%">
+              <stop offset="0%" style="stop-color:#ffd4a3;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#e8b084;stop-opacity:1" />
+            </radialGradient>
+
+            <linearGradient id="hairGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#5d4037;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#3e2723;stop-opacity:1" />
+            </linearGradient>
+
+            <linearGradient id="shirtGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#42a5f5;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1976d2;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background Circle -->
+          <circle cx="100" cy="100" r="95" fill="#e3f2fd" opacity="0.5"/>
+
+          <!-- Body/Shoulders -->
+          <ellipse cx="100" cy="180" rx="70" ry="40" fill="url(#shirtGradient)"/>
+          <rect x="30" y="160" width="140" height="40" fill="url(#shirtGradient)" rx="20"/>
+
+          <!-- Neck -->
+          <rect x="85" y="130" width="30" height="35" fill="#ffd4a3" rx="5"/>
+
+          <!-- Head -->
+          <ellipse cx="100" cy="90" rx="55" ry="60" fill="url(#skinGradient)"/>
+
+          <!-- Ears -->
+          <ellipse cx="50" cy="95" rx="12" ry="15" fill="#ffd4a3"/>
+          <ellipse cx="150" cy="95" rx="12" ry="15" fill="#ffd4a3"/>
+          <ellipse cx="50" cy="97" rx="7" ry="10" fill="#ffb894"/>
+          <ellipse cx="150" cy="97" rx="7" ry="10" fill="#ffb894"/>
+
+          <!-- Hair - Short Brown -->
+          <path d="M 50,70 Q 45,40 100,30 Q 155,40 150,70 L 145,75 Q 140,50 100,45 Q 60,50 55,75 Z"
+                fill="url(#hairGradient)"/>
+          <!-- Hair detail strands -->
+          <path d="M 70,45 Q 75,35 80,45" stroke="#3e2723" stroke-width="2" fill="none" opacity="0.3"/>
+          <path d="M 100,35 Q 105,30 110,35" stroke="#3e2723" stroke-width="2" fill="none" opacity="0.3"/>
+          <path d="M 120,45 Q 125,35 130,45" stroke="#3e2723" stroke-width="2" fill="none" opacity="0.3"/>
+
+          <!-- Eyes - Happy -->
+          <ellipse cx="75" cy="85" rx="8" ry="12" fill="white"/>
+          <ellipse cx="125" cy="85" rx="8" ry="12" fill="white"/>
+          <circle cx="75" cy="87" r="6" fill="#2c1810"/>
+          <circle cx="125" cy="87" r="6" fill="#2c1810"/>
+          <!-- Pupils shine -->
+          <circle cx="76" cy="85" r="2" fill="white" opacity="0.8"/>
+          <circle cx="126" cy="85" r="2" fill="white" opacity="0.8"/>
+          <!-- Eyelashes -->
+          <path d="M 67,80 Q 65,75 63,78" stroke="#2c1810" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M 133,80 Q 135,75 137,78" stroke="#2c1810" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Eyebrows -->
+          <path d="M 60,72 Q 75,68 90,70" stroke="#4a352a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M 110,70 Q 125,68 140,72" stroke="#4a352a" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- Nose -->
+          <ellipse cx="100" cy="100" rx="6" ry="8" fill="#e8b084" opacity="0.5"/>
+          <path d="M 96,100 Q 96,103 98,104" stroke="#d4a374" stroke-width="1" fill="none"/>
+          <path d="M 104,100 Q 104,103 102,104" stroke="#d4a374" stroke-width="1" fill="none"/>
+
+          <!-- Smile -->
+          <path d="M 75,115 Q 100,125 125,115" stroke="#e8737f" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M 75,115 Q 100,122 125,115" fill="#ff8a9b" opacity="0.3"/>
+
+          <!-- Cheek blush -->
+          <ellipse cx="60" cy="105" rx="15" ry="10" fill="#ff8a9b" opacity="0.3"/>
+          <ellipse cx="140" cy="105" rx="15" ry="10" fill="#ff8a9b" opacity="0.3"/>
+
+          <!-- Shirt collar -->
+          <path d="M 70,165 L 85,155 L 100,160 L 115,155 L 130,165"
+                stroke="#1565c0" stroke-width="2" fill="none"/>
+        </svg>
+        <h3>Garçon Classique</h3>
+        <p>Cheveux courts bruns • Yeux joyeux • T-shirt bleu</p>
+      </div>
+
+      <!-- Avatar Fille avec Cheveux Longs -->
+      <div class="avatar-card">
+        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="skinGradient2" cx="50%" cy="40%">
+              <stop offset="0%" style="stop-color:#ffe0d0;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#ffc4a8;stop-opacity:1" />
+            </radialGradient>
+
+            <linearGradient id="hairGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#ffd54f;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#ffb300;stop-opacity:1" />
+            </linearGradient>
+
+            <linearGradient id="dressGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#f48fb1;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#d81b60;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background Circle -->
+          <circle cx="100" cy="100" r="95" fill="#fce4ec" opacity="0.5"/>
+
+          <!-- Dress -->
+          <path d="M 40,170 L 60,155 L 70,200 L 130,200 L 140,155 L 160,170 Z"
+                fill="url(#dressGradient)"/>
+          <ellipse cx="100" cy="175" rx="60" ry="30" fill="url(#dressGradient)"/>
+          <!-- Dress details -->
+          <circle cx="75" cy="170" r="3" fill="white" opacity="0.6"/>
+          <circle cx="100" cy="175" r="3" fill="white" opacity="0.6"/>
+          <circle cx="125" cy="170" r="3" fill="white" opacity="0.6"/>
+
+          <!-- Neck -->
+          <rect x="85" y="130" width="30" height="30" fill="#ffe0d0" rx="5"/>
+
+          <!-- Long Hair Back Layer -->
+          <ellipse cx="50" cy="120" rx="18" ry="50" fill="url(#hairGradient2)"/>
+          <ellipse cx="150" cy="120" rx="18" ry="50" fill="url(#hairGradient2)"/>
+
+          <!-- Head -->
+          <ellipse cx="100" cy="85" rx="50" ry="55" fill="url(#skinGradient2)"/>
+
+          <!-- Ears -->
+          <ellipse cx="55" cy="90" rx="10" ry="12" fill="#ffe0d0"/>
+          <ellipse cx="145" cy="90" rx="10" ry="12" fill="#ffe0d0"/>
+
+          <!-- Hair Front -->
+          <path d="M 55,65 Q 50,35 100,25 Q 150,35 145,65 Q 140,50 100,45 Q 60,50 55,65 Z"
+                fill="url(#hairGradient2)"/>
+          <!-- Hair parting -->
+          <path d="M 100,30 Q 105,40 110,50" stroke="#ffb300" stroke-width="1" opacity="0.4"/>
+          <path d="M 100,30 Q 95,40 90,50" stroke="#ffb300" stroke-width="1" opacity="0.4"/>
+
+          <!-- Eyes - Excited -->
+          <ellipse cx="75" cy="80" rx="10" ry="14" fill="white"/>
+          <ellipse cx="125" cy="80" rx="10" ry="14" fill="white"/>
+          <circle cx="75" cy="82" r="7" fill="#1976d2"/>
+          <circle cx="125" cy="82" r="7" fill="#1976d2"/>
+          <circle cx="73" cy="80" r="3" fill="#0d47a1"/>
+          <circle cx="123" cy="80" r="3" fill="#0d47a1"/>
+          <!-- Eye shine -->
+          <circle cx="76" cy="78" r="2" fill="white"/>
+          <circle cx="126" cy="78" r="2" fill="white"/>
+
+          <!-- Eyelashes -->
+          <path d="M 65,74 L 62,70" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 70,72 L 68,67" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 80,72 L 82,67" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 85,74 L 88,70" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+
+          <path d="M 115,74 L 112,70" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 120,72 L 118,67" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 130,72 L 132,67" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 135,74 L 138,70" stroke="#2c1810" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- Eyebrows -->
+          <path d="M 60,67 Q 75,63 88,66" stroke="#d4a373" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M 112,66 Q 125,63 140,67" stroke="#d4a373" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Nose -->
+          <ellipse cx="100" cy="95" rx="5" ry="7" fill="#ffc4a8" opacity="0.5"/>
+
+          <!-- Smile -->
+          <path d="M 80,110 Q 100,118 120,110" stroke="#ff6b9d" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Cheek blush -->
+          <ellipse cx="65" cy="100" rx="12" ry="8" fill="#ff8fab" opacity="0.4"/>
+          <ellipse cx="135" cy="100" rx="12" ry="8" fill="#ff8fab" opacity="0.4"/>
+
+          <!-- Hair accessory - Bow -->
+          <ellipse cx="140" cy="60" rx="12" ry="8" fill="#d81b60" transform="rotate(-20 140 60)"/>
+          <ellipse cx="152" cy="60" rx="12" ry="8" fill="#d81b60" transform="rotate(20 152 60)"/>
+          <circle cx="146" cy="60" r="5" fill="#ad1457"/>
+        </svg>
+        <h3>Fille Joyeuse</h3>
+        <p>Cheveux longs blonds • Yeux bleus • Robe rose</p>
+      </div>
+
+      <!-- Avatar avec Accessoire Couronne -->
+      <div class="avatar-card">
+        <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="skinGradient3" cx="50%" cy="40%">
+              <stop offset="0%" style="stop-color:#8d5524;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#6d4c41;stop-opacity:1" />
+            </radialGradient>
+
+            <linearGradient id="hairGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+            </linearGradient>
+
+            <linearGradient id="crownGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#ffeb3b;stop-opacity:1" />
+              <stop offset="50%" style="stop-color:#ffc107;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#ff9800;stop-opacity:1" />
+            </linearGradient>
+
+            <linearGradient id="hoodie" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#9e9e9e;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#616161;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background Circle -->
+          <circle cx="100" cy="100" r="95" fill="#fff9c4" opacity="0.5"/>
+
+          <!-- Hoodie -->
+          <ellipse cx="100" cy="180" rx="75" ry="40" fill="url(#hoodie)"/>
+          <rect x="25" y="160" width="150" height="40" fill="url(#hoodie)" rx="25"/>
+          <!-- Hood -->
+          <path d="M 60,155 Q 55,130 100,120 Q 145,130 140,155" fill="url(#hoodie)" opacity="0.8"/>
+
+          <!-- Neck -->
+          <rect x="85" y="128" width="30" height="32" fill="#8d5524" rx="5"/>
+
+          <!-- Head -->
+          <ellipse cx="100" cy="88" rx="52" ry="58" fill="url(#skinGradient3)"/>
+
+          <!-- Ears -->
+          <ellipse cx="52" cy="93" rx="11" ry="14" fill="#8d5524"/>
+          <ellipse cx="148" cy="93" rx="11" ry="14" fill="#8d5524"/>
+
+          <!-- Curly Hair -->
+          <!-- Curls -->
+          <circle cx="65" cy="65" r="18" fill="url(#hairGradient3)"/>
+          <circle cx="80" cy="52" r="16" fill="url(#hairGradient3)"/>
+          <circle cx="100" cy="45" r="18" fill="url(#hairGradient3)"/>
+          <circle cx="120" cy="52" r="16" fill="url(#hairGradient3)"/>
+          <circle cx="135" cy="65" r="18" fill="url(#hairGradient3)"/>
+          <circle cx="55" cy="80" r="15" fill="url(#hairGradient3)"/>
+          <circle cx="145" cy="80" r="15" fill="url(#hairGradient3)"/>
+          <!-- Curl highlights -->
+          <circle cx="100" cy="42" r="4" fill="#333" opacity="0.3"/>
+          <circle cx="68" cy="62" r="3" fill="#333" opacity="0.3"/>
+          <circle cx="132" cy="62" r="3" fill="#333" opacity="0.3"/>
+
+          <!-- Crown Accessory -->
+          <path d="M 60,50 L 70,35 L 75,50 L 85,30 L 90,50 L 100,25 L 110,50 L 115,30 L 125,50 L 130,35 L 140,50 L 135,55 L 65,55 Z"
+                fill="url(#crownGradient)" stroke="#ff6f00" stroke-width="1"/>
+          <!-- Crown jewels -->
+          <circle cx="70" cy="40" r="4" fill="#e91e63"/>
+          <circle cx="100" cy="32" r="5" fill="#e91e63"/>
+          <circle cx="130" cy="40" r="4" fill="#e91e63"/>
+          <circle cx="85" cy="37" r="3" fill="#2196f3"/>
+          <circle cx="115" cy="37" r="3" fill="#2196f3"/>
+
+          <!-- Eyes - Happy -->
+          <ellipse cx="77" cy="88" rx="9" ry="13" fill="white"/>
+          <ellipse cx="123" cy="88" rx="9" ry="13" fill="white"/>
+          <circle cx="77" cy="90" r="6" fill="#4a2511"/>
+          <circle cx="123" cy="90" r="6" fill="#4a2511"/>
+          <circle cx="78" cy="88" r="2" fill="white"/>
+          <circle cx="124" cy="88" r="2" fill="white"/>
+
+          <!-- Eyebrows -->
+          <path d="M 62,78 Q 77,74 92,76" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M 108,76 Q 123,74 138,78" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- Nose -->
+          <ellipse cx="100" cy="102" rx="7" ry="9" fill="#6d4c41" opacity="0.4"/>
+
+          <!-- Big Smile -->
+          <path d="M 77,118 Q 100,130 123,118" stroke="#d5006d" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M 77,118 Q 100,126 123,118" fill="#ff4081" opacity="0.2"/>
+
+          <!-- Cheeks -->
+          <ellipse cx="62" cy="108" rx="13" ry="9" fill="#ff6b6b" opacity="0.25"/>
+          <ellipse cx="138" cy="108" rx="13" ry="9" fill="#ff6b6b" opacity="0.25"/>
+        </svg>
+        <h3>Roi/Reine</h3>
+        <p>Cheveux bouclés • Couronne dorée • Hoodie gris</p>
+      </div>
+    </div>
+
+    <div class="features">
+      <h3>✨ Caractéristiques Professionnelles</h3>
+      <ul>
+        <li><strong>Vectoriel Scalable</strong> - Parfait à toute résolution (50px à 500px+)</li>
+        <li><strong>Gradients 3D</strong> - Effets de profondeur avec radialGradient et linearGradient</li>
+        <li><strong>Layers Composables</strong> - Base, cheveux, yeux, tenue, accessoires séparés</li>
+        <li><strong>Détails Réalistes</strong> - Oreilles, nez, sourcils, cils, joues colorées</li>
+        <li><strong>Personnalisable CSS</strong> - Couleurs modifiables via variables</li>
+        <li><strong>Léger</strong> - 3-5KB par avatar (vs 50-200KB pour PNG)</li>
+        <li><strong>Animable</strong> - Compatible CSS animations et SMIL</li>
+        <li><strong>Accessible</strong> - Support aria-label et description</li>
+      </ul>
+    </div>
+
+    <div class="code-section">
+      <strong>💻 Code Exemple - Intégration dans Kids Tasks:</strong><br><br>
+      const avatar = avatarSystem.generateAvatar(child, { size: 300 });<br>
+      // Retourne SVG complet avec layers personnalisés<br>
+      // Taille: ~4KB, scalable, thématisable<br><br>
+
+      <strong>🎨 Variantes disponibles:</strong><br>
+      • 6 coiffures (courts, longs, bouclés, queue de cheval)<br>
+      • 4 teintes de peau (clair, moyen, hâlé, foncé)<br>
+      • 3 styles d'yeux (joyeux, neutre, excité)<br>
+      • 5 tenues (t-shirts, robes, hoodie)<br>
+      • 5 accessoires (couronne, chapeau, lunettes, casque, aucun)
+    </div>
+  </div>
+</body>
+</html>
