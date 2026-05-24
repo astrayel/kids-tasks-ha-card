@@ -57,12 +57,113 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return `
       ${this.getCommonStyles()}
       <style>
-        /* Dashboard-specific overrides */
-        .card-header {
-          background: linear-gradient(90deg, var(--custom-header-color, var(--kt-primary)) 0%, transparent 100%);
-          background-size: 100% 4px;
-          background-position: bottom;
+        /* Dashboard dark purple theme */
+        :host {
+          --kt-dp-bg:      #1E0B3B;
+          --kt-dp-section: #2C1654;
+          --kt-dp-purple:  #7B3FA0;
+          --kt-dp-border:  rgba(123,63,160,0.3);
+          --kt-dp-white:   #FFFFFF;
+          --kt-dp-muted:   rgba(255,255,255,0.60);
         }
+
+        .card-content {
+          background: var(--kt-dp-bg);
+          color: var(--kt-dp-white);
+        }
+
+        .card-header {
+          background: linear-gradient(135deg, var(--kt-dp-section) 0%, #3D1F7A 100%);
+          padding: 0;
+          margin: 0;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0 0;
+        }
+
+        .navigation {
+          background: transparent;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0 0;
+        }
+
+        .nav-button {
+          color: var(--kt-dp-muted);
+          border-bottom: 3px solid transparent;
+        }
+
+        .nav-button.active {
+          color: var(--kt-dp-white);
+          background: var(--kt-dp-purple);
+          border-bottom-color: transparent;
+        }
+
+        /* Summary stats – big numbers like Canva */
+        .summary-stats {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1px;
+          background: var(--kt-dp-border);
+          margin-bottom: 0;
+          border-top: 1px solid var(--kt-dp-border);
+        }
+
+        .summary-card {
+          background: var(--kt-dp-section);
+          border-left: none;
+          border-radius: 0;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          padding: var(--kt-space-lg) var(--kt-space-md);
+          gap: var(--kt-space-xs);
+        }
+
+        .summary-card:hover {
+          border-left: none;
+          background: var(--kt-dp-accent, #3D1F7A);
+          transform: none;
+          box-shadow: none;
+        }
+
+        .summary-icon {
+          font-size: 1.5em;
+          opacity: 0.7;
+          margin-bottom: 0;
+        }
+
+        .summary-number {
+          font-size: 2.4em;
+          font-weight: 700;
+          color: var(--kt-dp-white);
+          text-align: center;
+          margin-bottom: 0;
+        }
+
+        .summary-label {
+          font-size: 0.70em;
+          color: var(--kt-dp-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 600;
+        }
+
+        .main-content {
+          padding: var(--kt-space-md);
+        }
+
+        /* Children grid – darker cards */
+        .children-grid {
+          gap: var(--kt-space-md);
+        }
+
+        .child-card-colorful {
+          border-radius: var(--kt-radius-lg);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .child-name-header { color: white; }
+
+        /* Empty state */
+        .kt-empty { color: var(--kt-dp-muted); }
       </style>
     `;
   }
@@ -120,22 +221,26 @@ class KidsTasksCard extends KidsTasksBaseCard {
         <div class="summary-card">
           <div class="summary-icon">👦🏻</div>
           <div class="summary-number">${children.length}</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-icon">📋</div>
-          <div class="summary-number">${stats.totalTasks}</div>
+          <div class="summary-label">Enfants</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">✅</div>
           <div class="summary-number">${stats.completedToday}</div>
+          <div class="summary-label">Terminées aujourd'hui</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">⏳</div>
           <div class="summary-number">${stats.pendingTasks}</div>
+          <div class="summary-label">En attente validation</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">📋</div>
+          <div class="summary-number">${stats.totalTasks}</div>
+          <div class="summary-label">Tâches actives</div>
         </div>
       </div>
 
-      <div class="children-grid kt-fade-in">
+      <div class="children-grid kt-fade-in" style="margin-top: var(--kt-space-md);">
         ${children.map(child => this.renderChild(child)).join('')}
       </div>
     `;
@@ -147,20 +252,24 @@ class KidsTasksCard extends KidsTasksBaseCard {
     return `
       <div class="summary-stats kt-fade-in">
         <div class="summary-card">
+          <div class="summary-icon">👦🏻</div>
           <div class="summary-number">${children.length}</div>
           <div class="summary-label">Enfants</div>
         </div>
         <div class="summary-card">
+          <div class="summary-icon">📋</div>
           <div class="summary-number">${stats.totalTasks}</div>
           <div class="summary-label">Tâches actives</div>
         </div>
         <div class="summary-card">
+          <div class="summary-icon">✅</div>
           <div class="summary-number">${stats.completedToday}</div>
           <div class="summary-label">Terminées aujourd'hui</div>
         </div>
         <div class="summary-card">
+          <div class="summary-icon">🎫</div>
           <div class="summary-number">${stats.totalPoints}</div>
-          <div class="summary-label">Points</div>
+          <div class="summary-label">Points totaux</div>
         </div>
       </div>
       
