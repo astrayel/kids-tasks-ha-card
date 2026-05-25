@@ -57,7 +57,7 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
 
   render() {
     if (!this._hass) {
-      this.shadowRoot.innerHTML = '<div class="kt-loading">Chargement...</div>';
+      this.shadowRoot.innerHTML = `${this.getStyles()}<div class="card-content kids-tasks-scope"><div class="empty-state">Chargement...</div></div>`;
       return;
     }
 
@@ -67,7 +67,6 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
         <div class="card-header">
           ${this.config.show_navigation ? this.renderNavigation() : ''}
         </div>
-
         <div class="main-content">
           ${this.renderCurrentView()}
         </div>
@@ -79,12 +78,66 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
     return `
       ${this.getCommonStyles()}
       <style>
-        /* Include task and reward styles */
-        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getTaskStyles() : ''}
-        ${window.KidsTasksStyleManager ? window.KidsTasksStyleManager.getRewardStyles() : ''}
+        :host {
+          --kt-dp-bg:      #1E0B3B;
+          --kt-dp-section: #2C1654;
+          --kt-dp-accent:  #3D1F7A;
+          --kt-dp-purple:  #7B3FA0;
+          --kt-dp-border:  rgba(123,63,160,0.3);
+          --kt-dp-white:   #FFFFFF;
+          --kt-dp-muted:   rgba(255,255,255,0.60);
+        }
 
-        /* Manager-specific styles */
+        .card-content {
+          background: var(--kt-dp-bg);
+          color: var(--kt-dp-white);
+        }
 
+        .card-header {
+          background: linear-gradient(135deg, var(--kt-dp-section) 0%, var(--kt-dp-accent) 100%);
+          padding: 0;
+          margin: 0;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0 0;
+        }
+
+        .navigation {
+          background: transparent;
+          display: flex;
+          border-radius: var(--kt-radius-lg) var(--kt-radius-lg) 0 0;
+        }
+
+        .nav-button {
+          flex: 1;
+          color: var(--kt-dp-muted);
+          background: transparent;
+          border: none;
+          border-bottom: 3px solid transparent;
+          padding: var(--kt-space-sm) 4px;
+          font-size: 0.78em;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+          white-space: nowrap;
+        }
+
+        .nav-button.active {
+          color: var(--kt-dp-white);
+          background: var(--kt-dp-purple);
+          border-bottom-color: transparent;
+          border-radius: 20px;
+          margin: var(--kt-space-xs);
+        }
+
+        .nav-button:hover:not(.active) {
+          color: var(--kt-dp-white);
+          background: var(--kt-dp-accent);
+        }
+
+        .main-content {
+          padding: var(--kt-space-md);
+        }
+
+        /* Section headers */
         .section {
           margin-bottom: var(--kt-space-lg);
         }
@@ -94,52 +147,153 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
           justify-content: space-between;
           align-items: center;
           margin-bottom: var(--kt-space-md);
-          color: var(--primary-text-color);
+          color: var(--kt-dp-white);
+          font-size: 1em;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 700;
+          padding-bottom: var(--kt-space-sm);
+          border-bottom: 1px solid var(--kt-dp-border);
         }
 
+        /* Task / reward items */
+        .task-item, .reward-item {
+          display: flex;
+          align-items: center;
+          gap: var(--kt-space-sm);
+          background: var(--kt-dp-section);
+          border: 1px solid var(--kt-dp-border);
+          border-radius: var(--kt-radius-md);
+          padding: 10px var(--kt-space-md);
+          margin-bottom: var(--kt-space-sm);
+          cursor: pointer;
+          transition: border-color var(--kt-transition-fast);
+        }
+
+        .task-item:hover, .reward-item:hover {
+          border-color: var(--kt-dp-purple);
+        }
 
         .task-item.inactive {
-          opacity: 0.6;
-          background: var(--kt-surface-variant);
+          opacity: 0.5;
         }
 
         .task-item.out-of-period {
-          border-left: 4px solid var(--kt-warning);
+          border-left: 3px solid #FF9800;
+        }
+
+        .item-icon {
+          font-size: 1.5em;
+          flex-shrink: 0;
         }
 
         .task-main, .reward-main {
           flex: 1;
+          min-width: 0;
         }
 
+        .task-name, .reward-name {
+          font-weight: 600;
+          color: var(--kt-dp-white);
+          font-size: 0.92em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .task-meta, .reward-meta {
+          display: flex;
+          gap: var(--kt-space-sm);
+          flex-wrap: wrap;
+          font-size: 0.75em;
+          color: var(--kt-dp-muted);
+          margin-top: 2px;
+        }
 
         .task-rewards {
           display: flex;
           gap: var(--kt-space-xs);
           align-items: center;
+          flex-shrink: 0;
         }
 
-        .reward-points, .reward-coins {
-          background: var(--kt-success);
+        .reward-points {
+          background: var(--kt-dp-purple);
           color: white;
           padding: 2px 8px;
-          border-radius: var(--kt-radius-sm);
-          font-weight: 600;
-          font-size: 0.8em;
+          border-radius: 20px;
+          font-weight: 700;
+          font-size: 0.75em;
+          white-space: nowrap;
         }
 
         .reward-coins {
-          background: var(--kt-coins-color);
+          background: #9C27B0;
+          color: white;
+          padding: 2px 8px;
+          border-radius: 20px;
+          font-weight: 700;
+          font-size: 0.75em;
+          white-space: nowrap;
         }
 
-        /* Manager responsive overrides */
-        @media (max-width: 768px) {
-          .nav-tabs {
-            flex-wrap: wrap;
-          }
+        /* Filters */
+        .filters {
+          display: flex;
+          gap: var(--kt-space-xs);
+          margin-bottom: var(--kt-space-md);
+          flex-wrap: wrap;
+        }
 
-          .filters {
-            justify-content: center;
-          }
+        .filter-btn {
+          background: var(--kt-dp-section);
+          border: 1px solid var(--kt-dp-border);
+          color: var(--kt-dp-muted);
+          padding: 3px 12px;
+          border-radius: 20px;
+          font-size: 0.78em;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--kt-transition-fast);
+        }
+
+        .filter-btn.active {
+          background: var(--kt-dp-purple);
+          border-color: var(--kt-dp-purple);
+          color: white;
+        }
+
+        /* Children grid */
+        .children-grid {
+          display: flex;
+          flex-direction: column;
+          gap: var(--kt-space-md);
+        }
+
+        /* Empty states */
+        .empty-state {
+          text-align: center;
+          padding: var(--kt-space-xl);
+          color: var(--kt-dp-muted);
+        }
+
+        .empty-state-icon {
+          font-size: 2.4em;
+          opacity: 0.5;
+          margin-bottom: var(--kt-space-sm);
+        }
+
+        /* Add button */
+        .add-btn {
+          --mdc-theme-primary: var(--kt-dp-purple);
+          font-size: 0.85em;
+        }
+
+        /* Cosmetics grid */
+        .reward-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--kt-space-sm);
         }
       </style>
     `;
