@@ -1,180 +1,83 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Cartes Lovelace pour l'intégration
+[Kids Tasks Manager](https://github.com/astrayel/kids-tasks-ha).
 
-## Repository Overview
+## Architecture
 
-This is the **kids-tasks-card** project - a Home Assistant Lovelace custom card for the Kids Tasks Manager integration. It provides interactive frontend components for managing children's tasks, rewards, and progress tracking.
-
-## Project Structure
+Sources modulaires ES6 dans `src/`, compilées par Rollup vers
+`dist/kids-tasks-card.js`.
 
 ```
-kids-tasks-card/
-├── kids-tasks-card.js          # Main Lovelace card implementation (309KB)
-├── package.json                # Project metadata and configuration
-├── README.md                   # User documentation
-├── info.md                     # HACS integration info
-├── hacs.json                   # HACS configuration
-├── LICENSE                     # MIT license
-└── .github/                    # GitHub workflows and templates
+src/
+├── main.js              point d'entrée, enregistre les custom elements
+├── base-card.js         classe socle : données, styles, gestes, modales, droits
+├── card.js              custom:kids-tasks-card — tableau de bord général
+├── child-card.js        custom:kids-tasks-child-card — vue enfant
+├── supervisor-card.js   custom:kids-tasks-supervisor — validation parentale
+├── manager-card.js      custom:kids-tasks-manager — administration
+├── editors.js           éditeurs visuels de configuration
+├── forms/               formulaires tâche et récompense
+├── cosmetics/           avatars SVG, cache, catalogue
+├── style-manager.js     injection CSS globale, variables --kt-*
+└── accessibility.js · performance-monitor.js · error-boundary.js · logger.js
 ```
 
-## Architecture Overview
+Les cartes étendent `HTMLElement` et rendent via `innerHTML` dans un shadow
+root — **pas** LitElement, malgré ce que d'anciennes notes ont pu dire.
 
-### Main Components
+## Build et tests
 
-**kids-tasks-card.js** (kids-tasks-card.js:1-8000+) - Comprehensive Lovelace card implementation:
+- **Ne jamais lancer de build** (`npm run build`, `npm run dev`) : la CI
+  GitHub Actions compile `src/` et commite `dist/` à chaque push. Modifier les
+  sources et laisser faire.
+- `npm test` lance `scripts/check-service-calls.js` : vérifie que chaque
+  service `kids_tasks` appelé par les cartes existe réellement dans
+  l'intégration. Trois noms de services fantômes ont vécu des mois dans ce
+  dépôt — ce contrôle est là pour que ça ne recommence pas.
+- Après une modification de `services.yaml` côté intégration :
+  `npm run sync:services` régénère `tests/service-contract.json`.
 
-- **KidsTasksStyleManager** - Global CSS injection and theming system
-- **Multiple Card Types**:
-  - `custom:kids-tasks-card` - Main dashboard
-  - `custom:kids-tasks-manager` - Administrative interface
-  - `custom:kids-tasks-forms` - Task/reward creation
-  - `custom:kids-tasks-complete` - Task completion interface
-  - `custom:kids-tasks-data` - Statistics and visualization
+## Contrat avec l'intégration
 
-### Key Features
+Les cartes lisent les entités `sensor.kidtasks_*` et appellent les services
+`kids_tasks.*`. Deux règles à respecter :
 
-1. **Task Management**: Complete, validate, and track task progress
-2. **Reward System**: Points, levels, and reward claiming
-3. **Child Profiles**: Individual progress tracking with avatars
-4. **Parental Controls**: Administrative functions and validation
-5. **Real-time Updates**: WebSocket integration with Home Assistant
-6. **Responsive Design**: Mobile-friendly interface
-7. **Theming**: CSS custom properties integration
+- **Les identifiants viennent des attributs**, jamais de l'`entity_id`.
+  `entity.attributes.task_id`, pas `entity_id.replace('sensor.kidtasks_task_', '')` :
+  les tirets des UUID deviennent des underscores dans un `entity_id`, et l'id
+  reconstruit ne correspond alors à aucune tâche.
+- **Le statut d'un enfant vient de `child_statuses[childId]`**, pas de
+  `entity.state`, qui porte le statut global de la tâche. Sur une tâche
+  partagée, l'état global reflète ce qu'ont fait les frères et sœurs.
 
-## Technical Details
+Toute action ciblant un enfant précis passe un `child_id` : valider ou
+rejeter sans lui agit sur tous les enfants assignés à la tâche.
 
-### Dependencies
-- **Runtime**: Home Assistant Lovelace environment
-- **No Build Process**: Direct JavaScript deployment
-- **Integration**: Requires [Kids Tasks Manager](https://github.com/astrayel/kids-tasks-ha) custom component
+## Droits
 
-### CSS Architecture
-- Global style injection system via `KidsTasksStyleManager`
-- CSS custom properties for theming (`--kt-*` variables)
-- Status-based color coding (`--kt-status-*`)
-- Responsive grid layouts
+`isParent()` (dans `base-card.js`) masque les vues parentales sur un compte
+non-administrateur. **C'est du confort d'affichage, pas une protection** : la
+garde réelle est côté serveur, dans l'intégration. Voir `docs/permissions.md`
+du dépôt de l'intégration.
 
-### Home Assistant Integration
-- Entity state management through `this.hass`
-- Service calls for task operations
-- Event listening for real-time updates
-- Configuration schema validation
+## Style de code
 
-## Development Guidelines
+- ES6+, classes, pas de dépendance runtime
+- CSS via `KidsTasksStyleManager` et variables `--kt-*`, thème HA respecté
+- Avant d'ajouter une fonction, vérifier avec Grep qu'un équivalent n'existe
+  pas déjà dans `base-card.js` — c'est là que vit le commun.
 
-### Code Optimization & Best Practices
-- **EXPERT LEVEL**: Claude est un expert en optimisation de code - chaque ligne écrite inutilement est très coûteuse
-- **ALWAYS CHECK FIRST**: Toujours vérifier qu'une fonction équivalente n'existe pas déjà avant de l'implémenter
-- Rechercher dans toute la codebase avec Grep/Glob avant d'ajouter du code dupliqué
-- Privilégier la réutilisation et l'extension de fonctions existantes
-- Optimiser pour la performance et la maintenabilité
+## Installation
 
-### Code Style
-- ES6+ JavaScript with class-based components
-- Lit-HTML for templating
-- CSS-in-JS for styling
-- Modular card architecture
+Voir `README.md`. En résumé : HACS en dépôt personnalisé (catégorie Lovelace),
+ou copie manuelle de `dist/kids-tasks-card.js` puis déclaration de la ressource.
 
-### File Organization
-- Single-file deployment model
-- Self-contained with embedded styles
-- No external dependencies
-- HACS-compatible structure
+## Dépannage
 
-### Build & Testing
-- **IMPORTANT**: Ne jamais exécuter de commandes de build (npm run build, npm run dev, etc.)
-- Le développeur utilise un système de surveillance en temps réel qui détecte automatiquement les modifications
-- Les changements dans /src sont automatiquement compilés et déployés
-- Se contenter de modifier les fichiers source et laisser le système automatique gérer le build
-
-### Référence de fonctionnement
-- **REFERENCE**: Le fichier `temp_working_version.js` contient la version fonctionnelle de référence
-- Toujours consulter ce fichier pour comprendre comment les fonctionnalités doivent fonctionner
-- Utiliser ce fichier comme guide pour reproduire les comportements attendus
-- En cas de doute sur l'implémentation, comparer avec temp_working_version.js
-
-## Installation & Deployment
-
-### HACS Installation (Recommended)
-```yaml
-# hacs.json configuration
-{
-  "name": "Kids Tasks Card",
-  "render_readme": true,
-  "filename": "kids-tasks-card.js"
-}
-```
-
-### Manual Installation
-1. Copy `kids-tasks-card.js` to `/config/www/community/kids-tasks-card/`
-2. Add to Lovelace resources:
-```yaml
-resources:
-  - url: /hacsfiles/kids-tasks-card/kids-tasks-card.js
-    type: module
-```
-
-### Usage Example
-```yaml
-type: custom:kids-tasks-card
-title: "Kids Tasks Dashboard"
-show_completed: true
-show_rewards: true
-child_filter: ["child1", "child2"]
-```
-
-## Testing & Validation
-
-**No Automated Testing**: Direct browser testing in Home Assistant environment
-
-### Manual Testing Checklist
-- [ ] Card loads without errors in Lovelace
-- [ ] All card types render correctly
-- [ ] Task operations work (complete, validate, etc.)
-- [ ] Reward system functions properly
-- [ ] Responsive design on mobile
-- [ ] Integration with Kids Tasks Manager component
-
-## Common Operations
-
-### Adding New Card Types
-1. Extend main class with new card type handler
-2. Add to `getCardSize()` method
-3. Implement rendering logic
-4. Update configuration schema
-
-### Styling Updates
-1. Modify `KidsTasksStyleManager.getGlobalStyles()`
-2. Use CSS custom properties for theming
-3. Ensure responsive behavior
-4. Test across different HA themes
-
-### Service Integration
-1. Use `this.hass.callService()` for operations
-2. Listen for state changes via `this.hass.states`
-3. Handle error states gracefully
-4. Provide user feedback for actions
-
-## Important Notes
-
-- **No Build Process**: Files are used directly in Home Assistant
-- **Single File**: All functionality contained in one JavaScript file
-- **Home Assistant Specific**: Designed exclusively for HA Lovelace
-- **Integration Dependent**: Requires Kids Tasks Manager component
-- **Version Compatibility**: Requires HA 2024.1.0 or later
-
-## Troubleshooting
-
-### Common Issues
-- **Card Not Loading**: Check resource configuration and file path
-- **Service Calls Failing**: Verify Kids Tasks Manager integration is installed
-- **Styling Issues**: Check CSS custom property conflicts
-- **Mobile Display**: Test responsive breakpoints
-
-### Debug Information
-- Browser console for JavaScript errors
-- Home Assistant logs for service call issues
-- Check entity states in Developer Tools
-- Verify integration configuration
+- **Carte absente du sélecteur** : ressource Lovelace non déclarée, ou cache
+  navigateur.
+- **Un bouton ne fait rien** : console du navigateur. Un service refusé
+  indique le régime de droits de l'appelant.
+- **« Enfant non trouvé »** : le `child_id` de la config ne correspond à aucun
+  enfant ; le relire dans les attributs de `sensor.kidtasks_<prénom>_points`.
