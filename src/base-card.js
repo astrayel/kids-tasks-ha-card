@@ -1739,8 +1739,12 @@ showModal(content, title = '') {
     switch (filter) {
       case 'active':
         if (mode === 'child') {
-          // Pour child-card : tâches todo ou pending
-          return tasks.filter(t => t.status === 'todo' || t.status === 'pending');
+          // Pour child-card : tâches todo ou pending.
+          // not_applicable = jour non planifié, rien n'est dû ce jour-là.
+          return tasks.filter(t =>
+            (t.status === 'todo' || t.status === 'pending') &&
+            t.status !== 'not_applicable'
+          );
         } else {
           // Pour manager-card : tâches actives et dans la période
           return tasks.filter(task => task.frequency !== 'none' && task.active !== false && this.isTaskInPeriod(task));

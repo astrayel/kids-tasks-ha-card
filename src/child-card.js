@@ -296,6 +296,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         .kt-status-dot.pending_validation  { background: #2196F3; }
         .kt-status-dot.completed           { background: #4CAF50; }
         .kt-status-dot.validated           { background: #4CAF50; }
+        .kt-status-dot.not_applicable      { background: rgba(255,255,255,0.25); }
 
         .kt-task-info { flex: 1; min-width: 0; }
 
@@ -699,6 +700,8 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       actionHtml = `<button class="kt-complete-btn" data-action="complete-task" data-id="${task.id}" title="Marquer terminée">✓</button>`;
     } else if (task.status === 'pending_validation') {
       actionHtml = `<span class="kt-status-icon" title="En attente de validation">⏳</span>`;
+    } else if (task.status === 'not_applicable') {
+      actionHtml = `<span class="kt-status-icon" title="Pas prévue aujourd'hui">—</span>`;
     } else {
       actionHtml = `<span class="kt-status-icon" title="Terminée">✅</span>`;
     }
@@ -1036,17 +1039,23 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         const arr = Array.isArray(ids) ? ids : [ids];
         return arr.includes(childId);
       })
-      .map(entity => ({
-        id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
-        name: entity.attributes.friendly_name || 'Tâche',
-        description: entity.attributes.description,
-        status: entity.state,
-        points: entity.attributes.points || 0,
-        category: entity.attributes.category,
-        icon: entity.attributes.icon,
-        completed_at: entity.attributes.completed_at,
-        ...entity.attributes
-      }));
+      .map(entity => {
+        // entity.state is the task's *global* status, which on a shared task
+        // reflects whatever a sibling did. This child's own row is the truth.
+        const mine = (entity.attributes.child_statuses || {})[childId] || {};
+        return {
+          id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
+          name: entity.attributes.friendly_name || 'Tâche',
+          description: entity.attributes.description,
+          points: entity.attributes.points || 0,
+          category: entity.attributes.category,
+          icon: entity.attributes.icon,
+          ...entity.attributes,
+          status: mine.status || entity.state,
+          completed_at: mine.completed_at || null,
+          validated_at: mine.validated_at || null,
+        };
+      });
   }
 
   getRewards() {
