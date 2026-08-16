@@ -785,29 +785,48 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       `;
     }
 
-    const equippedIds = child.equipped_cosmetics || [];
-    const equipped  = cosmetics.filter(c => equippedIds.includes(c.id));
-    const available = cosmetics.filter(c =>
-      !equippedIds.includes(c.id) &&
-      (c.min_level || 1) <= (child.level || 1) &&
-      (c.cost || 0) <= (child.points || 0)
-    );
-    const locked = cosmetics.filter(c =>
-      !equippedIds.includes(c.id) &&
-      ((c.min_level || 1) > (child.level || 1) || (c.cost || 0) > (child.points || 0))
-    );
+    // A cosmetic reward carries the identity the backend actually stores:
+    // cosmetic_data.cosmetic_id keyed by cosmetic_data.type. Fall back to the
+    // reward id, exactly like the coordinator does when claiming.
+    const decorated = cosmetics.map(c => {
+      const data = c.cosmetic_data || {};
+      return {
+        ...c,
+        cosmeticType: data.type || 'avatar',
+        cosmeticId: data.cosmetic_id || c.id,
+      };
+    });
+
+    const owns = (c) => {
+      const byType = (child.cosmetic_collection || {})[c.cosmeticType] || [];
+      const legacy = child.cosmetic_items || [];
+      return byType.includes(c.cosmeticId) || legacy.includes(c.cosmeticId);
+    };
+    const isWorn = (c) =>
+      (child.active_cosmetics || {})[c.cosmeticType] === c.cosmeticId;
+
+    const equipped = decorated.filter(c => owns(c) && isWorn(c));
+    const owned    = decorated.filter(c => owns(c) && !isWorn(c));
+    const buyable  = decorated.filter(c => !owns(c) && (c.cost || 0) <= (child.points || 0));
+    const locked   = decorated.filter(c => !owns(c) && (c.cost || 0) > (child.points || 0));
 
     return `
       ${equipped.length > 0 ? `
-        <div class="kt-section-label">Équipés</div>
+        <div class="kt-section-label">Portés</div>
         <div class="kt-cosmetics-grid">
           ${equipped.map(c => this._renderCosmeticSlot(c, 'equipped')).join('')}
         </div>
       ` : ''}
-      ${available.length > 0 ? `
-        <div class="kt-section-label">Disponibles</div>
+      ${owned.length > 0 ? `
+        <div class="kt-section-label">Dans ta collection</div>
         <div class="kt-cosmetics-grid">
-          ${available.map(c => this._renderCosmeticSlot(c, 'available')).join('')}
+          ${owned.map(c => this._renderCosmeticSlot(c, 'owned')).join('')}
+        </div>
+      ` : ''}
+      ${buyable.length > 0 ? `
+        <div class="kt-section-label">À acheter</div>
+        <div class="kt-cosmetics-grid">
+          ${buyable.map(c => this._renderCosmeticSlot(c, 'buyable')).join('')}
         </div>
       ` : ''}
       ${locked.length > 0 ? `
@@ -823,10 +842,24 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     const isLocked   = state === 'locked';
     const isEquipped = state === 'equipped';
     const icon = this.getCategoryIcon(cosmetic);
+
+    // Owned but not worn -> equip it. Not owned yet -> buy it with points.
+    let action = '';
+    let hint = cosmetic.name;
+    if (state === 'owned') {
+      action = `data-action="equip-cosmetic" data-id="${cosmetic.cosmeticId}" data-cosmetic-type="${cosmetic.cosmeticType}"`;
+      hint = `${cosmetic.name} — appuie pour le porter`;
+    } else if (state === 'buyable') {
+      action = `data-action="claim-reward" data-id="${cosmetic.id}"`;
+      hint = `${cosmetic.name} — ${cosmetic.cost || 0} points`;
+    } else if (isLocked) {
+      hint = `${cosmetic.name} (il te manque des points)`;
+    }
+
     return `
       <div
         class="kt-cosmetic-slot ${isEquipped ? 'kt-equipped' : ''} ${isLocked ? 'kt-locked' : ''}"
-        ${!isLocked ? `data-action="equip-cosmetic" data-id="${cosmetic.id}" title="${cosmetic.name}"` : `title="${cosmetic.name} (verrouillé)"`}
+        ${action} title="${hint}"
       >${icon}</div>
     `;
   }
@@ -900,9 +933,11 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       case 'claim-reward':
         this._claimReward(id);
         break;
-      case 'equip-cosmetic':
-        this._equipCosmetic(id);
+      case 'equip-cosmetic': {
+        const slot = event?.target?.closest?.('[data-cosmetic-type]');
+        this._equipCosmetic(id, slot?.dataset.cosmeticType);
         break;
+      }
       default:
         console.warn('KidsTasksChildCard: unknown action', action);
     }
@@ -932,11 +967,12 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
     }
   }
 
-  async _equipCosmetic(cosmeticId) {
+  async _equipCosmetic(cosmeticId, cosmeticType) {
     try {
-      await this._hass.callService('kids_tasks', 'equip_cosmetic', {
+      await this._hass.callService('kids_tasks', 'activate_cosmetic', {
+        child_id: this.config.child_id,
         cosmetic_id: cosmeticId,
-        child_id: this.config.child_id
+        cosmetic_type: cosmeticType || 'avatar'
       });
     } catch (err) {
       console.error('Error equipping cosmetic:', err);
@@ -1001,7 +1037,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
         return arr.includes(childId);
       })
       .map(entity => ({
-        id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+        id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
         name: entity.attributes.friendly_name || 'Tâche',
         description: entity.attributes.description,
         status: entity.state,
@@ -1020,7 +1056,7 @@ class KidsTasksChildCard extends KidsTasksBaseCard {
       .filter(id => id.startsWith('sensor.kidtasks_reward_'))
       .map(id => this._hass.states[id])
       .map(entity => ({
-        id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
+        id: entity.attributes.reward_id || entity.entity_id.replace('sensor.kidtasks_reward_', ''),
         name: entity.attributes.friendly_name || 'Récompense',
         description: entity.attributes.description,
         cost: entity.attributes.cost || 0,

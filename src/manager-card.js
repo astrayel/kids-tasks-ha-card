@@ -851,6 +851,7 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
 
     if (!isEdit) {
       serviceData.initial_points = parseInt(form.querySelector('[name="initial_points"]')?.value || '0');
+      await this.callService('kids_tasks', 'add_child', serviceData);
     } else {
       const childId = form.querySelector('[name="child_id"]').value;
       serviceData.child_id = childId;
@@ -859,37 +860,39 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
       const newPoints = parseInt(form.querySelector('[name="points"]')?.value || '0');
       const newCoins = parseInt(form.querySelector('[name="coins"]')?.value || '0');
 
-      // Pour l'édition, on utilise update_child
       const success = await this.callService('kids_tasks', 'update_child', serviceData);
 
       if (success) {
-        // Ajuster les points et pièces si nécessaire
         const children = this.getChildren();
         const currentChild = children.find(c => (c.child_id || c.id) === childId);
 
         if (currentChild) {
-          const pointsDiff = newPoints - (currentChild.points || 0);
-          const coinsDiff = newCoins - (currentChild.coins || 0);
-
-          if (pointsDiff !== 0) {
-            await this.callService('kids_tasks', 'adjust_points', {
+          // set_* takes the target value directly — no need to compute a delta,
+          // and no risk of drifting if the state changed since the form opened.
+          if (newPoints !== (currentChild.points || 0)) {
+            await this.callService('kids_tasks', 'set_points', {
               child_id: childId,
-              points: pointsDiff,
-              reason: 'Ajustement manuel par admin'
+              points: newPoints,
+              description: 'Ajustement manuel par admin'
+            });
+          } else if (newLevel !== (currentChild.level || 1)) {
+            // Setting points already recomputes the level, so only send the
+            // level when the points were left untouched.
+            await this.callService('kids_tasks', 'set_level', {
+              child_id: childId,
+              level: newLevel,
+              description: 'Ajustement manuel par admin'
             });
           }
 
-          if (coinsDiff !== 0) {
-            await this.callService('kids_tasks', 'adjust_coins', {
+          if (newCoins !== (currentChild.coins || 0)) {
+            await this.callService('kids_tasks', 'set_coins', {
               child_id: childId,
-              coins: coinsDiff,
-              reason: 'Ajustement manuel par admin'
+              coins: newCoins
             });
           }
         }
       }
-/*    } else {
-      await this.callService('kids_tasks', 'add_child', serviceData);*/
     }
 
     dialog.close();

@@ -375,7 +375,7 @@ class KidsTasksCard extends KidsTasksBaseCard {
                       entity.attributes.assigned_children.includes(childId));
     
     return taskEntities.map(entity => ({
-      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       status: entity.state,
       completed_at: entity.attributes.completed_at,

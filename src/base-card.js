@@ -647,7 +647,9 @@ class KidsTasksBaseCard extends HTMLElement {
       });
 
     return taskEntities.map(entity => ({
-      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      // entity_id has dashes replaced by underscores — the attribute
+      // carries the real task id the services expect.
+      id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       status: entity.state,
       completed_at: entity.attributes.completed_at,
@@ -1670,7 +1672,7 @@ showModal(content, title = '') {
       .map(id => this._hass.states[id]);
 
     return taskEntities.map(entity => ({
-      id: entity.entity_id.replace('sensor.kidtasks_task_', ''),
+      id: entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', ''),
       name: entity.attributes.friendly_name || 'Tâche',
       description: entity.attributes.description,
       status: entity.state,
@@ -1694,7 +1696,7 @@ showModal(content, title = '') {
       .map(id => this._hass.states[id]);
 
     return rewardEntities.map(entity => ({
-      id: entity.entity_id.replace('sensor.kidtasks_reward_', ''),
+      id: entity.attributes.reward_id || entity.entity_id.replace('sensor.kidtasks_reward_', ''),
       name: entity.attributes.friendly_name || 'Récompense',
       description: entity.attributes.description,
       cost: entity.attributes.cost || 0,
@@ -1883,33 +1885,38 @@ showModal(content, title = '') {
       return [];
     }
 
-    // Récupérer l'historique via le service backend
-    let historyData = [];
+    // get_child_history returns the entries directly since the integration
+    // declares SupportsResponse.ONLY. Fall back to the history sensor when
+    // the running integration is older than that.
     try {
-      await this._hass.callService('kids_tasks', 'get_child_history', {
-        child_id: childId,
-        limit: 20
-      });
-
-      // Fallback to sensor data since services don't return data directly
-      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
-      const historyEntity = this._hass.states[historyEntityId];
-
-      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
-        historyData = historyEntity.attributes.points_history;
-      }
+      const response = await this._hass.callService(
+        'kids_tasks',
+        'get_child_history',
+        { child_id: childId, limit: 20 },
+        undefined,
+        false,
+        true
+      );
+      const history = response?.response?.history;
+      if (Array.isArray(history)) return history;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'historique:', error);
-      // Fallback to sensor if service fails
-      const historyEntityId = `sensor.kidtasks_${child.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_points_history`;
-      const historyEntity = this._hass.states[historyEntityId];
-
-      if (historyEntity && historyEntity.attributes && historyEntity.attributes.points_history) {
-        historyData = historyEntity.attributes.points_history;
-      }
+      console.warn('get_child_history indisponible, lecture du capteur:', error);
     }
 
-    return historyData || [];
+    return this.getPointsHistoryFromSensor(childId);
+  }
+
+  // Reads the history sensor by its child_id attribute rather than by
+  // rebuilding the entity_id from the child's name.
+  getPointsHistoryFromSensor(childId) {
+    if (!this._hass) return [];
+
+    const entity = Object.keys(this._hass.states)
+      .filter(id => id.startsWith('sensor.kidtasks_') && id.endsWith('_points_history'))
+      .map(id => this._hass.states[id])
+      .find(e => e?.attributes?.child_id === childId);
+
+    return entity?.attributes?.points_history || [];
   }
 
   getActionIcon(actionType) {

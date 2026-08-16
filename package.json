@@ -20,8 +20,9 @@
     "deploy:hacs": "npm run build && cp dist/kids-tasks-card.js /config/www/community/kids-tasks-card/ || echo 'Could not copy to HACS - update path manually'",
     "deploy:dev": "npm run build:dev && node scripts/watch-and-deploy.js --once",
     "start": "npm run setup && npm run dev:full",
-    "test": "echo 'No tests yet' && exit 0",
-    "prepublishOnly": "npm run clean && npm run build"
+    "test": "node scripts/check-service-calls.js",
+    "prepublishOnly": "npm run clean && npm run build",
+    "sync:services": "node scripts/sync-service-contract.js"
   },
   "keywords": [
     "home-assistant",

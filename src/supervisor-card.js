@@ -364,7 +364,7 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
           <button class="btn-reject" data-action="reject-task" data-task-id="${item.task_id}" data-child-id="${item.child_id}">
             ✗ Rejeter
           </button>
-          <button class="btn-validate" data-action="validate-task" data-task-id="${item.task_id}">
+          <button class="btn-validate" data-action="validate-task" data-task-id="${item.task_id}" data-child-id="${item.child_id}">
             ✓ Valider
           </button>
         </div>
@@ -497,7 +497,11 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
             · ${this.formatDateTime(entry.timestamp)}
           </div>
         </div>
-        <button class="history-undo" data-action="undo-transaction" data-entry-id="${entry.id}">
+        <button class="history-undo"
+                data-action="undo-transaction"
+                data-id="${entry.child_id || ''}"
+                data-delta="${entry.points_delta || 0}"
+                data-label="${(entry.description || 'Action').replace(/"/g, '&quot;')}">
           ↶ Annuler
         </button>
       </div>
@@ -511,7 +515,7 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
         this.render();
         break;
       case 'validate-task':
-        this.validateTask(event.target.dataset.taskId);
+        this.validateTask(event.target.dataset.taskId, event.target.dataset.childId);
         break;
       case 'reject-task':
         this.rejectTask(event.target.dataset.taskId, event.target.dataset.childId);
@@ -531,9 +535,11 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
       case 'give-cosmetic':
         this.showGiveCosmeticModal();
         break;
-      case 'undo-transaction':
-        this.undoTransaction(id);
+      case 'undo-transaction': {
+        const btn = event?.target?.closest?.('[data-action="undo-transaction"]');
+        this.undoTransaction(id, Number(btn?.dataset.delta || 0), btn?.dataset.label);
         break;
+      }
       case 'filter-history':
         this.historyFilter = event.target.value;
         this.render();
@@ -543,10 +549,12 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
     }
   }
 
-  async validateTask(taskId) {
+  async validateTask(taskId, childId) {
     try {
+      // child_id keeps siblings assigned to the same task waiting.
       await this._hass.callService('kids_tasks', 'validate_task', {
-        task_id: taskId
+        task_id: taskId,
+        ...(childId ? { child_id: childId } : {})
       });
       this.showNotification('Tâche validée !', 'success');
       setTimeout(() => this.render(), 500);
@@ -560,7 +568,7 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
     try {
       await this._hass.callService('kids_tasks', 'reject_task', {
         task_id: taskId,
-        child_id: childId,
+        ...(childId ? { child_id: childId } : {}),
         reason: reason || 'Tâche non conforme'
       });
       this.showNotification('Tâche rejetée', 'warning');
@@ -615,6 +623,114 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
     }
   }
 
+  // ── Undo a points movement ──────────────────────────────────────────────
+  //
+  // The history is a ledger of deltas, not a list of reversible commands, so
+  // undoing means posting the opposite delta rather than deleting an entry.
+  // The original movement stays visible, which is what a parent wants when
+  // explaining the correction to a child.
+
+  async undoTransaction(childId, delta, label) {
+    if (!childId || !delta) {
+      this.showNotification('Cette entrée ne peut pas être annulée', 'warning');
+      return;
+    }
+
+    const amount = Math.abs(delta);
+    const wasGain = delta > 0;
+    const question = wasGain
+      ? `Retirer les ${amount} points de « ${label || 'cette action'} » ?`
+      : `Rendre les ${amount} points de « ${label || 'cette action'} » ?`;
+    if (!confirm(question)) return;
+
+    try {
+      await this._hass.callService(
+        'kids_tasks',
+        wasGain ? 'remove_points' : 'add_points',
+        {
+          child_id: childId,
+          points: amount,
+          reason: `Annulation : ${label || 'action précédente'}`
+        }
+      );
+      this.showNotification('Mouvement annulé', 'success');
+      setTimeout(() => this.render(), 500);
+    } catch (error) {
+      this.showNotification(`Erreur: ${error.message}`, 'error');
+    }
+  }
+
+  // ── Give a cosmetic to a child ──────────────────────────────────────────
+
+  showGiveCosmeticModal() {
+    const children = this.getChildren();
+    const cosmetics = this.getRewards().filter(
+      r => r.reward_type === 'cosmetic' || r.cosmetic_data
+    );
+
+    if (cosmetics.length === 0) {
+      this.showNotification(
+        'Aucun cosmétique au catalogue — utilisez le service create_cosmetic_rewards',
+        'warning'
+      );
+      return;
+    }
+
+    const content = `
+      <form id="give-cosmetic-form">
+        <ha-select name="child_id" label="Enfant" required>
+          ${children.map(child => `
+            <ha-list-item value="${child.child_id || child.id}">${child.name}</ha-list-item>
+          `).join('')}
+        </ha-select>
+
+        <ha-select name="reward_id" label="Cosmétique" required>
+          ${cosmetics.map(c => `
+            <ha-list-item value="${c.id}">${c.name}</ha-list-item>
+          `).join('')}
+        </ha-select>
+
+        <div class="form-actions">
+          <ha-button class="btn-secondary" onclick="this.closest('ha-dialog').close()">Annuler</ha-button>
+          <ha-button class="btn-primary" onclick="supervisorCard.submitGiveCosmetic()">Offrir</ha-button>
+        </div>
+      </form>
+    `;
+
+    this.showModal(content, 'Offrir un Cosmétique');
+  }
+
+  async submitGiveCosmetic() {
+    const dialog = document.querySelector('ha-dialog');
+    const form = dialog.querySelector('form');
+    const childId = form.querySelector('[name="child_id"]').value;
+    const rewardId = form.querySelector('[name="reward_id"]').value;
+
+    const reward = this.getRewards().find(r => r.id === rewardId);
+    const cosmeticData = reward?.cosmetic_data || {};
+    const cosmeticType = cosmeticData.type || 'avatar';
+    const cosmeticId = cosmeticData.cosmetic_id || rewardId;
+
+    try {
+      // Grant it first (this is what fills the child's collection), then wear
+      // it straight away so the gift is immediately visible.
+      await this._hass.callService('kids_tasks', 'claim_reward', {
+        reward_id: rewardId,
+        child_id: childId
+      });
+      await this._hass.callService('kids_tasks', 'activate_cosmetic', {
+        child_id: childId,
+        cosmetic_id: cosmeticId,
+        cosmetic_type: cosmeticType
+      });
+      this.showNotification('Cosmétique offert !', 'success');
+      dialog.close();
+      setTimeout(() => this.render(), 500);
+    } catch (error) {
+      this.showNotification(`Erreur: ${error.message}`, 'error');
+    }
+  }
+
   getPendingValidations(hass) {
     if (!hass) return [];
 
@@ -625,7 +741,7 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
 
     taskEntities.forEach(entity => {
       if (entity.state === 'pending_validation') {
-        const taskId = entity.entity_id.replace('sensor.kidtasks_task_', '');
+        const taskId = entity.attributes.task_id || entity.entity_id.replace('sensor.kidtasks_task_', '');
         const childStatuses = entity.attributes.child_statuses || {};
 
         Object.entries(childStatuses).forEach(([childId, status]) => {
@@ -657,7 +773,10 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
     const history = [];
 
     children.forEach(child => {
-      const childHistory = child.points_history || [];
+      const childId = child.child_id || child.id;
+      // The points sensor does not carry the history — it lives on the
+      // dedicated *_points_history entity.
+      const childHistory = child.points_history || this.getPointsHistoryFromSensor(childId);
       childHistory.forEach(entry => {
         history.push({
           ...entry,
