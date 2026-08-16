@@ -61,6 +61,11 @@ class KidsTasksManagerCard extends KidsTasksBaseCard {
       return;
     }
 
+    if (!this.isParent()) {
+      this.shadowRoot.innerHTML = this.renderParentOnlyNotice("L'administration");
+      return;
+    }
+
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
       <div class="card-content kids-tasks-scope">

@@ -1074,6 +1074,32 @@ showModal(content, title = '') {
     `;
   }
 
+  // ── Parental access ───────────────────────────────────────────────────────
+  //
+  // Display only. The integration enforces the real rule server-side, so a
+  // child reaching the developer tools is refused there — see the four-regime
+  // model in the integration's docs/permissions.md.
+
+  isParent() {
+    return this._hass?.user?.is_admin === true;
+  }
+
+  renderParentOnlyNotice(cardTitle = 'Cette vue') {
+    return `
+      ${this.getCommonStyles()}
+      <div class="card-content kids-tasks-scope">
+        <div class="empty-state">
+          <div class="empty-icon">🔒</div>
+          <div class="empty-text">${cardTitle} est réservée aux parents</div>
+          <div class="empty-hint">
+            Connecte-toi avec un compte administrateur pour valider les tâches
+            et gérer les récompenses.
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   getCommonStyles() {
     return `
       <style>

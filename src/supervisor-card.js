@@ -55,6 +55,11 @@ class KidsTasksSupervisorCard extends KidsTasksBaseCard {
       return;
     }
 
+    if (!this.isParent()) {
+      this.shadowRoot.innerHTML = this.renderParentOnlyNotice('La supervision');
+      return;
+    }
+
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
       <div class="card-content kids-tasks-scope">
